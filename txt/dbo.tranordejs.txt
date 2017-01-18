@@ -1,0 +1,46 @@
+
+alter  function [dbo].[tranordejs](@tranvcceno nvarchar(20))
+returns @tmp table(
+	noa nvarchar(20)
+	,noq nvarchar(20)
+	,productno nvarchar(20)
+	,product nvarchar(50)
+	,addrno nvarchar(20)
+	,addr nvarchar(50)
+	,mount float
+	,memo nvarchar(max)
+	,gmount float
+	,emount float
+	,[weight] float
+	,[volume] float
+	,[address] nvarchar(100)
+	,lat nvarchar(20)
+	,lng nvarchar(20)
+) as
+begin
+	insert into @tmp(noa,noq,productno,product,addrno,addr,mount,memo,gmount)
+	select a.noa,a.noq,a.productno,a.product,a.addrno,a.addr,isnull(a.mount,0),a.memo,isnull(c.mount,0)
+	from view_tranordes a
+	left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
+	outer apply(select sum(ISNULL(mount,0)) mount from view_tranvcces where noa!=@tranvcceno and ordeno=a.noa and no2=a.noq ) c
+	where ISNULL(b.enda,0) = 0
+	order by a.noa,a.noq
+
+	update @tmp set emount = mount - gmount
+	delete @tmp where emount<=0
+	update @tmp set [weight]= round(emount * isnull(b.uweight,0),3)
+		 ,[volume]= round(emount * isnull(b.stkmount,0),3)
+	from @tmp a
+	left join ucc b on a.productno=b.noa
+	update @tmp set [address]=isnull(b.[address],'')
+		,lat=isnull(b.lat,'')
+		,lng=isnull(b.lng,'')
+	from @tmp a
+	left join addr2 b on a.addrno=b.noa
+	return 
+end
+
+
+GO
+
+
