@@ -340,8 +340,8 @@
 			}
 			function initMap() {
                 directionsService = new google.maps.DirectionsService();
-                //directionsDisplay = new google.maps.DirectionsRenderer();
-                directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+                directionsDisplay = new google.maps.DirectionsRenderer();
+                //directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
                 map = new google.maps.Map(document.getElementById('map'), {
                     zoom : 14,
                     center : {
@@ -390,12 +390,12 @@
                         var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?center='+$('#txtLat').val()+','+$('#txtLng').val()+'&size=300x300&maptype=roadmap';
                         imgsrc += '&markers=color:blue|label:S|'+$('#txtLat').val()+','+$('#txtLng').val();
                         
-                       	var marker = new google.maps.Marker({
+                       	/*var marker = new google.maps.Marker({
 						    position: (new google.maps.LatLng(q_float('txtLat'),q_float('txtLng'))),
 						    label: '起點',
 						    map: map
 					    });
-				    	marker.setMap(map);
+				    	marker.setMap(map);*/
 						    	
                         for (var i = 0; i < route.legs.length; i++) {
                         	if(i<route.legs.length-1){
