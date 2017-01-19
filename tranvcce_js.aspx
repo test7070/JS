@@ -15,6 +15,7 @@
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8&signed_in=true&callback=initMap" async defer></script>
 		<script type="text/javascript">
+		
 			var directionsService;
             var directionsDisplay;
  			var map;
@@ -60,15 +61,25 @@
 					return;
 				}
 				mainForm(0);
-				$('#btnOrde').click(function(e){
-                	var t_where ='';
-                	q_box("tranordejs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val()}), "tranorde_tranvcce", "95%", "95%", '');
-                });
+				
 			}
 
 			function mainPost() {
 				q_mask(bbmMask);
+				
+				$('body').append('<div id="_orde" style="display:none"></div>');
+				$('body').append('<div id="_carno" style="display:none"></div>');
+				
+				$('#btnOrde').click(function(e){
+                	var t_where ='';
+                	q_box("tranordejs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val()}), "tranorde_tranvcce", "95%", "95%", '');
+                });
+                $('#btnCar').click(function(e){
+                	var t_where ='';
+                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val()}), "car_tranvcce", "95%", "95%", '');
+                });
 				$('#btnRun').click(function() {
+					initMap();
 					calculateAndDisplayRoute(directionsService, directionsDisplay);
 				});
 			}
@@ -150,8 +161,27 @@
                 	case 'tranorde_tranvcce':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtProductno,txtProduct,txtMount,txtWeight,txtVolume,txtAddrno,txtAddr,txtAddress,txtLat,txtLng,txtMemo'
-                        	, as.length, as, 'noa,noq,productno,product,emount,weight,volume,addrno,addr,address,lat,lng,memo', '','');
+                        	$('#_orde').children().remove();
+                        	for(var i=0;i<as.length;i++){
+                        		$('#_orde').append('<a style="display:none">'+as[i].noa+'-'+as[i].noq
+                        			+'<a class="lat">'+as[i].lat+'</a>'
+                        			+'<a class="lng">'+as[i].lng+'</a>'
+                        			+'<a class="theight">'+as[i].theight+'</a>'
+                        			+'<a class="tvolume">'+as[i].tvolume+'</a>'+'</a>');
+                        	}
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtTypea,txtOrdeno,txtNo2,txtCustno,txtCust,txtProductno,txtProduct,txtMount,txtWeight,txtVolume,txtAddrno,txtAddr,txtAddress,txtLat,txtLng,txtMemo,txtLengthb,txtWidth,txtHeight,txtTheight,txtTvolume,txtConn,txtTel'
+                        	, as.length, as, 'typea,noa,noq,custno,cust,productno,product,emount,weight,volume,addrno,addr,address,lat,lng,memo,lengthb,width,height,theight,tvolume,conn,tel', '','');
+                        }else{
+                        	Unlock(1);
+                        }
+                        break;
+                    case 'car_tranvcce':
+                        if (b_ret != null) {
+                        	as = b_ret;
+                        	$('#_carno').children().remove();
+                        	for(var i=0;i<as.length;i++){
+                        		$('#_carno').append('<a style="display:none">'+as[i].carno+'</a>');
+                        	}
                         }else{
                         	Unlock(1);
                         }
@@ -200,6 +230,8 @@
 
 			function btnIns() {
 				_btnIns();
+				$('#_orde').children().remove();
+				$('#_carno').children().remove();
 				$('#txtNoa').val('AUTO');
 				$('#txtDatea').val(q_date());
 				$('#chkEnda').prop('checked',false);
@@ -210,6 +242,8 @@
 				if (emp($('#txtNoa').val()))
 					return;
 				_btnModi();
+				$('#_orde').children().remove();
+				$('#_carno').children().remove();
 				$('#txtDatea').focus();
 			}
 
@@ -262,10 +296,12 @@
 					$('#txtDatea').datepicker('destroy');
 					$('#btnRun').attr('disabled','disabled');
 					$('#btnOrde').attr('disabled','disabled');
+					$('#btnCar').attr('disabled','disabled');
 				}else{
 					$('#txtDatea').datepicker();
 					$('#btnRun').removeAttr('disabled');
 					$('#btnOrde').removeAttr('disabled');
+					$('#btnCar').removeAttr('disabled');
 				}
 			}
 
@@ -340,8 +376,8 @@
 			}
 			function initMap() {
                 directionsService = new google.maps.DirectionsService();
-                directionsDisplay = new google.maps.DirectionsRenderer();
-                //directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+                //directionsDisplay = new google.maps.DirectionsRenderer();
+                directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
                 map = new google.maps.Map(document.getElementById('map'), {
                     zoom : 14,
                     center : {
@@ -350,6 +386,7 @@
                     }
                 });
                 directionsDisplay.setMap(map);
+                map.setOptions({styles: stylesArray});
             }
 
             function calculateAndDisplayRoute(directionsService, directionsDisplay) {
@@ -390,12 +427,12 @@
                         var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?center='+$('#txtLat').val()+','+$('#txtLng').val()+'&size=300x300&maptype=roadmap';
                         imgsrc += '&markers=color:blue|label:S|'+$('#txtLat').val()+','+$('#txtLng').val();
                         
-                       	/*var marker = new google.maps.Marker({
+                       	var marker = new google.maps.Marker({
 						    position: (new google.maps.LatLng(q_float('txtLat'),q_float('txtLng'))),
 						    label: '起點',
 						    map: map
 					    });
-				    	marker.setMap(map);*/
+				    	marker.setMap(map);
 						    	
                         for (var i = 0; i < route.legs.length; i++) {
                         	if(i<route.legs.length-1){
@@ -441,7 +478,7 @@
                         imgsrc+='&key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8';
                         //console.log(imgsrc);
                         imgsrc = encodeURI(imgsrc);
-                        $('#img').attr('src',imgsrc);
+                        //$('#img').attr('src',imgsrc);
                         //$('#txtImg').val(imgsrc);
                         //$('#img').attr('src',encodeURI(imgsrc));
                         //$('#txtImg').val(getBase64Image($('#img')[0]));
@@ -494,6 +531,8 @@
                	}
                	return tmp;
             }
+            
+            var stylesArray = [{"featureType":"administrative","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"administrative.province","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"saturation":-100},{"lightness":65},{"visibility":"on"}]},{"featureType":"poi","elementType":"all","stylers":[{"saturation":-100},{"lightness":"50"},{"visibility":"simplified"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"all","stylers":[{"lightness":"30"}]},{"featureType":"road.local","elementType":"all","stylers":[{"lightness":"40"}]},{"featureType":"transit","elementType":"all","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"water","elementType":"geometry","stylers":[{"hue":"#ffff00"},{"lightness":-25},{"saturation":-97}]},{"featureType":"water","elementType":"labels","stylers":[{"lightness":-25},{"saturation":-100}]}];
 		</script>
 		
 		<style type="text/css">
@@ -591,7 +630,7 @@
 				margin: -1px;
 			}
 			.dbbs {
-				width: 1400px;
+				width: 2300px;
 			}
 			.dbbt {
 				width: 1000px;
@@ -704,8 +743,8 @@
 						<td><input id="txtWorker" type="text"  class="txt c1"/></td>
 						<td><span> </span><a id="lblWorker2" class="lbl"> </a></td>
 						<td><input id="txtWorker2" type="text"  class="txt c1"/></td>
-						<td> </td>
 						<td><input id="btnOrde" type="button" value="訂單匯入" style="width:100%;"/></td>
+						<td><input id="btnCar" type="button" value="車輛選擇" style="width:100%;"/></td>
 						<td>
 							<input id="btnRun" type="button" value="排程" style="width:100%;"/>
 							<input id="txtImg" type="text" style="display:none;"/>
@@ -713,7 +752,7 @@
 					</tr>
 				</table>
 			</div>
-			<img id="img" crossorigin="anonymous" style="float:left;"/> 
+			<img id="img" crossorigin="anonymous" style="float:left;display:none;"/> 
 		</div>
 		<div class='dbbs' >
 			<table id="tbbs" class='tbbs'>
@@ -721,14 +760,29 @@
 					<td align="center" style="width:25px"><input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  /></td>
 					<td align="center" style="width:20px;"> </td>
 					<td align="center" style="width:70px"><a>車牌</a></td>
+					<td align="center" style="width:70px"><a>類型</a></td>
+					<td align="center" style="width:150px"><a>貨主</a></td>
+					<td align="center" style="width:40px"><a>提貨</a></td>
+					<td align="center" style="width:40px"><a>卸貨</a></td>
+					<td align="center" style="width:40px"><a>空瓶</a></td>
 					<td align="center" style="width:150px"><a>品名</a></td>
 					<td align="center" style="width:70px"><a>數量</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
+					<td align="center" style="width:70px"><a>長</a></td>
+					<td align="center" style="width:70px"><a>寬</a></td>
+					<td align="center" style="width:70px"><a>高</a></td>
 					<td align="center" style="width:70px"><a>材積</a></td>
+					<td align="center" style="width:70px"><a>運送需<br>耗高度</a></td>
+					<td align="center" style="width:70px"><a>運送需<br>耗材積</a></td>
 					<td align="center" style="width:70px"><a>裝卸貨<br>時間(分)</a></td>
 					<td align="center" style="width:150px"><a>地點</a></td>
 					<td align="center" style="width:300px"><a>地址</a></td>
-					<td align="center" style="width:100px"><a>備註</a></td>
+					<td align="center" style="width:70px"><a>聯絡人</a></td>
+					<td align="center" style="width:70px"><a>聯絡電話</a></td>
+					<td align="center" style="width:100px"><a>注意事項</a></td>
+					<td align="center" style="width:100px"><a>提貨完<br>工時間</a></td>
+					<td align="center" style="width:100px"><a>卸貨完<br>工時間</a></td>
+					<td align="center" style="width:100px"><a>空瓶完<br>工時間</a></td>
 					<td align="center" style="width:120px"><a>訂單</a></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
@@ -741,6 +795,15 @@
 						<input type="text" id="txtCarno.*" style="width:95%;"/>
 						<input type="button" id="btnCarno.*" style="display:none;"/>
 					</td>
+					<td><input type="text" id="txtTypea.*" style="width:95%;"/></td>
+					<td>
+						<input type="text" id="txtCustno.*" style="float:left;width:40%;"/>
+						<input type="text" id="txtCust.*" style="float:left;width:45%;"/>
+						<input type="button" id="btnCust.*" style="display:none;"/>
+					</td>
+					<td><input type="checkbox" id="chkChk1.*" style="width:95%;"/></td>
+					<td><input type="checkbox" id="chkChk2.*" style="width:95%;"/></td>
+					<td><input type="checkbox" id="chkChk3.*" style="width:95%;"/></td>
 					<td>
 						<input type="text" id="txtProductno.*" style="float:left;width:45%;"/>
 						<input type="text" id="txtProduct.*" style="float:left;width:45%;"/>
@@ -748,7 +811,12 @@
 					</td>
 					<td><input type="text" id="txtMount.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtWeight.*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtLengthb.*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtWidth.*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtHeight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtVolume.*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtTvolume.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtMins.*" class="num" style="width:95%;"/></td>
 					<td>
 						<input type="text" id="txtAddrno.*" style="float:left;width:45%;"/>
@@ -760,7 +828,12 @@
 						<input type="text" id="txtLat.*" style="float:left;width:40%;display:none;"/>
 						<input type="text" id="txtLng.*" style="float:left;width:40%;display:none;"/>
 					</td>
+					<td><input type="text" id="txtConn.*" style="width:95%;"/></td>
+					<td><input type="text" id="txtTel.*" style="width:95%;"/></td>
 					<td><input type="text" id="txtMemo.*" style="width:95%;"/></td>
+					<td><input type="text" id="txtTime1.*" style="width:95%;"/></td>
+					<td><input type="text" id="txtTime2.*" style="width:95%;"/></td>
+					<td><input type="text" id="txtTime3.*" style="width:95%;"/></td>
 					<td>
 						<input type="text" id="txtOrdeno.*" style="float:left;width:70%;"/>
 						<input type="text" id="txtNo2.*" style="float:left;width:20%;"/>

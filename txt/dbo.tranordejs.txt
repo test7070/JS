@@ -1,28 +1,46 @@
-
-alter  function [dbo].[tranordejs](@tranvcceno nvarchar(20))
+ALTER  function [dbo].[tranordejs](@tranvcceno nvarchar(20))
 returns @tmp table(
 	noa nvarchar(20)
-	,noq nvarchar(20)
-	,productno nvarchar(20)
-	,product nvarchar(50)
-	,addrno nvarchar(20)
-	,addr nvarchar(50)
-	,mount float
-	,memo nvarchar(max)
-	,gmount float
-	,emount float
-	,[weight] float
-	,[volume] float
-	,[address] nvarchar(100)
-	,lat nvarchar(20)
-	,lng nvarchar(20)
+		,noq nvarchar(20)
+		,typea nvarchar(20)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,addrno nvarchar(20)
+		,addr nvarchar(50)
+		,conn nvarchar(50)
+		,tel nvarchar(50)
+		,mount float
+		,memo nvarchar(max)
+		,gmount float
+		,emount float
+		,[weight] float
+		,lengthb float
+		,width float
+		,height float
+		,[volume] float
+		,theight float
+		,tvolume float
+		,[address] nvarchar(100)
+		,lat nvarchar(20)
+		,lng nvarchar(20)
+		,date1 nvarchar(20)
+		,time1 nvarchar(20)
+		,date2 nvarchar(20)
+		,time2 nvarchar(20)
 ) as
 begin
-	insert into @tmp(noa,noq,productno,product,addrno,addr,mount,memo,gmount)
-	select a.noa,a.noq,a.productno,a.product,a.addrno,a.addr,isnull(a.mount,0),a.memo,isnull(c.mount,0)
+	insert into @tmp(noa,noq,typea,custno,cust,productno,product,addrno,addr,conn,tel
+		,mount,lengthb,width,height,theight,tvolume,memo,gmount
+		,date1,time1,date2,time2)
+	select a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,a.addrno,a.addr,a.conn,a.tel
+		,isnull(a.mount,0),a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
+		,a.date1,a.time1,a.date2,a.time2
 	from view_tranordes a
 	left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
 	outer apply(select sum(ISNULL(mount,0)) mount from view_tranvcces where noa!=@tranvcceno and ordeno=a.noa and no2=a.noq ) c
+	left join cust d on b.custno=d.noa
 	where ISNULL(b.enda,0) = 0
 	order by a.noa,a.noq
 
@@ -39,8 +57,3 @@ begin
 	left join addr2 b on a.addrno=b.noa
 	return 
 end
-
-
-GO
-
-

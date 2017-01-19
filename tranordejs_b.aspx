@@ -39,26 +39,64 @@
 				$('#btnPrev').hide();
 				$('#btnNext').hide();
 				$('#btnBott').hide();
-				
-				$('#checkAllCheckbox').click(function(e){
-					$('.ccheck').prop('checked',$(this).prop('checked'));
-				});
 			}
             function q_gtPost(t_name) {
 				switch (t_name) {
 					case q_name:
-						//if (isLoadGt == 1) {
-							abbs = _q_appendData(q_name, "", true);
-							isLoadGt = 0;
-							refresh();
-						//}
+						abbs = _q_appendData(q_name, "", true);
+						//refresh();
 						break;
 				}
 			}
-
+			var maxAbbsCount = 0;
             function refresh() {
-                _refresh();
-            }
+            	//ref ordest_b.aspx
+				var w = window.parent;
+				
+				if (maxAbbsCount < abbs.length) {
+					for (var i = (abbs.length - (abbs.length - maxAbbsCount)); i < abbs.length; i++) {
+						for(var j=0;j<w.$('#_orde').children().length;j++){
+							if(w.$('#_orde').children().eq(j).text()==abbs[i].noa+'-'+abbs[i].noq){
+								abbs[i]['sel'] = "true";
+								$('#chkSel_' + abbs[i].rec).attr('checked', true);
+							}
+						}
+						/*for (var j = 0; j < w.q_bbsCount; j++) {
+							if (w.$('#txtOrdeno_' + j).val() == abbs[i].noa && w.$('#txtNo2_' + j).val() == abbs[i].noq) {			
+								abbs[i]['sel'] = "true";
+								$('#chkSel_' + abbs[i].rec).attr('checked', true);
+								//alert(abbs[i].rec);
+							}
+						}*/
+					}
+					maxAbbsCount = abbs.length;
+				}
+				abbs.sort(function(a,b){
+					var x = (a.sel==true || a.sel=="true"?1:0);
+					var y = (b.sel==true || b.sel=="true"?1:0);
+					return y-x;
+				});
+				/*for(var i=0;i<abbs.length;i++){
+					if(abbs[i].kind == ''){
+						abbs.splice(i,1);
+						i--;
+					}
+				}*/
+				_refresh();
+				q_bbsCount = abbs.length;
+				
+				$('#checkAllCheckbox').click(function() {
+					$('input[type=checkbox][id^=chkSel]').each(function() {
+						var t_id = $(this).attr('id').split('_')[1];
+						if (!emp($('#txtNoa_' + t_id).val()))
+							$(this).attr('checked', $('#checkAllCheckbox').is(':checked'));
+					});
+				});
+				for(var i=0;i<q_bbsCount;i++){
+					$('#lblNo_'+i).text((i+1));
+				}
+				//_readonlys(true);
+			}
 		</script>
 		<style type="text/css">
 		</style>
@@ -68,45 +106,80 @@
 		<div  id="dFixedTitle" style="overflow-y: scroll;">
 			<table id="tFixedTitle" class='tFixedTitle'  border="2"  cellpadding='2' cellspacing='1' style='width:100%;'  >
 				<tr style='color:white; background:#003366;' >
-					<th align="center" style="width:2%;" ><input type="checkbox" id="checkAllCheckbox"/></th>
-					<td align="center" style="width:20%;"><a>訂單編號</a></td>
-					<td align="center" style="width:15%;"><a>品名</a></td>
-					<td align="center" style="width:20%;"><a>地點</a></td>
-					<td align="center" style="width:7%;"><a>數量</a></td>
-					<td align="center" style="width:7%;"><a>重量</a></td>
-					<td align="center" style="width:7%;"><a>材積</a></td>
+					<td align="center" style="width:25px" ><input type="checkbox" id="checkAllCheckbox"/></td>
+					<td align="center" style="width:25px;"> </td>
+					<td align="center" style="width:150px;"><a>訂單編號</a></td>
+					<td align="center" style="width:100px;"><a>客戶</a></td>
+					<td align="center" style="width:100px;"><a>品名</a></td>
+					<td align="center" style="width:100px;"><a>地點</a></td>
+					<td align="center" style="width:100px;"><a>提貨日期</a></td>
+					<td align="center" style="width:100px;"><a>卸貨日期</a></td>
+					<td align="center" style="width:60px;"><a>數量</a></td>
+					<td align="center" style="width:60px;"><a>長</a></td>
+					<td align="center" style="width:60px;"><a>寬</a></td>
+					<td align="center" style="width:60px;"><a>高</a></td>
+					<td align="center" style="width:60px;"><a>材積</a></td>
+					<td align="center" style="width:60px;"><a>重量</a></td>
+					<td align="center" style="width:60px;"><a>運送<br>高度</a></td>
+					<td align="center" style="width:60px;"><a style="color:green">運送<br>材積</a></td>
 				</tr>
 			</table>
 		</div>
-		<div id="dbbs" style="overflow: scroll;height:450px;" >
+		<div id="dbbs" style="overflow: scroll;height:400px;" >
 			<table id="tbbs" class='tbbs' border="2" cellpadding='2' cellspacing='1' style='width:100%;' >
 				<tr style="display:none;">
-					<th align="center" style="width:2%;"> </th>
-					<td align="center" style="width:10%;"><a id='lblContno'> </a></td>
-					<td align="center" style="width:20%;"><a> </a></td>
-					<td align="center" style="width:15%;"><a> </a></td>
-					<td align="center" style="width:20%;"><a> </a></td>
-					<td align="center" style="width:7%;"><a> </a></td>
-					<td align="center" style="width:7%;"><a> </a></td>
-					<td align="center" style="width:7%;"><a> </a></td>
+					<td align="center" style="width:25px;"> </td>
+					<td align="center" style="width:25px;"> </td>
+					<td align="center" style="width:150px;"><a> </a></td>
+					<td align="center" style="width:100px;"><a> </a></td>
+					<td align="center" style="width:100px;"><a> </a></td>
+					<td align="center" style="width:100px;"><a> </a></td>
+					<td align="center" style="width:100px;"><a> </a></td>
+					<td align="center" style="width:100px;"><a> </a></td>
+					<td align="center" style="width:60px;"><a> </a></td>
+					<td align="center" style="width:60px;"><a> </a></td>
+					<td align="center" style="width:60px;"><a> </a></td>
+					<td align="center" style="width:60px;"><a> </a></td>
+					<td align="center" style="width:60px;"><a> </a></td>
+					<td align="center" style="width:60px;"><a> </a></td>
+					<td align="center" style="width:60px;"><a> </a></td>
+					<td align="center" style="width:60px;"><a> </a></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
-					<td style="width:2%;"><input type="checkbox" class="ccheck" id="chkSel.*"/></td>
-					<td style="width:20%;">
-						<input class="txt" id="txtNoa.*" type="text" style="float:left;width:80%;"  readonly="readonly" />
-						<input class="txt" id="txtNoq.*" type="text" style="float:left;width:15%;"  readonly="readonly" />
+					<td style="width:25px;"><input id="chkSel.*" type="checkbox"/></td>
+					<td style="width:25px;"><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+					<td style="width:150px;">
+						<input id="txtNoa.*" type="text" style="float:left;width:78%;"  readonly="readonly" />
+						<input id="txtNoq.*" type="text" style="float:left;width:20%; text-align: right;"  readonly="readonly" />
 					</td>
-					<td style="width:15%;">
-						<input class="txt" id="txtProductno.*" type="text" style="float:left;width:40%;"  readonly="readonly" />
-						<input class="txt" id="txtProduct.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
+					<td style="width:100px;">
+						<input id="txtCustno.*" type="text" style="display:none;"/>
+						<input id="txtCust.*" type="text" style="float:left;width:95%;" readonly="readonly"/>
 					</td>
-					<td style="width:20%;">
-						<input class="txt" id="txtAddrno.*" type="text" style="float:left;width:40%;"  readonly="readonly" />
-						<input class="txt" id="txtAddr.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
+					<td style="width:100px;">
+						<input id="txtProductno.*" type="text" style="display:none;"/>
+						<input id="txtProduct.*" type="text" style="float:left;width:95%;" readonly="readonly" />
 					</td>
-					<td style="width:7%;"><input class="txt" id="txtEmount.*" type="text"  style="text-align:right;width:95%;"  readonly="readonly" /></td>
-					<td style="width:7%;"><input class="txt" id="txtWeight.*" type="text"  style="text-align:right;width:95%;"  readonly="readonly" /></td>
-					<td style="width:7%;"><input class="txt" id="txtVolume.*" type="text"  style="text-align:right;width:95%;"  readonly="readonly" /></td>
+					<td style="width:100px;">
+						<input id="txtAddrno.*" type="text" style="display:none;"/>
+						<input id="txtAddr.*" type="text" style="float:left;width:95%;" readonly="readonly" />
+					</td>
+					<td style="width:100px;">
+						<input id="txtDate1.*" type="text" style="float:left;width:55%;" readonly="readonly" />
+						<input id="txtTime1.*" type="text" style="float:left;width:40%;" readonly="readonly" />
+					</td>
+					<td style="width:100px;">
+						<input id="txtDate2.*" type="text" style="float:left;width:55%;" readonly="readonly" />
+						<input id="txtTime2.*" type="text" style="float:left;width:40%;" readonly="readonly" />
+					</td>
+					<td style="width:60px;"><input id="txtEmount.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;"><input id="txtLengthb.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;"><input id="txtWidth.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;"><input id="txtHeight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;"><input id="txtVolume.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;"><input id="txtWeight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;"><input id="txtTheight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;"><input id="txtTvolume.*" type="text" style="text-align:right;width:95%;"/></td>
 				</tr>
 			</table>
 		</div>

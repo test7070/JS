@@ -454,7 +454,7 @@
 						<td colspan="3"><input id="txtTel" type="text" class="txt c1"/></td>
 					</tr>
 					<tr>
-						<td><span> </span><a id="lblMemo" class="lbl">備註</a></td>
+						<td><span> </span><a id="lblMemo" class="lbl">注意事項</a></td>
 						<td colspan="3">
 							<textarea id="txtMemo" class="txt c1" style="height:50px;"> </textarea>
 						</td>
