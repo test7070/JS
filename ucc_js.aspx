@@ -25,7 +25,7 @@
 			brwNowPage = 0;
 			brwKey = 'noa';
 			brwCount2 = 20;
-			q_xchg = 1;
+			//q_xchg = 1;
 			$(document).ready(function() {
 				bbmKey = ['noa'];
 				q_brwCount();
@@ -219,7 +219,7 @@
 			}
 			.dview {
 				float: left;
-				width: 100%;
+				width: 450px;
 				border-width: 0px;
 			}
 			.tview {
@@ -283,14 +283,6 @@
 				width: 100%;
 				float: left;
 			}
-			.txt.c2 {
-				width: 40%;
-				float: left;
-			}
-			.txt.c3 {
-				width: 60%;
-				float: left;
-			}
 			.txt.num {
 				text-align: right;
 			}
@@ -341,7 +333,7 @@
 					<tr>
 						<td align="center" style="width:20px; color:black;"><a id='vewChk'> </a></td>
 						<td align="center" style="width:120px; color:black;"><a>品號</a></td>
-						<td align="center" style="width:300px; color:black;"><a>品名</a></td>
+						<td align="center" style="width:200px; color:black;"><a>品名</a></td>
 						<td align="center" style="width:60px; color:black;"><a id='vewUnit'> </a></td>
 						<td align="center" style="width:60px; color:black;"><a id='vewUweight'>單位重</a></td>
 						<td align="center" style="width:60px; color:black;"><a id='vewStkmount'>材積</a></td>
@@ -382,8 +374,28 @@
 						<td><input id="txtUweight" type="text"  class="txt c1 num"/></td>
 					</tr>
 					<tr>
+						<td><span> </span><a class="lbl">長</a></td>
+						<td><input id="txtLengthb" type="text" class="txt c1 num"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a class="lbl">寬</a></td>
+						<td><input id="txtWidth" type="text" class="txt c1 num"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a class="lbl">高</a></td>
+						<td><input id="txtHeight" type="text" class="txt c1 num"/></td>
+					</tr>
+					<tr>
 						<td><span> </span><a id='lblStkmount' class="lbl">材積</a></td>
 						<td><input id="txtStkmount" type="text"  class="txt c1 num"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a class="lbl">運送需耗高度</a></td>
+						<td><input id="txtTheight" type="text" class="txt c1 num"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a class="lbl">運送需耗材積</a></td>
+						<td><input id="txtTvolume" type="text" class="txt c1 num"/></td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblMemo" class="lbl">備註</a></td>

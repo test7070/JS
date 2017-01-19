@@ -114,7 +114,7 @@
             function _btnSeek() {
                 if (q_cur > 0 && q_cur < 4)// 1-3
                     return;
-                q_box(q_name + '_js_s.aspx', q_name + '_js_s', "500px", "300px", q_getMsg("popSeek"));
+                q_box(q_name + '_js_s.aspx', q_name + '_js_s', "500px", "400px", q_getMsg("popSeek"));
             }
 
             function btnIns() {
@@ -400,6 +400,8 @@
 						<td align="center" style="width:400px; color:black;"><a>地址</a></td>
 						<td align="center" style="width:80px; color:black;"><a>經度</a></td>
 						<td align="center" style="width:80px; color:black;"><a>緯度</a></td>
+						<td align="center" style="width:100px; color:black;"><a>聯絡人</a></td>
+						<td align="center" style="width:100px; color:black;"><a>聯絡電話</a></td>
 						<tr>
 							<td >
 							<input id="chkBrow.*" type="checkbox" style=' '/>
@@ -409,6 +411,8 @@
 							<td id='address' style="text-align:left;">~address</td>
 							<td id='lat' style="text-align:center;">~lat</td>
 							<td id='lng' style="text-align:center;">~lng</td>
+							<td id='conn' style="text-align:left;">~conn</td>
+							<td id='tel' style="text-align:left;">~tel</td>
 						</tr>
 				</table>
 			</div>
@@ -423,9 +427,7 @@
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">編號</a></td>
-						<td>
-						<input id="txtNoa"  type="text"  class="txt c1"/>
-						</td>
+						<td><input id="txtNoa"  type="text"  class="txt c1"/></td>
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">地點</a></td>
@@ -435,15 +437,27 @@
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">地址</a></td>
-						<td colspan="3">
-							<input id="txtAddress" type="text"  class="txt c1"/>
-						</td>
+						<td colspan="3"><input id="txtAddress" type="text"  class="txt c1"/></td>
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">經度</a></td>
 						<td><input id="txtLat" type="text"  class="txt c1"/></td>
 						<td><span> </span><a class="lbl">緯度</a></td>
 						<td><input id="txtLng" type="text"  class="txt c1"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a class="lbl">聯絡人</a></td>
+						<td colspan="3"><input id="txtConn" type="text" class="txt c1"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a class="lbl">電話</a></td>
+						<td colspan="3"><input id="txtTel" type="text" class="txt c1"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a id="lblMemo" class="lbl">備註</a></td>
+						<td colspan="3">
+							<textarea id="txtMemo" class="txt c1" style="height:50px;"> </textarea>
+						</td>
 					</tr>
 				</table>
 			</div>

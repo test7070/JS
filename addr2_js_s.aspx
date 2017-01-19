@@ -29,14 +29,20 @@
 			function q_seekStr() {
 				t_noa = $.trim($('#txtNoa').val());
 				t_addr = $.trim($('#txtAddr').val());
-				t_memo = $.trim($('#txtMemo').val());
+				t_address = $.trim($('#txtAddress').val());
+				t_conn = $.trim($('#txtConn').val());
+				t_tel = $.trim($('#txtTel').val());
 				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("noa", t_noa);
-				if (t_Addr.length > 0)
+				if (t_addr.length > 0)
 					t_where += " and charindex('" + t_addr + "',addr)>0";
-				if (t_memo.length > 0)
-					t_where += " and charindex('" + t_memo + "',memo)>0";
+				if (t_address.length > 0)
+					t_where += " and charindex('" + t_address + "',address)>0";
+				if (t_conn.length > 0)
+					t_where += " and charindex('" + t_conn + "',conn)>0";
+				if (t_tel.length > 0)
+					t_where += " and charindex('" + t_tel + "',tel)>0";
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -67,9 +73,15 @@
 				</tr>
 				<tr class='seek_tr'>
 					<td class='seek'  style="width:150px;"><a>地址</a></td>
-					<td>
-					<input class="txt" id="txtMemo" type="text" style="width:215px; font-size:medium;" />
-					</td>
+					<td><input class="txt" id="txtAddress" type="text" style="width:215px; font-size:medium;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek'  style="width:150px;"><a>聯絡人</a></td>
+					<td><input class="txt" id="txtConn" type="text" style="width:215px; font-size:medium;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek'  style="width:150px;"><a>聯絡電話</a></td>
+					<td><input class="txt" id="txtTel" type="text" style="width:215px; font-size:medium;" /></td>
 				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->
