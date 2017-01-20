@@ -74,11 +74,16 @@
 				
 				$('#btnOrde').click(function(e){
                 	var t_where ='';
-                	q_box("tranordejs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val()}), "tranorde_tranvcce", "95%", "95%", '');
+                	q_box("tranordejs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),chk1:$('#chkChk1').prop('checked')?1:0,chk2:$('#chkChk2').prop('checked')?1:0}), "tranorde_tranvcce", "95%", "95%", '');
                 });
                 $('#btnCar').click(function(e){
-                	var t_where ='';
-                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val()}), "car_tranvcce", "95%", "95%", '');
+                	var t_where ='',t_addrno='';
+                	for(var i=0;i<q_bbsCount;i++){
+                		if($('#txtAddrno_'+i).val().length>0)
+                			t_addrno=(t_addrno.length>0?',':'')+$('#txtAddrno_'+i).val();
+                	}
+                	
+                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),addrno:t_addrno}), "car_tranvcce", "95%", "95%", '');
                 });
                 
 				$('#btnRun').click(function() {
@@ -111,6 +116,10 @@
                 			+'<a class="lengthb">'+$('#txtLengthb_'+i).val()+'</a>'
                 			+'<a class="width">'+$('#txtWidth_'+i).val()+'</a>'
                 			+'<a class="height">'+$('#txtHeight_'+i).val()+'</a>'
+                			+'<a class="allowcar">'+$('#txtAllowcar_'+i).val()+'</a>'
+                			+'<a class="chk1">'+$('#chkChk1_'+i).prop('checked')+'</a>'
+                			+'<a class="chk2">'+$('#chkChk2_'+i).prop('checked')+'</a>'
+                			+'<a class="chk3">'+$('#chkChk3_'+i).prop('checked')+'</a>'
                 			+'</div>');
                 	}
 					var obj;
@@ -156,15 +165,24 @@
 	            			,lengthb:parseFloat(obj.find('.lengthb').eq(0).text())
 	            			,width:parseFloat(obj.find('.width').eq(0).text())
 	            			,height:parseFloat(obj.find('.height').eq(0).text())
+	            			,allowcar:obj.find('.allowcar').eq(0).text()
+	            			,chk1:obj.find('.chk1').eq(0).text()=="true"?1:0
+	            			,chk2:obj.find('.chk2').eq(0).text()=="true"?1:0
+	            			,chk3:obj.find('.chk3').eq(0).text()=="true"?1:0
 	                    });
 	                }
-	              
-	                for(var i=0;i<data_orde.length;i++){
+	              	//有指定車輛的先
+	              	for(var i=0;i<data_orde.length;i++){
+	              		//提貨不用管車輛
+	                	if(data_orde[i].chk2==1 && data_orde[i].allowcar.length==0)
+	                		continue;
 	                	if(data_orde[i].emount<=0)
 	                		continue;
 	                	for(var j=0;j<data_car.length;j++){
 	                		if(data_orde[i].emount<=0)
 	                			break;
+	                		if(data_orde[i].allowcar.indexOf(data_car[j].carno)<0)
+	                			continue;
 	                		if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
 	                			continue;	
 	                		//訂單重,材積
@@ -172,7 +190,7 @@
 	                		t_weight = round(data_orde[i].uweight * t_mount,2);
 	                		t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
 	                		
-	                		if(data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+	                		if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
 	                			data_car[j].gvolume += t_cuft;
                 				data_car[j].evolume -= t_cuft;
                 				data_car[j].gweight += t_weight;
@@ -188,7 +206,57 @@
 	                			while(t_mount>=0){
 	                				t_weight = round(data_orde[i].uweight * t_mount,2);
 	                				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
-	                				if(data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+	                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+	                					data_car[j].gvolume += t_cuft;
+		                				data_car[j].evolume -= t_cuft;
+		                				data_car[j].gweight += t_weight;
+                						data_car[j].eweight -= t_weight;
+		                				data_orde[i].gmount += t_mount;
+		                				data_orde[i].emount -= t_mount;
+		                				data_car[j].orde.push(data_orde[i]);
+		                				data_car[j].ordevolume.push(t_cuft);
+		                				data_car[j].ordeweight.push(t_weight);
+		                				data_car[j].ordemount.push(t_mount);
+	                					break;
+	                				}
+	                				t_mount--;
+	                			}
+	                		}
+	                	}
+	                }
+	              	//沒指定車輛
+	                for(var i=0;i<data_orde.length;i++){
+	                	if(data_orde[i].chk2==1 && data_orde[i].allowcar.length>0)
+	                		continue;
+	                	if(data_orde[i].emount<=0)
+	                		continue;
+	                	for(var j=0;j<data_car.length;j++){
+	                		if(data_orde[i].emount<=0)
+	                			break;
+	                		if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
+	                			continue;	
+	                		//訂單重,材積
+	                		t_mount = data_orde[i].emount;
+	                		t_weight = round(data_orde[i].uweight * t_mount,2);
+	                		t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	                		
+	                		if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+	                			data_car[j].gvolume += t_cuft;
+                				data_car[j].evolume -= t_cuft;
+                				data_car[j].gweight += t_weight;
+                				data_car[j].eweight -= t_weight;
+                				data_orde[i].gmount += t_mount;
+                				data_orde[i].emount -= t_mount;
+                				data_car[j].orde.push(data_orde[i]);
+                				data_car[j].ordevolume.push(t_cuft);
+                				data_car[j].ordeweight.push(t_weight);
+                				data_car[j].ordemount.push(t_mount);
+	                		}else{ 
+	                			t_mount--;
+	                			while(t_mount>=0){
+	                				t_weight = round(data_orde[i].uweight * t_mount,2);
+	                				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
 	                					data_car[j].gvolume += t_cuft;
 		                				data_car[j].evolume -= t_cuft;
 		                				data_car[j].gweight += t_weight;
@@ -315,8 +383,8 @@
                 	case 'tranorde_tranvcce':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtTypea,txtOrdeno,txtNo2,txtCustno,txtCust,txtProductno,txtProduct,txtUweight,txtMount,txtWeight,txtVolume,txtAddrno,txtAddr,txtAddress,txtLat,txtLng,txtMemo,txtLengthb,txtWidth,txtHeight,txtTheight,txtTvolume,txtConn,txtTel'
-                        	, as.length, as, 'typea,noa,noq,custno,cust,productno,product,uweight,emount,weight,volume,addrno,addr,address,lat,lng,memo,lengthb,width,height,theight,tvolume,conn,tel', '','');
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtTypea,txtOrdeno,txtNo2,txtCustno,txtCust,txtProductno,txtProduct,txtUweight,txtMount,txtWeight,txtVolume,txtAddrno,txtAddr,txtAddress,txtLat,txtLng,txtMemo,txtLengthb,txtWidth,txtHeight,txtTheight,txtTvolume,txtConn,txtTel,txtAllowcar,chkChk1,chkChk2,chkChk3'
+                        	, as.length, as, 'typea,noa,noq,custno,cust,productno,product,uweight,emount,weight,volume,addrno,addr,address,lat,lng,memo,lengthb,width,height,theight,tvolume,conn,tel,allowcar,chk1,chk2,chk3', '','');
                         }else{
                         	Unlock(1);
                         }
@@ -413,6 +481,11 @@
                     Unlock(1);
                     return;
                 }
+                /*for(vari=0;i<q_bbsCount;i++){
+                	$('#chkChk1_'+i).prop('checked',$('#chkChk1').prop('checked'));
+                	$('#chkChk2_'+i).prop('checked',$('#chkChk2').prop('checked'));
+                }*/
+                
 				sum();
 				if(q_cur ==1){
 					$('#txtWorker').val(r_name);
@@ -773,7 +846,7 @@
 			}
 			.dview {
 				float: left;
-				width: 400px;
+				width: 300px;
 				border-width: 0px;
 			}
 			.tview {
@@ -911,18 +984,12 @@
 				<table class="tview" id="tview">
 					<tr>
 						<td align="center" style="width:20px; color:black;"><a id='vewChk'> </a></td>
-						<td align="center" style="width:120px; color:black;"><a>單號</a></td>
-						<td align="center" style="width:120px; color:black;"><a>車號</a></td>
 						<td align="center" style="width:80px; color:black;"><a>日期</a></td>
-						<td align="center" style="width:80px; color:black;"><a>時間</a></td>
-						<td align="center" style="width:80px; color:black;"><a>起點</a></td>
+						<td align="center" style="width:150px; color:black;"><a>起點</a></td>
 					</tr>
 					<tr>
 						<td><input id="chkBrow.*" type="checkbox"/></td>
-						<td id='noa' style="text-align: center;">~noa</td>
-						<td id='carno' style="text-align: center;">~carno</td>
 						<td id='datea' style="text-align: center;">~datea</td>
-						<td id='timea' style="text-align: center;">~timea</td>
 						<td id='addr' style="text-align: center;">~addr</td>
 					</tr>
 				</table>
@@ -946,6 +1013,13 @@
 						<td><input type="text" id="txtDatea" class="txt c1"/></td>
 						<td><span> </span><a id="lblTimea_js" class="lbl">時間</a></td>
 						<td><input type="text" id="txtTimea" style="text-align: center;" class="txt c1"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a class="lbl">提貨</a></td>
+						<td><input type="checkbox" id="chkChk1" class="txt"/></td>
+						<td> </td>
+						<td><span> </span><a class="lbl">卸貨</a></td>
+						<td><input type="checkbox" id="chkChk2" class="txt"/></td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblAddr_js" class="lbl btn">起點</a></td>
@@ -1008,9 +1082,9 @@
 					<td align="center" style="width:70px;display:none;"><a>車牌</a></td>
 					<td align="center" style="width:70px"><a>類型</a></td>
 					<td align="center" style="width:150px"><a>貨主</a></td>
-					<td align="center" style="width:40px"><a>提貨</a></td>
-					<td align="center" style="width:40px"><a>卸貨</a></td>
-					<td align="center" style="width:40px"><a>空瓶</a></td>
+					<td align="center" style="display:none;width:40px"><a>提貨</a></td>
+					<td align="center" style="display:none;width:40px"><a>卸貨</a></td>
+					<td align="center" style="display:none;width:40px"><a>空瓶</a></td>
 					<td align="center" style="width:150px"><a>品名</a></td>
 					<td align="center" style="width:70px"><a>數量</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
@@ -1047,9 +1121,9 @@
 						<input type="text" id="txtCust.*" style="float:left;width:45%;"/>
 						<input type="button" id="btnCust.*" style="display:none;"/>
 					</td>
-					<td><input type="checkbox" id="chkChk1.*" style="width:95%;"/></td>
-					<td><input type="checkbox" id="chkChk2.*" style="width:95%;"/></td>
-					<td><input type="checkbox" id="chkChk3.*" style="width:95%;"/></td>
+					<td style="display:none;"><input type="checkbox" id="chkChk1.*" /></td>
+					<td style="display:none;"><input type="checkbox" id="chkChk2.*" /></td>
+					<td style="display:none;"><input type="checkbox" id="chkChk3.*" /></td>
 					<td>
 						<input type="text" id="txtProductno.*" style="float:left;width:45%;"/>
 						<input type="text" id="txtProduct.*" style="float:left;width:45%;"/>
@@ -1074,6 +1148,7 @@
 						<input type="text" id="txtAddress.*" style="width:95%;"/>
 						<input type="text" id="txtLat.*" style="float:left;width:40%;display:none;"/>
 						<input type="text" id="txtLng.*" style="float:left;width:40%;display:none;"/>
+						<input type="text" id="txtAllowcar.*" style="float:left;width:95%;display:none;"/>
 					</td>
 					<td><input type="text" id="txtConn.*" style="width:95%;"/></td>
 					<td><input type="text" id="txtTel.*" style="width:95%;"/></td>

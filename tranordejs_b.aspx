@@ -28,7 +28,7 @@
                 var t_para = new Array();
 	            try{
 	            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
-	            	t_content = "where=^^['"+t_para.noa+"')^^";
+	            	t_content = "where=^^['"+t_para.noa+"',"+t_para.chk1+","+t_para.chk2+")^^";
 	            }catch(e){
 	            }    
                 brwCount = -1;
@@ -55,6 +55,7 @@
 				
 				if (maxAbbsCount < abbs.length) {
 					for (var i = (abbs.length - (abbs.length - maxAbbsCount)); i < abbs.length; i++) {
+						//alert(abbs[i].chk1+'__'+abbs[i].chk2);
 						/*for(var j=0;j<w.$('#_orde').children().length;j++){
 							if(w.$('#_orde').children().eq(j).find('.ordeno').text()==abbs[i].noa+'-'+abbs[i].noq){
 								abbs[i]['sel'] = "true";
@@ -62,7 +63,11 @@
 							}
 						}*/
 						for (var j = 0; j < w.q_bbsCount; j++) {
-							if (w.$('#txtOrdeno_' + j).val() == abbs[i].noa && w.$('#txtNo2_' + j).val() == abbs[i].noq) {			
+							if (w.$('#txtOrdeno_' + j).val() == abbs[i].noa 
+								&& w.$('#txtNo2_' + j).val() == abbs[i].noq
+								&& (w.$('#chkChk1_' + j).prop('checked').toString() == abbs[i].chk1.toString())
+								&& (w.$('#chkChk2_' + j).prop('checked').toString() == abbs[i].chk2.toString()) 
+								) {			
 								abbs[i]['sel'] = "true";
 								$('#chkSel_' + abbs[i].rec).attr('checked', true);
 								//alert(abbs[i].rec);
@@ -108,6 +113,7 @@
 				<tr style='color:white; background:#003366;' >
 					<td align="center" style="width:25px" ><input type="checkbox" id="checkAllCheckbox"/></td>
 					<td align="center" style="width:25px;"> </td>
+					<td align="center" style="width:60px;"><a>狀態</a></td>
 					<td align="center" style="width:150px;"><a>訂單編號</a></td>
 					<td align="center" style="width:100px;"><a>客戶</a></td>
 					<td align="center" style="width:100px;"><a>品名</a></td>
@@ -130,6 +136,7 @@
 				<tr style="display:none;">
 					<td align="center" style="width:25px;"> </td>
 					<td align="center" style="width:25px;"> </td>
+					<td align="center" style="width:60px;"><a> </a></td>
 					<td align="center" style="width:150px;"><a> </a></td>
 					<td align="center" style="width:100px;"><a> </a></td>
 					<td align="center" style="width:100px;"><a> </a></td>
@@ -148,6 +155,7 @@
 				<tr style='background:#cad3ff;'>
 					<td style="width:25px;"><input id="chkSel.*" type="checkbox"/></td>
 					<td style="width:25px;"><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+					<td style="width:60px;"><input id="txtChktype.*" type="text" style="width:95%;" readonly="readonly"/></td>
 					<td style="width:150px;">
 						<input id="txtNoa.*" type="text" style="float:left;width:78%;"  readonly="readonly" />
 						<input id="txtNoq.*" type="text" style="float:left;width:20%; text-align: right;"  readonly="readonly" />
@@ -163,6 +171,7 @@
 					<td style="width:100px;">
 						<input id="txtAddrno.*" type="text" style="display:none;"/>
 						<input id="txtAddr.*" type="text" style="float:left;width:95%;" readonly="readonly" />
+						<input id="txtAllowcar.*" type="text" style="display:none;" />
 					</td>
 					<td style="width:100px;">
 						<input id="txtDate1.*" type="text" style="float:left;width:55%;" readonly="readonly" />

@@ -15,10 +15,13 @@
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8&sensor=true"></script>
 		<script type="text/javascript">
+			q_tables = 's';
             var q_name = "addr2";
             var q_readonly = [];
             var bbmNum = [];
             var bbmMask = [];
+            var bbsNum = [];
+            var bbsMask = [];
             q_sqlCount = 6;
             brwCount = 6;
             brwList = [];
@@ -26,10 +29,12 @@
             brwKey = 'noa';
             brwCount2 = 20;
             q_xchg = 1;
+            aPop = new Array(['txtCarno_', 'btnCarno_', 'car2', 'a.noa,driverno,driver', 'txtCarno_', 'car2_b.aspx']);
             $(document).ready(function() {
                 bbmKey = ['noa'];
+                bbsKey = ['noa', 'noq'];
                 q_brwCount();
-                q_gt(q_name, q_content, q_sqlCount, 1);
+                q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
             });
             function main() {
                 if (dataErr) {
@@ -192,6 +197,29 @@
                     $('#txtNoa').css('color', 'green').css('background', 'RGB(237,237,237)').attr('readonly', 'readonly');
                 }
             }
+            
+            function bbsAssign() {
+				for (var i = 0; i < q_bbsCount; i++) {
+					$('#lblNo_' + i).text(i + 1);
+					if($('#btnMinus_' + i).hasClass('isAssign'))
+                    	continue;
+                	$('#txtCarno_' + i).bind('contextmenu', function(e) {
+                        /*滑鼠右鍵*/
+                        e.preventDefault();
+                        var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
+                        $('#btnCarno_'+n).click();
+                    });
+				}
+				_bbsAssign();
+			}
+			function bbsSave(as) {
+				if (!as['carno']) {
+					as[bbsKey[1]] = '';
+					return;
+				}
+				q_nowf();
+				return true;
+			}
 
             function btnMinus(id) {
                 _btnMinus(id);
@@ -364,24 +392,24 @@
                 padding: 0px;
                 margin: -1px;
             }
-            .tbbs input[type="text"] {
-                width: 98%;
-            }
-            .tbbs a {
-                font-size: medium;
-            }
-            .num {
-                text-align: right;
-            }
-            .bbs {
-                float: left;
-            }
-            input[type="text"], input[type="button"] {
-                font-size: medium;
-            }
-            select {
-                font-size: medium;
-            }
+            .dbbs {
+				width: 200px;
+			}
+			.dbbt {
+				width: 1000px;
+			}
+			.tbbs a {
+				font-size: medium;
+			}
+			input[type="text"], input[type="button"] {
+				font-size: medium;
+			}
+			.num {
+				text-align: right;
+			}
+			select {
+				font-size: medium;
+			}
 		</style>
 	</head>
 	<body ondragstart="return false" draggable="false"
@@ -462,6 +490,28 @@
 				</table>
 			</div>
 		</div>
+		<div class='dbbs'>
+            <table id="tbbs" class='tbbs'>
+                <tr style='color:white; background:#003366;' >
+                    <td  align="center" style="width:30px;">
+                    	<input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  />
+                    </td>
+                    <td align="center" style="width:20px;"> </td>
+                    <td align="center" style="width:100px;"><a>車牌</a></td>
+                </tr>
+                <tr  style='background:#cad3ff;'>
+                    <td align="center">
+                    	<input class="btn"  id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
+                    	<input id="txtNoq.*" type="text" style="display: none;" />
+                    </td>
+                    <td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+                    <td>
+                    	<input type="text" id="txtCarno.*" style="width:95%;" />
+                    	<input type="button" id="btnCarno.*" style="display:none;"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
 		<input id="q_sys" type="hidden" />
 	</body>
 </html>
