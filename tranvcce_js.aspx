@@ -866,19 +866,18 @@
                         		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].cust);
                         		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].productno);
                         		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].product);
+                        		imgsrc += '&markers=color:red|label:'+(i+1)+'|'+getLatLngString(route.legs[i].end_location.lat())+','+getLatLngString(route.legs[i].end_location.lng());
                         	}else{
                         		$('#txtAddrno__'+(i+strn_bbt)).val($('#txtEndaddrno').val());
                         		$('#txtAddr__'+(i+strn_bbt)).val($('#txtEndaddr').val());
                         		$('#txtAddress__'+(i+strn_bbt)).val($('#txtEndaddress').val());
+                        		imgsrc += '&markers=color:blue|label:E|'+getLatLngString(route.legs[i].end_location.lat())+','+getLatLngString(route.legs[i].end_location.lng());
                         	}
                         	$('#txtEndaddress__'+(i+strn_bbt)).val(route.legs[i].end_address);
                         	$('#txtLat__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lat()));
                             $('#txtLng__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lng()));
                         	$('#txtMins1__'+(i+strn_bbt)).val(Math.round(route.legs[i].duration.value/60));
                 			$('#txtMemo__'+(i+strn_bbt)).val(route.legs[i].distance.text);
-                			
-                			imgsrc += '&markers=color:red|label:'+(i+1)+'|'+getLatLngString(route.legs[i].end_location.lat())+','+getLatLngString(route.legs[i].end_location.lng());
-                			
                 			date.setMinutes(date.getMinutes() + q_float('txtMins1__'+(i+strn_bbt)));
                 			hour = '00'+date.getHours();
                 			hour = hour.substring(hour.length-2,hour.length);
@@ -893,6 +892,7 @@
                 			minute = minute.substring(minute.length-2,minute.length);
                 			$('#txtTime2__'+(i+strn_bbt)).val(hour+':'+minute);
                         }
+                        //imgsrc += '&markers=color:green|label:E|'+$('#txtEndlat').val()+','+$('#txtEndlng').val();
                         imgsrc+='&key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8';
                         $('#pathImg').append('<img src="'+imgsrc+'" title="'+data_car[data_car_current].carno+'"> </img>');
                         data_car_current++;
