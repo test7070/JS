@@ -1,0 +1,18 @@
+ALTER  function [dbo].[trancarjs](@tranvcceno nvarchar(20))
+returns @tmp table(
+	carno nvarchar(20)
+	,driverno nvarchar(20)
+	,driver nvarchar(50)
+	,[weight] float
+	,volume float
+) as
+begin
+	insert into @tmp(carno,driverno,[weight],volume)
+	select carno,driverno,[weight2],cast(isnull(volume,0) as float) from car2 order by carno
+	update @tmp set driver = isnull(b.namea,'')
+	from @tmp a
+	left join driver b on a.driverno=b.noa
+	return 
+end
+
+

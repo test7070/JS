@@ -15,14 +15,15 @@
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8&signed_in=true&callback=initMap" async defer></script>
 		<script type="text/javascript">
-		
+			var data_car=[],data_orde=[],data_car_current=-1;
+			
 			var directionsService;
             var directionsDisplay;
  			var map;
 			q_tables = 't';
 			var q_name = "tranvcce";
 			var q_readonly = ['txtNoa','txtWorker', 'txtWorker2'];
-			var q_readonlys = [];
+			var q_readonlys = ['txtOrdeno','txtNo2'];
 			var bbsNum = new Array();
 			var bbsMask = new Array();
 			var bbtMask = new Array(); 
@@ -38,8 +39,9 @@
 			q_alias = '';
 			q_desc = 1;
 			//q_xchg = 1;
-			brwCount2 = 5;
+			brwCount2 = 7;
 			aPop = new Array(['txtAddrno', 'lblAddr_js', 'addr2', 'noa,addr,address,lat,lng', 'txtAddrno,txtAddr,txtAddress,txtLat,txtLng', 'addr2_b.aspx']
+				,['txtEndaddrno', 'lblEndaddr_js', 'addr2', 'noa,addr,address,lat,lng', 'txtEndaddrno,txtEndaddr,txtEndaddress,txtEndlat,txtEndlng', 'addr2_b.aspx']
 				,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
 				,['txtAddrno_', 'btnAddr_', 'addr2', 'noa,addr,address,lat,lng', 'txtAddrno_,txtAddr_,txtAddress_,txtLat_,txtLng_', 'addr2_b.aspx']
 				,['txtAddrno__', 'btnAddr__', 'addr2', 'noa,addr,address,lat,lng', 'txtAddrno__,txtAddr__,txtLat__,txtLng__', 'addr2_b.aspx']
@@ -78,9 +80,144 @@
                 	var t_where ='';
                 	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val()}), "car_tranvcce", "95%", "95%", '');
                 });
+                
 				$('#btnRun').click(function() {
-					initMap();
-					calculateAndDisplayRoute(directionsService, directionsDisplay);
+					$('#_orde').children().remove();
+                	for(var i=0;i<q_bbsCount;i++){
+                		if($('#txtAddrno_'+i).val().length==0)
+                			continue;
+                		if(q_float('txtMins_'+i)==0)
+                			$('#txtMins_'+i).val(30);	
+                		$('#_orde').append('<div style="display:none">'
+                			+'<a class="ordeno">'+$('#txtOrdeno_'+i).val()+'-'+$('#txtNo2_'+i).val()+'</a>'
+                			+'<a class="custno">'+$('#txtCustno_'+i).val()+'</a>'
+                			+'<a class="cust">'+$('#txtCust_'+i).val()+'</a>'
+                			+'<a class="addrno">'+$('#txtAddrno_'+i).val()+'</a>'
+                			+'<a class="addr">'+$('#txtAddr_'+i).val()+'</a>'
+                			+'<a class="address">'+$('#txtAddress_'+i).val()+'</a>'
+                			+'<a class="weight">'+$('#txtWeight_'+i).val()+'</a>'
+                			+'<a class="lat">'+$('#txtLat_'+i).val()+'</a>'
+                			+'<a class="lng">'+$('#txtLng_'+i).val()+'</a>'
+                			+'<a class="theight">'+$('#txtTheight_'+i).val()+'</a>'
+                			+'<a class="tvolume">'+$('#txtTvolume_'+i).val()+'</a>'
+                			+'<a class="date1">'+$('#txtDate1_'+i).val()+'</a>'
+                			+'<a class="time1">'+$('#txtTime1_'+i).val()+'</a>'
+                			+'<a class="date2">'+$('#txtDate2_'+i).val()+'</a>'
+                			+'<a class="time2">'+$('#txtTime2_'+i).val()+'</a>'
+                			+'<a class="productno">'+$('#txtProductno_'+i).val()+'</a>'
+                			+'<a class="product">'+$('#txtProduct_'+i).val()+'</a>'
+                			+'<a class="uweight">'+$('#txtUweight_'+i).val()+'</a>'
+                			+'<a class="mount">'+$('#txtMount_'+i).val()+'</a>'
+                			+'<a class="lengthb">'+$('#txtLengthb_'+i).val()+'</a>'
+                			+'<a class="width">'+$('#txtWidth_'+i).val()+'</a>'
+                			+'<a class="height">'+$('#txtHeight_'+i).val()+'</a>'
+                			+'</div>');
+                	}
+					var obj;
+					data_car_current = -1;
+                    data_car = [];
+	                for(var i=0;i<$('#_carno').find('div').length;i++){
+	                	obj = $('#_carno').find('div').eq(i);
+	                	data_car.push({
+	            			carno:obj.find('.carno').eq(0).text()
+	            			,weight:parseFloat(obj.find('.weight').eq(0).text())
+	            			,volume:parseFloat(obj.find('.volume').eq(0).text())
+	            			,gweight:0
+	            			,gvolume:0
+	            			,eweight:parseFloat(obj.find('.weight').eq(0).text())
+	            			,evolume:parseFloat(obj.find('.volume').eq(0).text())
+	            			,orde:[]
+	            			,ordevolume:[]
+	            			,ordeweight:[]
+	            			,ordemount:[]
+	        			});
+	                }
+	                data_orde = [];
+	                for(var i=0;i<$('#_orde').find('div').length;i++){
+	                	obj = $('#_orde').find('div').eq(i);
+	                	data_orde.push({
+	                		ordeno:obj.find('.ordeno').eq(0).text()
+	                		,custno:obj.find('.custno').eq(0).text()
+	                		,cust:obj.find('.cust').eq(0).text()
+	            			,addrno:obj.find('.addrno').eq(0).text()
+	            			,addr:obj.find('.addr').eq(0).text()
+	            			,address:obj.find('.address').eq(0).text()
+	            			,lat:obj.find('.lat').eq(0).text()
+	            			,lng:obj.find('.lng').eq(0).text()
+	            			,weight:obj.find('.weight').eq(0).text()
+	            			,theight:obj.find('.theight').eq(0).text()
+	            			,tvolume:parseFloat(obj.find('.tvolume').eq(0).text())
+	            			,gmount:0
+	            			,emount:parseFloat(obj.find('.mount').eq(0).text())
+	            			,productno:obj.find('.productno').eq(0).text()
+	            			,product:obj.find('.product').eq(0).text()
+	            			,uweight:parseFloat(obj.find('.uweight').eq(0).text())
+	            			,mount:parseFloat(obj.find('.mount').eq(0).text())
+	            			,lengthb:parseFloat(obj.find('.lengthb').eq(0).text())
+	            			,width:parseFloat(obj.find('.width').eq(0).text())
+	            			,height:parseFloat(obj.find('.height').eq(0).text())
+	                    });
+	                }
+	              
+	                for(var i=0;i<data_orde.length;i++){
+	                	if(data_orde[i].emount<=0)
+	                		continue;
+	                	for(var j=0;j<data_car.length;j++){
+	                		if(data_orde[i].emount<=0)
+	                			break;
+	                		if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
+	                			continue;	
+	                		//訂單重,材積
+	                		t_mount = data_orde[i].emount;
+	                		t_weight = round(data_orde[i].uweight * t_mount,2);
+	                		t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	                		
+	                		if(data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+	                			data_car[j].gvolume += t_cuft;
+                				data_car[j].evolume -= t_cuft;
+                				data_car[j].gweight += t_weight;
+                				data_car[j].eweight -= t_weight;
+                				data_orde[i].gmount += t_mount;
+                				data_orde[i].emount -= t_mount;
+                				data_car[j].orde.push(data_orde[i]);
+                				data_car[j].ordevolume.push(t_cuft);
+                				data_car[j].ordeweight.push(t_weight);
+                				data_car[j].ordemount.push(t_mount);
+	                		}else{ 
+	                			t_mount--;
+	                			while(t_mount>=0){
+	                				t_weight = round(data_orde[i].uweight * t_mount,2);
+	                				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	                				if(data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+	                					data_car[j].gvolume += t_cuft;
+		                				data_car[j].evolume -= t_cuft;
+		                				data_car[j].gweight += t_weight;
+                						data_car[j].eweight -= t_weight;
+		                				data_orde[i].gmount += t_mount;
+		                				data_orde[i].emount -= t_mount;
+		                				data_car[j].orde.push(data_orde[i]);
+		                				data_car[j].ordevolume.push(t_cuft);
+		                				data_car[j].ordeweight.push(t_weight);
+		                				data_car[j].ordemount.push(t_mount);
+	                					break;
+	                				}
+	                				t_mount--;
+	                			}
+	                		}
+	                	}
+	                }
+					if(data_orde.length==0)
+						alert('無訂單');
+					if(data_car.length==0)
+						alert('無車輛');
+					if(data_car.length>0 && data_orde.length>0){
+						data_car_current = 0;
+						for (var i = 0; i < q_bbtCount; i++) {
+                        	$('#btnMinut__'+i).click();
+                        }
+						initMap();
+						calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
+					}
 				});
 			}
 
@@ -111,6 +248,15 @@
                         var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                         refreshWV(n);
                     });
+                    $('#txtLengthb_' + i).change(function(e) {
+                        sum();
+                    });
+                    $('#txtWidth_' + i).change(function(e) {
+                        sum();
+                    });
+                    $('#txtHeight_' + i).change(function(e) {
+                        sum();
+                    });
 				}
 				_bbsAssign();
 			}
@@ -119,6 +265,7 @@
 				if(t_productno.length==0){
 					$('#txtWeight_'+n).val(0);
 					$('#txtVolume_'+n).val(0);
+					$('#txtTvolume_'+n).val(0);
 				}else{
 					q_gt('ucc', "where=^^noa='"+t_productno+"'^^", 0, 0, 0, JSON.stringify({action:"getUcc",n:n}));
 				}
@@ -153,6 +300,13 @@
 			function sum() {
 				if (!(q_cur == 1 || q_cur == 2))
 					return;
+				for(var i=0;i<q_bbsCount;i++){
+					cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
+					$('#txtVolume_'+i).val(cuft);
+					if(q_float('txtTvolume_'+i)==0){
+						$('#txtTvolume_'+i).val(Math.ceil(cuft));
+					}	
+				}
 			}
 
 			function q_boxClose(s2) {
@@ -161,16 +315,8 @@
                 	case 'tranorde_tranvcce':
                         if (b_ret != null) {
                         	as = b_ret;
-                        	$('#_orde').children().remove();
-                        	for(var i=0;i<as.length;i++){
-                        		$('#_orde').append('<a style="display:none">'+as[i].noa+'-'+as[i].noq
-                        			+'<a class="lat">'+as[i].lat+'</a>'
-                        			+'<a class="lng">'+as[i].lng+'</a>'
-                        			+'<a class="theight">'+as[i].theight+'</a>'
-                        			+'<a class="tvolume">'+as[i].tvolume+'</a>'+'</a>');
-                        	}
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtTypea,txtOrdeno,txtNo2,txtCustno,txtCust,txtProductno,txtProduct,txtMount,txtWeight,txtVolume,txtAddrno,txtAddr,txtAddress,txtLat,txtLng,txtMemo,txtLengthb,txtWidth,txtHeight,txtTheight,txtTvolume,txtConn,txtTel'
-                        	, as.length, as, 'typea,noa,noq,custno,cust,productno,product,emount,weight,volume,addrno,addr,address,lat,lng,memo,lengthb,width,height,theight,tvolume,conn,tel', '','');
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtTypea,txtOrdeno,txtNo2,txtCustno,txtCust,txtProductno,txtProduct,txtUweight,txtMount,txtWeight,txtVolume,txtAddrno,txtAddr,txtAddress,txtLat,txtLng,txtMemo,txtLengthb,txtWidth,txtHeight,txtTheight,txtTvolume,txtConn,txtTel'
+                        	, as.length, as, 'typea,noa,noq,custno,cust,productno,product,uweight,emount,weight,volume,addrno,addr,address,lat,lng,memo,lengthb,width,height,theight,tvolume,conn,tel', '','');
                         }else{
                         	Unlock(1);
                         }
@@ -180,7 +326,11 @@
                         	as = b_ret;
                         	$('#_carno').children().remove();
                         	for(var i=0;i<as.length;i++){
-                        		$('#_carno').append('<a style="display:none">'+as[i].carno+'</a>');
+                        		$('#_carno').append('<div style="display:none">'
+                        			+'<a class="carno">'+as[i].carno+'</a>'
+                        			+'<a class="weight">'+as[i].weight+'</a>'
+                        			+'<a class="volume">'+as[i].volume+'</a>'
+                        			+'</div>');
                         	}
                         }else{
                         	Unlock(1);
@@ -190,6 +340,7 @@
                         q_boxClose2(s2);
                         break;
                 }
+                b_pop='';
             }
             function q_gtPost(t_name) {
                 switch (t_name) {
@@ -206,14 +357,18 @@
                     			if(as[0]!=undefined){
                     				$('#txtWeight_'+n).val(round(q_mul(q_float('txtMount_'+n),parseFloat(as[0].uweight)),3));
                     				$('#txtVolume_'+n).val(round(q_mul(q_float('txtMount_'+n),parseFloat(as[0].stkmount)),0));
+                    				$('#txtTvolume_'+n).val(round(q_mul(q_float('txtMount_'+n),parseFloat(as[0].tvolume)),0));
                     			}else{
                     				$('#txtWeight_'+n).val(0);
                     				$('#txtVolume_'+n).val(0);
+                    				$('#txtTvolume_'+n).val(0);
                     			}
                     		}else {
                     			$('#txtWeight_'+n).val(0);
                 				$('#txtVolume_'+n).val(0);
+                				$('#txtTvolume_'+n).val(0);
 							}
+							sum();
                     	}catch(e){
                     		Unlock(1);
                     	}
@@ -376,8 +531,8 @@
 			}
 			function initMap() {
                 directionsService = new google.maps.DirectionsService();
-                //directionsDisplay = new google.maps.DirectionsRenderer();
-                directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+                directionsDisplay = new google.maps.DirectionsRenderer();
+                //directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
                 map = new google.maps.Map(document.getElementById('map'), {
                     zoom : 14,
                     center : {
@@ -389,42 +544,119 @@
                 map.setOptions({styles: stylesArray});
             }
 
-            function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-                var waypts = [];
-           		
+            function calculateAndDisplayRoute(directionsService, directionsDisplay, orde, car) {
+                /*var waypts = [];
                 for(var i=0;i<q_bbsCount;i++){
                 	$('#txtAddress_'+i).val($.trim($('#txtAddress_'+i).val()));	
-                	
                 	if(q_float('txtLat_'+i)!=0 && q_float('txtLng_'+i)!=0){
                 		waypts.push({
                             location : new google.maps.LatLng(q_float('txtLat_'+i),q_float('txtLng_'+i)),
                             stopover : true
                         });
                 	}
+                }*/
+                var waypts = [];
+                for(var i=0;i<car.orde.length;i++){
+                	for(var j=0;j<orde.length;j++){
+                		if(car.orde[i].ordeno != orde[j].ordeno)
+                			continue;
+                		waypts.push({
+	                        location : new google.maps.LatLng(orde[j].lat,orde[j].lng),
+	                        stopover : true
+	                    });
+                		break;
+                	}
                 }
+                if(waypts.length==0){
+                	data_car_current++;
+                    if(data_car_current<data_car.length){
+					   	initMap();
+					   	calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
+				    }
+				    return;
+                }
+                
                 directionsService.route({
                     origin : new google.maps.LatLng(q_float('txtLat'),q_float('txtLng')),
-                    destination : new google.maps.LatLng(q_float('txtLat'),q_float('txtLng')),
+                    destination : new google.maps.LatLng(q_float('txtEndlat'),q_float('txtEndlng')),
                     waypoints : waypts,
                     optimizeWaypoints : true,
                     travelMode : google.maps.TravelMode.DRIVING
                 }, function(response, status) {
                     if (status === google.maps.DirectionsStatus.OK) {
-                        directionsDisplay.setDirections(response);
-                        var route = response.routes[0];
-                        for (var i = 0; i < q_bbtCount; i++) {
-                        	$('#btnMinut__'+i).click();
-                        }
-                        while(route.legs.length>q_bbtCount)
-                        	$('#btnPlut').click();
-
                         var date = new Date(parseInt($('#txtDatea').val().substring(0,3))+1911
                         	,$('#txtDatea').val().substring(4,6)
                         	,$('#txtDatea').val().substring(7,9)
                         	,$('#txtTimea').val().substring(0,2)
                         	,$('#txtTimea').val().substring(3,5));
+                        	
+                        directionsDisplay.setDirections(response);
+                        var route = response.routes[0];
+                        var strn_bbt=0;
+                        for(var i=0;i<q_bbtCount;i++){
+                        	if($('#txtCarno__'+i).val().length==0)
+                        		break;
+                        	strn_bbt++;	
+                        }
+                        while(route.legs.length+strn_bbt>q_bbtCount){
+                        	$('#btnPlut').click();
+                        }
                         
-                        var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?center='+$('#txtLat').val()+','+$('#txtLng').val()+'&size=300x300&maptype=roadmap';
+                        for (var i = 0; i < route.legs.length; i++) {
+                        	$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        	
+                        	if(i<route.legs.length-1){
+                        		n = route.waypoint_order[i];
+                        		$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addrno);
+                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addr);
+                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].address);
+                        		for(var j=0;j<q_bbsCount;j++){
+                        			if(data_car[data_car_current].orde[n].ordeno == $('#txtOrdeno_'+j).val()+'-'+$('#txtNo2_'+j).val()){
+                        				$('#txtMins2__'+(i+strn_bbt)).val($('#txtMins_'+j).val());
+                        			}
+                        		}
+                        		$('#txtMount__'+(i+strn_bbt)).val(data_car[data_car_current].ordemount[n]);
+                        		$('#txtVolume__'+(i+strn_bbt)).val(data_car[data_car_current].ordevolume[n]);
+                        		$('#txtWeight__'+(i+strn_bbt)).val(data_car[data_car_current].ordeweight[n]);
+                        		t_orde = data_car[data_car_current].orde[n].ordeno;
+                        		$('#txtOrdeno__'+(i+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
+                        		$('#txtNo2__'+(i+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
+                        	
+                        		$('#txtCustno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].custno);
+                        		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].cust);
+                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].productno);
+                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].product);
+                        	}else{
+                        		$('#txtAddrno__'+(i+strn_bbt)).val($('#txtEndaddrno').val());
+                        		$('#txtAddr__'+(i+strn_bbt)).val($('#txtEndaddr').val());
+                        		$('#txtAddress__'+(i+strn_bbt)).val($('#txtEndaddress').val());
+                        	}
+                        	$('#txtEndaddress__'+(i+strn_bbt)).val(route.legs[i].end_address);
+                        	$('#txtLat__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lat()));
+                            $('#txtLng__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lng()));
+                        	$('#txtMins1__'+(i+strn_bbt)).val(Math.round(route.legs[i].duration.value/60));
+                			$('#txtMemo__'+(i+strn_bbt)).val(route.legs[i].distance.text);
+                			
+                			date.setMinutes(date.getMinutes() + q_float('txtMins1__'+(i+strn_bbt)));
+                			hour = '00'+date.getHours();
+                			hour = hour.substring(hour.length-2,hour.length);
+                			minute = '00'+date.getMinutes();
+                			minute = minute.substring(minute.length-2,minute.length);
+                			$('#txtTime1__'+(i+strn_bbt)).val(hour+':'+minute);
+                			
+                			date.setMinutes(date.getMinutes() + q_float('txtMins2__'+(i+strn_bbt)));
+                			hour = '00'+date.getHours();
+                			hour = hour.substring(hour.length-2,hour.length);
+                			minute = '00'+date.getMinutes();
+                			minute = minute.substring(minute.length-2,minute.length);
+                			$('#txtTime2__'+(i+strn_bbt)).val(hour+':'+minute);
+                        }
+                        data_car_current++;
+                        if(data_car_current<data_car.length){
+						   	initMap();
+						   	calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
+					    }
+                        /*var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?center='+$('#txtLat').val()+','+$('#txtLng').val()+'&size=300x300&maptype=roadmap';
                         imgsrc += '&markers=color:blue|label:S|'+$('#txtLat').val()+','+$('#txtLng').val();
                         
                        	var marker = new google.maps.Marker({
@@ -432,8 +664,7 @@
 						    label: '起點',
 						    map: map
 					    });
-				    	marker.setMap(map);
-						    	
+				    	marker.setMap(map);  	
                         for (var i = 0; i < route.legs.length; i++) {
                         	if(i<route.legs.length-1){
                         		n = route.waypoint_order[i];
@@ -474,10 +705,10 @@
                 			minute = '00'+date.getMinutes();
                 			minute = minute.substring(minute.length-2,minute.length);
                 			$('#txtTime2__'+i).val(hour+':'+minute);
-                        }
-                        imgsrc+='&key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8';
+                        }*/
+                        //imgsrc+='&key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8';
                         //console.log(imgsrc);
-                        imgsrc = encodeURI(imgsrc);
+                        //imgsrc = encodeURI(imgsrc);
                         //$('#img').attr('src',imgsrc);
                         //$('#txtImg').val(imgsrc);
                         //$('#img').attr('src',encodeURI(imgsrc));
@@ -633,7 +864,7 @@
 				width: 2300px;
 			}
 			.dbbt {
-				width: 1000px;
+				width: 1600px;
 			}
 			.tbbs a {
 				font-size: medium;
@@ -732,6 +963,21 @@
 						</td>
 					</tr>
 					<tr>
+						<td><span> </span><a id="lblEndaddr_js" class="lbl btn">終點</a></td>
+						<td colspan="6">
+							<input type="text" id="txtEndaddrno" class="txt" style="width:30%;float: left; " />
+							<input type="text" id="txtEndaddr" class="txt" style="width:70%;float: left; " />
+						</td>
+					</tr>
+					<tr>
+						<td><span> </span><a id="lblEndaddress_js" class="lbl btn">地址</a></td>
+						<td colspan="6">
+							<input type="text" id="txtEndaddress" class="txt c1"/>
+							<input type="text" id="txtEndlat" style="float:left;width:40%;display:none;"/>
+							<input type="text" id="txtEndlng" style="float:left;width:40%;display:none;"/>
+						</td>
+					</tr>
+					<tr>
 						<td><span> </span><a id="lblMemo" class="lbl"> </a></td>
 						<td colspan="6">
 							<textarea id="txtMemo" class="txt c1" style="height:75px;"> </textarea>
@@ -759,7 +1005,7 @@
 				<tr style='color:white; background:#003366;' >
 					<td align="center" style="width:25px"><input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  /></td>
 					<td align="center" style="width:20px;"> </td>
-					<td align="center" style="width:70px"><a>車牌</a></td>
+					<td align="center" style="width:70px;display:none;"><a>車牌</a></td>
 					<td align="center" style="width:70px"><a>類型</a></td>
 					<td align="center" style="width:150px"><a>貨主</a></td>
 					<td align="center" style="width:40px"><a>提貨</a></td>
@@ -791,7 +1037,7 @@
 						<input type="text" id="txtNoq.*" style="display:none;"/>
 					</td>
 					<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
-					<td>
+					<td style="display:none;">
 						<input type="text" id="txtCarno.*" style="width:95%;"/>
 						<input type="button" id="btnCarno.*" style="display:none;"/>
 					</td>
@@ -808,6 +1054,7 @@
 						<input type="text" id="txtProductno.*" style="float:left;width:45%;"/>
 						<input type="text" id="txtProduct.*" style="float:left;width:45%;"/>
 						<input type="button" id="btnProduct.*" style="display:none;"/>
+						<input type="text" id="txtUweight.*" style="display:none;"/>
 					</td>
 					<td><input type="text" id="txtMount.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtWeight.*" class="num" style="width:95%;"/></td>
@@ -847,14 +1094,20 @@
 				<tr style="color:white; background:#003366;">
 					<td align="center" style="width:25px"><input class="btn"  id="btnPlut" type="button" value='+' style="font-weight: bold;display:none;"  /></td>
 					<td align="center" style="width:20px;"> </td>
-					<td align="center" style="width:70px"><a>車牌</a></td>
-					<td align="center" style="width:150px"><a>地點</a></td>
-					<td align="center" style="width:300px"><a>地址</a></td>
+					<td align="center" style="width:100px"><a>車牌</a></td>
+					<td align="center" style="width:100px"><a>貨主</a></td>
+					<td align="center" style="width:250px"><a>地點</a></td>
+					<td align="center" style="width:120px"><a>品名</a></td>
+					<td align="center" style="width:70px"><a>數量</a></td>
+					<td align="center" style="width:70px"><a>材積</a></td>
+					<td align="center" style="width:70px"><a>重量</a></td>
 					<td align="center" style="width:70px"><a>運輸時間<br>(分)</a></td>
 					<td align="center" style="width:70px"><a>到達時間</a></td>
 					<td align="center" style="width:70px"><a>裝卸貨<br>時間(分)</a></td>
 					<td align="center" style="width:70px"><a>完工時間</a></td>
 					<td align="center" style="width:150px"><a>備註</a></td>
+					<td align="center" style="width:150px"><a>訂單</a></td>
+					<td align="center" style="width:300px"><a>地址</a></td>
 				</tr>
 				<tr style='background:pink;'>
 					<td align="center">
@@ -867,9 +1120,29 @@
 						<input type="button" id="btnCarno..*" style="display:none;"/>
 					</td>
 					<td>
-						<input type="text" id="txtAddrno..*" style="float:left;width:45%;"/>
-						<input type="text" id="txtAddr..*" style="float:left;width:45%;"/>
+						<input type="text" id="txtCustno..*" style="width:95%;display:none;"/>
+						<input type="text" id="txtCust..*" style="width:95%;"/>
+					</td>
+					<td>
+						<input type="text" id="txtAddrno..*" style="float:left;width:40%;"/>
+						<input type="text" id="txtAddr..*" style="float:left;width:50%;"/>
 						<input type="button" id="btnAddr..*" style="display:none;"/>
+					</td>
+					<td>
+						<input type="text" id="txtProductno..*" style="width:95%;display:none;"/>
+						<input type="text" id="txtProduct..*" style="width:95%;"/>
+					</td>
+					<td><input type="text" id="txtMount..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtVolume..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtWeight..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtMins1..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtTime1..*" style="width:95%;text-align: center;" /></td>
+					<td><input type="text" id="txtMins2..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtTime2..*" style="width:95%;text-align: center;" /></td>
+					<td><input type="text" id="txtMemo..*" style="width:95%;" /></td>
+					<td>
+						<input type="text" id="txtOrdeno..*" style="float:left;width:70%;"/>
+						<input type="text" id="txtNo2..*" style="float:left;width:20%;"/>
 					</td>
 					<td>
 						<input type="text" id="txtAddress..*" style="width:95%;"/>
@@ -877,11 +1150,6 @@
 						<input type="text" id="txtLat..*" style="float:left;width:40%;display:none;"/>
 						<input type="text" id="txtLng..*" style="float:left;width:40%;display:none;"/>
 					</td>
-					<td><input type="text" id="txtMins1..*" class="num" style="width:95%;"/></td>
-					<td><input type="text" id="txtTime1..*" style="width:95%;text-align: center;" /></td>
-					<td><input type="text" id="txtMins2..*" class="num" style="width:95%;"/></td>
-					<td><input type="text" id="txtTime2..*" style="width:95%;text-align: center;" /></td>
-					<td><input type="text" id="txtMemo..*" style="width:95%;" /></td>
 				</tr>
 			</table>
 		</div>

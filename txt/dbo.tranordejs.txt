@@ -7,6 +7,7 @@ returns @tmp table(
 		,cust nvarchar(50)
 		,productno nvarchar(20)
 		,product nvarchar(50)
+		,uweight float
 		,addrno nvarchar(20)
 		,addr nvarchar(50)
 		,conn nvarchar(50)
@@ -46,8 +47,10 @@ begin
 
 	update @tmp set emount = mount - gmount
 	delete @tmp where emount<=0
-	update @tmp set [weight]= round(emount * isnull(b.uweight,0),3)
-		 ,[volume]= round(emount * isnull(b.stkmount,0),3)
+	update @tmp set [weight]= round(emount * isnull(b.uweight,0),2)
+		 ,[volume]= round(emount *a.lengthb*a.width*a.height*0.0000353,2)
+		 ,[tvolume]= ceiling(emount *a.lengthb*a.width*a.height*0.0000353)
+		 ,uweight = isnull(b.uweight,0)
 	from @tmp a
 	left join ucc b on a.productno=b.noa
 	update @tmp set [address]=isnull(b.[address],'')

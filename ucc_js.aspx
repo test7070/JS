@@ -31,6 +31,13 @@
 				q_brwCount();
 				q_gt(q_name, q_content, q_sqlCount, 1);
 			});
+			function sum(){
+				cuft = round(0.0000353 * q_float('txtLengthb')* q_float('txtWidth')* q_float('txtHeight'),2); 
+				$('#txtStkmount').val(cuft);
+				if(q_float('txtTvolume')==0)
+					$('#txtTvolume').val(Math.ceil(cuft));
+			}
+			
 			function main() {
 				if (dataErr) {
 					dataErr = false;
@@ -49,6 +56,9 @@
 						q_gt('ucc', t_where, 0, 0, 0, "chkNoa_change", r_accy);
 					}
 				});
+				$('#txtLengthb').change(function(e){sum();});
+				$('#txtWidth').change(function(e){sum();});
+				$('#txtHeight').change(function(e){sum();});
 			}
 
 			function q_boxClose(s2) {
@@ -101,6 +111,7 @@
 				if (emp($('#txtNoa').val()))
 					return;
 				_btnModi();
+				sum();
 				refreshBbm();
 			}
 
@@ -120,6 +131,7 @@
                 });
 				$('#txtNoa').val($.trim($('#txtNoa').val()));
 				$('#txtWorker').val(r_name);
+				sum();
 				if($('#txtNoa').val().length == 0){
 					alert('請輸入品號!');
 					Unlock(1);

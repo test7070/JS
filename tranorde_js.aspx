@@ -75,7 +75,13 @@
                         $('#btnAddr_'+n).click();
                     });
                     $('#txtPrice_'+i).change(function(e){sum();});
-                    $('#txtMount_'+i).change(function(e){sum();});
+                    $('#txtMount_'+i).change(function(e){
+                    	var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
+                        refreshWV(n);
+                	});
+                    $('#txtLengthb_'+i).change(function(e){sum();});
+                    $('#txtWidth_'+i).change(function(e){sum();});
+                    $('#txtHeight_'+i).change(function(e){sum();});
 				}
 				_bbsAssign();
 			}
@@ -101,6 +107,11 @@
 				if (!(q_cur == 1 || q_cur == 2))
 					return;
 				for(var i=0;i<q_bbsCount;i++){
+					cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
+					$('#txtVolume_'+i).val(cuft);
+					if(q_float('txtTvolume_'+i)==0){
+						$('#txtTvolume_'+i).val(Math.ceil(cuft));
+					}	
 					$('#txtMoney_'+i).val(round(q_mul(q_float('txtMount_'+i),q_float('txtPrice_'+i)),0));
 					if($('#txtDate1').val().length>0){
 						$('#txtDate1_'+i).val($('#txtDate1').val());
@@ -260,8 +271,55 @@
 			}
 			function q_popPost(id) {
 				switch(id){
+					case 'txtProductno_':
+						var n = b_seq;
+						refreshWV(n);
+						break;
 					default:
 						break;
+				}
+			}
+			function q_gtPost(t_name) {
+                switch (t_name) {
+                    case q_name:
+                        if (q_cur == 4)
+                            q_Seek_gtPost();
+                        break;
+                    default:
+                    	try{
+                    		var t_para = JSON.parse(t_name);
+                    		if(t_para.action=="getUcc"){
+                    			var n = t_para.n;
+                    			as = _q_appendData("ucc", "", true);
+                    			if(as[0]!=undefined){
+                    				$('#txtWeight_'+n).val(round(q_mul(q_float('txtMount_'+n),parseFloat(as[0].uweight)),3));
+                    				$('#txtVolume_'+n).val(round(q_mul(q_float('txtMount_'+n),parseFloat(as[0].stkmount)),0));
+                    				$('#txtTvolume_'+n).val(round(q_mul(q_float('txtMount_'+n),parseFloat(as[0].tvolume)),0));
+                    			}else{
+                    				$('#txtWeight_'+n).val(0);
+                    				$('#txtVolume_'+n).val(0);
+                    				$('#txtTvolume_'+n).val(0);
+                    			}
+                    		}else {
+                    			$('#txtWeight_'+n).val(0);
+                				$('#txtVolume_'+n).val(0);
+                				$('#txtTvolume_'+n).val(0);
+							}
+							sum();
+                    	}catch(e){
+                    		Unlock(1);
+                    	}
+                        break;
+                }
+            }
+			function refreshWV(n){
+				var t_productno = $.trim($('#txtProductno_'+n).val());
+				if(t_productno.length==0){
+					$('#txtWeight_'+n).val(0);
+					$('#txtVolume_'+n).val(0);
+					$('#txtTvolume_'+n).val(0);
+				}else{
+					q_gt('ucc', "where=^^noa='"+t_productno+"'^^", 0, 0, 0, JSON.stringify({action:"getUcc",n:n}));
 				}
 			}
 		</script>
@@ -509,9 +567,9 @@
 					<td align="center" style="width:80px"><a>聯絡人</a></td>
 					<td align="center" style="width:80px"><a>聯絡電話</a></td>
 					<td align="center" style="width:100px"><a>注意事項</a></td>
-					<td align="center" style="width:70px"><a>長</a></td>
-					<td align="center" style="width:70px"><a>寬</a></td>
-					<td align="center" style="width:70px"><a>高</a></td>
+					<td align="center" style="width:70px"><a>長cm</a></td>
+					<td align="center" style="width:70px"><a>寬cm</a></td>
+					<td align="center" style="width:70px"><a>高cm</a></td>
 					<td align="center" style="width:70px"><a>材積</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
 					<td align="center" style="width:70px"><a>運送需<br>耗高度 </a></td>

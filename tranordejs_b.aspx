@@ -55,19 +55,19 @@
 				
 				if (maxAbbsCount < abbs.length) {
 					for (var i = (abbs.length - (abbs.length - maxAbbsCount)); i < abbs.length; i++) {
-						for(var j=0;j<w.$('#_orde').children().length;j++){
-							if(w.$('#_orde').children().eq(j).text()==abbs[i].noa+'-'+abbs[i].noq){
+						/*for(var j=0;j<w.$('#_orde').children().length;j++){
+							if(w.$('#_orde').children().eq(j).find('.ordeno').text()==abbs[i].noa+'-'+abbs[i].noq){
 								abbs[i]['sel'] = "true";
 								$('#chkSel_' + abbs[i].rec).attr('checked', true);
 							}
-						}
-						/*for (var j = 0; j < w.q_bbsCount; j++) {
+						}*/
+						for (var j = 0; j < w.q_bbsCount; j++) {
 							if (w.$('#txtOrdeno_' + j).val() == abbs[i].noa && w.$('#txtNo2_' + j).val() == abbs[i].noq) {			
 								abbs[i]['sel'] = "true";
 								$('#chkSel_' + abbs[i].rec).attr('checked', true);
 								//alert(abbs[i].rec);
 							}
-						}*/
+						}
 					}
 					maxAbbsCount = abbs.length;
 				}
@@ -121,7 +121,7 @@
 					<td align="center" style="width:60px;"><a>材積</a></td>
 					<td align="center" style="width:60px;"><a>重量</a></td>
 					<td align="center" style="width:60px;"><a>運送<br>高度</a></td>
-					<td align="center" style="width:60px;"><a style="color:green">運送<br>材積</a></td>
+					<td align="center" style="width:60px;"><a>運送<br>材積</a></td>
 				</tr>
 			</table>
 		</div>
@@ -179,7 +179,7 @@
 					<td style="width:60px;"><input id="txtVolume.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtWeight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtTheight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
-					<td style="width:60px;"><input id="txtTvolume.*" type="text" style="text-align:right;width:95%;"/></td>
+					<td style="width:60px;"><input id="txtTvolume.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 				</tr>
 			</table>
 		</div>
