@@ -26,6 +26,7 @@
 			brwKey = 'noa';
 			brwCount2 = 20;
 			//q_xchg = 1;
+			q_copy = 1;
 			$(document).ready(function() {
 				bbmKey = ['noa'];
 				q_brwCount();
@@ -102,6 +103,7 @@
 			}
 
 			function btnIns() {
+				$('#btnXchg').click();
 				_btnIns();
 				refreshBbm();
 				$('#txtNoa').focus();

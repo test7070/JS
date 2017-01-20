@@ -29,6 +29,7 @@
             brwKey = 'noa';
             brwCount2 = 20;
             q_xchg = 1;
+            q_copy = 1;
             aPop = new Array(['txtCarno_', 'btnCarno_', 'car2', 'a.noa,driverno,driver', 'txtCarno_', 'car2_b.aspx']);
             $(document).ready(function() {
                 bbmKey = ['noa'];
@@ -46,7 +47,7 @@
 
             function mainPost() {
                 q_mask(bbmMask);
-
+				document.title = '運送地點';
                 $('#txtNoa').change(function(e) {
                     $(this).val($.trim($(this).val()).toUpperCase());
                     if ($(this).val().length > 0) {
@@ -123,6 +124,7 @@
             }
 
             function btnIns() {
+            	$('#btnXchg').click();
                 _btnIns();
                 refreshBbm();
                 $('#txtNoa').focus();
@@ -497,7 +499,7 @@
                     	<input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  />
                     </td>
                     <td align="center" style="width:20px;"> </td>
-                    <td align="center" style="width:100px;"><a>車牌</a></td>
+                    <td align="center" style="width:100px;"><a>可進廠車牌</a></td>
                 </tr>
                 <tr  style='background:#cad3ff;'>
                     <td align="center">

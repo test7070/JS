@@ -169,10 +169,174 @@
 	            			,chk1:obj.find('.chk1').eq(0).text()=="true"?1:0
 	            			,chk2:obj.find('.chk2').eq(0).text()=="true"?1:0
 	            			,chk3:obj.find('.chk3').eq(0).text()=="true"?1:0
+	            			,orderange : []
 	                    });
 	                }
+	               
+	                var str = {lat:q_float('txtLat'),lng:q_float('txtLng')};
+	                for(var i=0;i<data_orde.length;i++){
+	                	 //計算訂單與起點的距離
+	                	target = {lat:data_orde[i].lat,lng:data_orde[i].lng};
+	                	data_orde[i].range = round(calcDistance(str,target),0); 
+	                	 //計算訂單與其他訂單的距離
+	                	 for(var j=0;j<data_orde.length;j++){
+	                	 	if(data_orde[i].addrno==data_orde[j].addrno)
+	                	 		data_orde[i].orderange.push({ordeno:data_orde[j].ordeno,range:0});
+	                	 	else{
+	                	 		data_orde[i].orderange.push({ordeno:data_orde[j].ordeno,range:round(calcDistance({lat:data_orde[j].lat,lng:data_orde[j].lng},target),0)});
+	                	 	}
+	                	 }
+	                }
+	                //依訂單與起點的距離
+	                data_orde.sort(function(a, b) {
+						if(a.range < b.range)
+							return -1;
+						else if(a.range == b.range)
+							return 0;
+						else
+							return 1;
+					});
+					//依訂單彼此的距離排序
+					for(var i=0;i<data_orde.length;i++){
+						data_orde[i].orderange.sort(function(a, b) {
+							if(a.range < b.range)
+								return -1;
+							else if(a.range == b.range)
+								return 0;
+							else
+								return 1;
+						});						
+					}
+					
+					//有指定車輛的先
+					for(var i=0;i<data_orde.length;i++){
+						//提貨不用管車輛
+	                	if(data_orde[i].chk2==1 && data_orde[i].allowcar.length==0)
+	                		continue;
+						if(data_orde[i].emount<=0)
+	                		continue;
+						for(var j=0;j<data_car.length;j++){
+							if(data_orde[i].chk2==2 && data_orde[i].allowcar.indexOf(data_car[j].carno)<0)
+	                			continue;
+							if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
+	                			continue;
+	                		t_mount = data_orde[i].emount;
+	                		while(t_mount>=0){
+                				t_weight = round(data_orde[i].uweight * t_mount,2);
+                				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+                					data_car[j].gvolume += t_cuft;
+	                				data_car[j].evolume -= t_cuft;
+	                				data_car[j].gweight += t_weight;
+            						data_car[j].eweight -= t_weight;
+	                				data_orde[i].gmount += t_mount;
+	                				data_orde[i].emount -= t_mount;
+	                				data_car[j].orde.push(data_orde[i]);
+	                				data_car[j].ordevolume.push(t_cuft);
+	                				data_car[j].ordeweight.push(t_weight);
+	                				data_car[j].ordemount.push(t_mount);
+                					break;
+                				}
+                				t_mount--;
+                			}	
+							//一次就把那台車排完
+							for(var k;k<data_orde[i].orderange.length;k++){					
+								t_nextOrdeno = data_orde[i].orderange[k].ordeno;
+								for(var l=0;l<data_orde.length;l++){
+									if(data_orde[l].ordeno != t_nextOrdeno)
+										continue;
+									if(data_orde[l].emount<=0)
+	                					continue;
+                					if(data_orde[l].chk2==2 && data_orde[l].allowcar.indexOf(data_car[j].carno)<0)
+	                					continue;
+									t_mount = data_orde[l].emount;
+			                		while(t_mount>=0){
+		                				t_weight = round(data_orde[l].uweight * t_mount,2);
+		                				t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
+		                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+		                					data_car[j].gvolume += t_cuft;
+			                				data_car[j].evolume -= t_cuft;
+			                				data_car[j].gweight += t_weight;
+		            						data_car[j].eweight -= t_weight;
+			                				data_orde[l].gmount += t_mount;
+			                				data_orde[l].emount -= t_mount;
+			                				data_car[j].orde.push(data_orde[l]);
+			                				data_car[j].ordevolume.push(t_cuft);
+			                				data_car[j].ordeweight.push(t_weight);
+			                				data_car[j].ordemount.push(t_mount);
+		                					break;
+		                				}
+		                				t_mount--;
+		                			}
+								}
+							}
+						}	
+					}
+					//NO指定車輛的先
+					for(var i=0;i<data_orde.length;i++){
+						//提貨不用管車輛
+	                	if(data_orde[i].chk2==1 && data_orde[i].allowcar.length>0)
+	                		continue;
+						if(data_orde[i].emount<=0)
+	                		continue;
+						for(var j=0;j<data_car.length;j++){
+							if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
+	                			continue;
+	                		t_mount = data_orde[i].emount;
+	                		while(t_mount>=0){
+                				t_weight = round(data_orde[i].uweight * t_mount,2);
+                				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+                					data_car[j].gvolume += t_cuft;
+	                				data_car[j].evolume -= t_cuft;
+	                				data_car[j].gweight += t_weight;
+            						data_car[j].eweight -= t_weight;
+	                				data_orde[i].gmount += t_mount;
+	                				data_orde[i].emount -= t_mount;
+	                				data_car[j].orde.push(data_orde[i]);
+	                				data_car[j].ordevolume.push(t_cuft);
+	                				data_car[j].ordeweight.push(t_weight);
+	                				data_car[j].ordemount.push(t_mount);
+                					break;
+                				}
+                				t_mount--;
+                			}	
+							//一次就把那台車排完
+							for(var k;k<data_orde[i].orderange.length;k++){					
+								t_nextOrdeno = data_orde[i].orderange[k].ordeno;
+								for(var l=0;l<data_orde.length;l++){
+									if(data_orde[l].ordeno != t_nextOrdeno)
+										continue;
+									if(data_orde[l].emount<=0)
+	                					continue;
+                					if(data_orde[l].chk2==2 && data_orde[l].allowcar.indexOf(data_car[j].carno)<0)
+	                					continue;
+									t_mount = data_orde[l].emount;
+			                		while(t_mount>=0){
+		                				t_weight = round(data_orde[l].uweight * t_mount,2);
+		                				t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
+		                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+		                					data_car[j].gvolume += t_cuft;
+			                				data_car[j].evolume -= t_cuft;
+			                				data_car[j].gweight += t_weight;
+		            						data_car[j].eweight -= t_weight;
+			                				data_orde[l].gmount += t_mount;
+			                				data_orde[l].emount -= t_mount;
+			                				data_car[j].orde.push(data_orde[l]);
+			                				data_car[j].ordevolume.push(t_cuft);
+			                				data_car[j].ordeweight.push(t_weight);
+			                				data_car[j].ordemount.push(t_mount);
+		                					break;
+		                				}
+		                				t_mount--;
+		                			}
+								}
+							}
+						}	
+					}
+	                
 	              	//有指定車輛的先
-	              	for(var i=0;i<data_orde.length;i++){
+	              	/*for(var i=0;i<data_orde.length;i++){
 	              		//提貨不用管車輛
 	                	if(data_orde[i].chk2==1 && data_orde[i].allowcar.length==0)
 	                		continue;
@@ -273,7 +437,7 @@
 	                			}
 	                		}
 	                	}
-	                }
+	                }*/
 					if(data_orde.length==0)
 						alert('無訂單');
 					if(data_car.length==0)
@@ -283,6 +447,7 @@
 						for (var i = 0; i < q_bbtCount; i++) {
                         	$('#btnMinut__'+i).click();
                         }
+                        $('#pathImg').html('');
 						initMap();
 						calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
 					}
@@ -674,7 +839,9 @@
                         while(route.legs.length+strn_bbt>q_bbtCount){
                         	$('#btnPlut').click();
                         }
+                        var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?center='+$('#txtLat').val()+','+$('#txtLng').val()+'&size=300x300&maptype=roadmap';
                         
+                        imgsrc += '&markers=color:green|label:S|'+$('#txtLat').val()+','+$('#txtLng').val();
                         for (var i = 0; i < route.legs.length; i++) {
                         	$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
                         	
@@ -710,6 +877,8 @@
                         	$('#txtMins1__'+(i+strn_bbt)).val(Math.round(route.legs[i].duration.value/60));
                 			$('#txtMemo__'+(i+strn_bbt)).val(route.legs[i].distance.text);
                 			
+                			imgsrc += '&markers=color:red|label:'+(i+1)+'|'+getLatLngString(route.legs[i].end_location.lat())+','+getLatLngString(route.legs[i].end_location.lng());
+                			
                 			date.setMinutes(date.getMinutes() + q_float('txtMins1__'+(i+strn_bbt)));
                 			hour = '00'+date.getHours();
                 			hour = hour.substring(hour.length-2,hour.length);
@@ -724,6 +893,8 @@
                 			minute = minute.substring(minute.length-2,minute.length);
                 			$('#txtTime2__'+(i+strn_bbt)).val(hour+':'+minute);
                         }
+                        imgsrc+='&key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8';
+                        $('#pathImg').append('<img src="'+imgsrc+'" title="'+data_car[data_car_current].carno+'"> </img>');
                         data_car_current++;
                         if(data_car_current<data_car.length){
 						   	initMap();
@@ -835,7 +1006,18 @@
                	}
                	return tmp;
             }
-            
+             
+        	function calcDistance(f,t){  
+        		var FINAL = 6378137.0;//赤道半徑
+	            var flat = f.lat*Math.PI/180.0;  
+	            var flng = f.lng*Math.PI/180.0; 
+	            var tlat = t.lat*Math.PI/180.0;  
+	            var tlng = t.lng*Math.PI/180.0; 
+	              
+	            var result = Math.sin(flat)*Math.sin(tlat) ;  
+	            result += Math.cos(flat)*Math.cos(tlat)*Math.cos(flng-tlng) ;  
+	            return Math.acos(result)*FINAL ;  
+	        }
             var stylesArray = [{"featureType":"administrative","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"administrative.province","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"saturation":-100},{"lightness":65},{"visibility":"on"}]},{"featureType":"poi","elementType":"all","stylers":[{"saturation":-100},{"lightness":"50"},{"visibility":"simplified"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"all","stylers":[{"lightness":"30"}]},{"featureType":"road.local","elementType":"all","stylers":[{"lightness":"40"}]},{"featureType":"transit","elementType":"all","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"water","elementType":"geometry","stylers":[{"hue":"#ffff00"},{"lightness":-25},{"saturation":-97}]},{"featureType":"water","elementType":"labels","stylers":[{"lightness":-25},{"saturation":-100}]}];
 		</script>
 		
@@ -1082,9 +1264,6 @@
 					<td align="center" style="width:70px;display:none;"><a>車牌</a></td>
 					<td align="center" style="width:70px"><a>類型</a></td>
 					<td align="center" style="width:150px"><a>貨主</a></td>
-					<td align="center" style="display:none;width:40px"><a>提貨</a></td>
-					<td align="center" style="display:none;width:40px"><a>卸貨</a></td>
-					<td align="center" style="display:none;width:40px"><a>空瓶</a></td>
 					<td align="center" style="width:150px"><a>品名</a></td>
 					<td align="center" style="width:70px"><a>數量</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
@@ -1104,6 +1283,9 @@
 					<td align="center" style="width:100px"><a>卸貨完<br>工時間</a></td>
 					<td align="center" style="width:100px"><a>空瓶完<br>工時間</a></td>
 					<td align="center" style="width:120px"><a>訂單</a></td>
+					<td align="center" style="width:40px"><a>提貨</a></td>
+					<td align="center" style="width:40px"><a>卸貨</a></td>
+					<td align="center" style="display:none;width:40px"><a>空瓶</a></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td align="center">
@@ -1121,9 +1303,6 @@
 						<input type="text" id="txtCust.*" style="float:left;width:45%;"/>
 						<input type="button" id="btnCust.*" style="display:none;"/>
 					</td>
-					<td style="display:none;"><input type="checkbox" id="chkChk1.*" /></td>
-					<td style="display:none;"><input type="checkbox" id="chkChk2.*" /></td>
-					<td style="display:none;"><input type="checkbox" id="chkChk3.*" /></td>
 					<td>
 						<input type="text" id="txtProductno.*" style="float:left;width:45%;"/>
 						<input type="text" id="txtProduct.*" style="float:left;width:45%;"/>
@@ -1160,6 +1339,9 @@
 						<input type="text" id="txtOrdeno.*" style="float:left;width:70%;"/>
 						<input type="text" id="txtNo2.*" style="float:left;width:20%;"/>
 					</td>
+					<td><input type="checkbox" id="chkChk1.*" /></td>
+					<td><input type="checkbox" id="chkChk2.*" /></td>
+					<td style="display:none;"><input type="checkbox" id="chkChk3.*" /></td>
 				</tr>
 
 			</table>
@@ -1229,7 +1411,8 @@
 			</table>
 		</div>
 		<input id="q_sys" type="hidden" />
-		<div id="map" style="width:1000px;height:600px;"> </div>
+		<div id="pathImg"> </div>
+		<div id="map" style="width:500px;height:300px;display:none;"> </div>
 		<canvas id="canvas" style="display:none;"> </canvas>
 	</body>
 </html>
