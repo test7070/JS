@@ -28,7 +28,7 @@
                 var t_para = new Array();
 	            try{
 	            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
-	            	t_content = "where=^^['"+t_para.noa+"')^^";
+	            	t_content = "where=^^['"+t_para.noa+"','"+t_para.date+"')^^";
 	            }catch(e){
 	            }    
                 brwCount = -1;
@@ -104,6 +104,9 @@
 					<td align="center" style="width:150px;"><a>司機</a></td>
 					<td align="center" style="width:80px;"><a>載重</a></td>
 					<td align="center" style="width:80px;"><a>材積</a></td>
+					<td align="center" style="width:80px;"><a>已運輸<BR>時間(分)</a></td>
+					<td align="center" style="width:80px;"><a>已裝卸<BR>時間(分)</a></td>
+					<td align="center" style="width:300px;"><a>已裝卸<BR>地點</a></td>
 				</tr>
 			</table>
 		</div>
@@ -131,8 +134,21 @@
 					<td style="width:80px;">
 						<input id="txtVolume.*" type="text" style="float:left;width:95%;text-align: right;" readonly="readonly" />
 					</td>
+					<td style="width:80px;">
+						<input id="txtMins1.*" type="text" style="float:left;width:95%;text-align: right;" readonly="readonly" />
+					</td>
+					<td style="width:80px;">
+						<input id="txtMins2.*" type="text" style="float:left;width:95%;text-align: right;" readonly="readonly" />
+					</td>
+					<td style="width:300px;">
+						<input id="txtMemo.*" type="text" style="float:left;width:95%;" readonly="readonly" />
+					</td>
 				</tr>
 			</table>
+		</div>
+		<div　style="display:none;">
+			<a>訂單重量：</a>
+			<a>訂單才積：</a>
 		</div>
 		<!--#include file="../inc/pop_ctrl.inc"-->
 	</body>

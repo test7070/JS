@@ -39,12 +39,13 @@ returns @tmp table(
 begin
 	if(@chk1=1)
 	begin
+		--地點:  提貨地點
 		insert into @tmp(chktype,chk1,chk2,chk3
 			,noa,noq,typea,custno,cust,productno,product,addrno,addr,conn,tel
 			,mount,lengthb,width,height,theight,tvolume,memo,gmount
 			,date1,time1,date2,time2)
 		select '提貨',1,0,0
-			,a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,a.addrno,a.addr,a.conn,a.tel
+			,a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,b.addrno,b.addr,a.conn,a.tel
 			,isnull(a.mount,0),a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
 			,a.date1,a.time1,a.date2,a.time2
 		from view_tranordes a
@@ -122,3 +123,4 @@ begin
 	
 	return 
 end
+

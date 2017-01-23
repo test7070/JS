@@ -16,8 +16,8 @@
 		<script type="text/javascript">
 			q_tables = 't';
 			var q_name = "tranorde";
-			var q_readonly = ['txtNoa','txtWorker', 'txtWorker2'];
-			var q_readonlys = [];
+			var q_readonly = ['txtNoa','txtWorker', 'txtWorker2','txtBoat'];
+			var q_readonlys = ['txtAddress'];
 			var bbsNum = new Array();
 			var bbsMask = new Array(['txtDate1', '999/99/99'],['txtDate2', '999/99/99'],['txtTime1', '99:99'],['txtTime2', '99:99']);
 			var bbtMask = new Array(); 
@@ -33,6 +33,7 @@
 			//q_xchg = 1;
 			brwCount2 = 5;
 			aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick', 'txtCustno,txtComp,txtNick', 'cust_b.aspx'] 
+				,['txtAddrno', 'lblAddr_js', 'addr2', 'noa,addr,address', 'txtAddrno,txtAddr,txtBoat', 'addr2_b.aspx']
 				,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product,lengthb,width,height,stkmount,theight,tvolume', 'txtProductno_,txtProduct_,txtLengthb_,txtWidth_,txtHeight_,txtVolume_,txtTheight_,txtTvolume_,txtMount_', 'ucc_b.aspx']
 				,['txtAddrno_', 'btnAddr_', 'addr2', 'noa,addr,address,conn,tel,memo', 'txtAddrno_,txtAddr_,txtAddress_,txtConn_,txtTel_,txtMemo_', 'addr2_b.aspx']);
 
@@ -505,7 +506,6 @@
 						<td> </td>
 						<td> </td>
 						<td> </td>
-						<td> </td>
 						<td class="tdZ"> </td>
 					</tr>
 					<tr>
@@ -522,6 +522,16 @@
 							<input type="text" id="txtCustno" class="txt" style="width:30%;float: left; " />
 							<input type="text" id="txtComp" class="txt" style="width:70%;float: left; " />
 							<input type="text" id="txtNick" class="txt" style="display:none; " />
+						</td>
+					</tr>
+					<tr>
+						<td><span> </span><a id="lblAddr_js" class="lbl btn">提貨地點</a></td>
+						<td colspan="3">
+							<input type="text" id="txtAddrno" class="txt" style="width:40%;float: left; " />
+							<input type="text" id="txtAddr" class="txt" style="width:60%;float: left; " />
+						</td>
+						<td colspan="3">
+							<input type="text" id="txtBoat" class="c1 txt"/>
 						</td>
 					</tr>
 					<tr>
