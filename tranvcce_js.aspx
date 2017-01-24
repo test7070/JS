@@ -20,11 +20,14 @@
 			var directionsService;
             var directionsDisplay;
  			var map;
+ 			var markers;
+			var locations;
+			
 			q_tables = 't';
 			var q_name = "tranvcce";
 			var q_readonly = ['txtNoa','txtWorker', 'txtWorker2'];
 			var q_readonlys = ['txtOrdeno','txtNo2'];
-			var q_readonlyt = ['txtCust','txtAddrno','txtProduct'];
+			var q_readonlyt = ['txtCust','txtAddrno','txtAddr','txtProduct'];
 			var bbsNum = new Array();
 			var bbsMask = new Array();
 			var bbtMask = new Array(); 
@@ -104,8 +107,12 @@
                 });
                 $('#btnCar').click(function(e){
                 	var t_where ='',t_date=$('#txtDatea').val();
-                	
-                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),date:t_date}), "car_tranvcce", "95%", "95%", '');
+                	var t_weight=0,t_volume=0;
+                	for(var i=0;i<q_bbsCount;i++){
+                		t_weight+=q_float('txtWeight_'+i);
+                		t_volume+=q_float('txtTvolume_'+i);
+                	}
+                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),date:t_date,weight:t_weight,volume:t_volume}), "car_tranvcce", "95%", "95%", '');
                 });
                 
 				$('#btnRun').click(function() {
@@ -126,6 +133,8 @@
 						calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
 					}
 				});
+				
+				
 			}
 
 			function bbsAssign() {
@@ -188,12 +197,15 @@
                     });	
                     $('#btnMap__' + i).click(function(e) {
                     	var n = $(this).attr('id').replace(/^(.*)__(\d+)$/,'$2');
-                    	$('#map').show();  
+                    	$('#map').show().offset({left:$(this).offset().left+250,top:$(this).offset().top});  
                 		initMap();
                         displayRoute(directionsService, directionsDisplay,$('#txtCarno__'+n).val());
                     });	
                 }
                 _bbtAssign();
+                $('#btnMap_close').click(function(e){
+					$('#map').hide();
+				});
             }
 
 			function bbsSave(as) {
@@ -906,7 +918,10 @@
            // var stylesArray = [{"featureType":"administrative","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"administrative.province","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"saturation":-100},{"lightness":65},{"visibility":"on"}]},{"featureType":"poi","elementType":"all","stylers":[{"saturation":-100},{"lightness":"50"},{"visibility":"simplified"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"all","stylers":[{"lightness":"30"}]},{"featureType":"road.local","elementType":"all","stylers":[{"lightness":"40"}]},{"featureType":"transit","elementType":"all","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"water","elementType":"geometry","stylers":[{"hue":"#ffff00"},{"lightness":-25},{"saturation":-97}]},{"featureType":"water","elementType":"labels","stylers":[{"lightness":-25},{"saturation":-100}]}];
 		
 			function displayRoute(directionsService, directionsDisplay,carno) {
+				
+				
                 waypts = [];
+                
                 for(j=0;j<q_bbtCount;j++){
                 	if($('#txtCarno__'+j).val()!=carno)
                 		continue;
@@ -920,6 +935,39 @@
 	                	}
 	                }
                 }      
+				//MARKER
+				markers = [];
+				locations = [];
+				locations.push({
+					lat : q_float('txtLat'),
+					lng : q_float('txtLng'),
+					label : 'S',
+					color : 'green'
+				});
+				for(var i=0;i<waypts.length;i++){
+					locations.push({
+						lat : waypts[i].location.lat(),
+						lng : waypts[i].location.lng(),
+						label : (i+1)+'',
+						color : 'red'
+					});
+				}
+				locations.push({
+					lat : q_float('txtEndlat'),
+					lng : q_float('txtEndlng'),
+					label : 'E',
+					color : 'blue'
+				});
+				/*for (var i = 0; i < markers.length; i++) {
+					markers[i].setMap(null);
+				}*/
+				for(var i=0;i<locations.length;i++){
+					addMarkerWithTimeout({lat:locations[i].lat,lng:locations[i].lng}
+						, locations[i].label
+						, locations[i].color
+						, i*300);
+				}
+												
                 directionsService.route({
                     origin : new google.maps.LatLng(q_float('txtLat'),q_float('txtLng')),
                     destination : new google.maps.LatLng(q_float('txtEndlat'),q_float('txtEndlng')),
@@ -929,11 +977,50 @@
                 }, function(response, status) {
                     if (status === google.maps.DirectionsStatus.OK) {
                         directionsDisplay.setDirections(response);
+						
+						
+						
+						
+		              /*  var marker = new google.maps.Marker({
+							position: {},
+							map: map,
+							label: 'S',
+							color: 'green'
+						});
+						//marker.setMap(map);
+		                
+		                marker = new google.maps.Marker({
+							position: {lat:q_float('txtEndlat'),lng:q_float('txtEndlng')},
+							map: map,
+							label: 'E',
+							color: 'blue'
+						});
+						//marker.setMap(map);
+		                for(var i=0;i<waypts.length;i++){
+							marker = new google.maps.Marker({
+								position: {lat:waypts[i].location.lat(),lng:waypts[i].location.lng()},
+								map: map,
+								label: (i+1)+'',
+								color: 'red'
+							});
+							//marker.setMap(map);
+						}*/
                     } else {
                         alert('Directions request failed due to ' + status);
                     }
                 });
             }
+            function addMarkerWithTimeout(position, label, color, timeout) {
+				window.setTimeout(function() {
+				markers.push(new google.maps.Marker({
+					position: position,
+					label: label,
+					color: color,
+					map: map,
+					animation: google.maps.Animation.DROP
+					}));
+				}, timeout);
+			}
 		</script>
 		
 		<style type="text/css">
@@ -1227,11 +1314,11 @@
 					<td><input type="text" id="txtMount.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtWeight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtLengthb.*" class="num" style="width:95%;"/></td>
-					<td><input type="text" id="txtWidth.*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtWidth.*" class="num bbsWeight" style="width:95%;"/></td>
 					<td><input type="text" id="txtHeight.*" class="num" style="width:95%;"/></td>
-					<td><input type="text" id="txtVolume.*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtVolume.*" class="num " style="width:95%;"/></td>
 					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;"/></td>
-					<td><input type="text" id="txtTvolume.*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtTvolume.*" class="num bbsVolume" style="width:95%;"/></td>
 					<td><input type="text" id="txtMins.*" class="num" style="width:95%;"/></td>
 					<td>
 						<input type="text" id="txtAddrno.*" style="float:left;width:45%;"/>
@@ -1265,7 +1352,7 @@
 			<table id="tbbt" class='tbbt'>
 				<tr style="color:white; background:#003366;">
 					<td align="center" style="width:25px"><input class="btn"  id="btnPlut" type="button" value='+' style="font-weight: bold;display:noxne;"  /></td>
-					<td align="center" style="width:20px;"> </td>
+					<td align="center" style="width:20px;"><input id="btnMap_close" type="button" value='關閉' style="font-size: 8"/></td>
 					<td align="center" style="width:20px;"> </td>
 					<td align="center" style="width:100px"><a>車牌</a></td>
 					<td align="center" style="width:100px"><a>貨主</a></td>
@@ -1329,7 +1416,7 @@
 		</div>
 		<input id="q_sys" type="hidden" />
 		<div id="pathImg"> </div>
-		<div id="map" style="width:800px;height:800px;display:none;"> </div>
+		<div id="map" style="width:400px;height:400px;display:none;position: absolute;"> </div>
 		<canvas id="canvas" style="display:none;"> </canvas>
 	</body>
 </html>

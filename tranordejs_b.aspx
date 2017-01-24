@@ -65,8 +65,8 @@
 						for (var j = 0; j < w.q_bbsCount; j++) {
 							if (w.$('#txtOrdeno_' + j).val() == abbs[i].noa 
 								&& w.$('#txtNo2_' + j).val() == abbs[i].noq
-								&& (w.$('#chkChk1_' + j).prop('checked').toString() == abbs[i].chk1.toString())
-								&& (w.$('#chkChk2_' + j).prop('checked').toString() == abbs[i].chk2.toString()) 
+								//&& (w.$('#chkChk1_' + j).prop('checked').toString() == abbs[i].chk1.toString())
+								//&& (w.$('#chkChk2_' + j).prop('checked').toString() == abbs[i].chk2.toString()) 
 								) {			
 								abbs[i]['sel'] = "true";
 								$('#chkSel_' + abbs[i].rec).attr('checked', true);

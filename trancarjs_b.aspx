@@ -29,6 +29,8 @@
 	            try{
 	            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
 	            	t_content = "where=^^['"+t_para.noa+"','"+t_para.date+"')^^";
+	            	$('#textWeight').val(t_para.weight);
+					$('#textVolume').val(t_para.volume);
 	            }catch(e){
 	            }    
                 brwCount = -1;
@@ -48,6 +50,7 @@
 						break;
 				}
 			}
+			
 			var maxAbbsCount = 0;
             function refresh() {
             	//ref ordest_b.aspx
@@ -85,9 +88,56 @@
 							$(this).attr('checked', $('#checkAllCheckbox').is(':checked'));
 					});
 				});
+				//----------------------------------
+				/*t_weight = 0;
+				t_volume = 0;
+				for(var i=0;i<w.find('.bbsWeight').length;i++){
+					t_weight += q_float(w.find('.bbsWeight').eq(i).attr('id'));
+				}
+				for(var i=0;i<w.find('.bbsVolume').length;i++){
+					t_volume += q_float(w.find('.bbsVolume').eq(i).attr('id'));
+				}
+				$('#textWeight').val(t_weight);
+				$('#textVolume').val(t_volume);
+				*/
 				for(var i=0;i<q_bbsCount;i++){
 					$('#lblNo_'+i).text((i+1));
+					$('#chkSel_'+i).click(function(e){
+						t_weight = 0;
+						t_volume = 0;
+						for(var i=0;i<q_bbsCount;i++){
+							t_weight += ($('#chkSel_'+i).prop('checked')?q_float('txtWeight_'+i):0);
+							t_volume += ($('#chkSel_'+i).prop('checked')?q_float('txtVolume_'+i):0);
+						}
+						$('#textWeight2').val(t_weight);
+						$('#textVolume2').val(t_volume);
+						$('#textWeight3').val(q_float('textWeight')-q_float('textWeight2'));
+						$('#textVolume3').val(q_float('textVolume')-q_float('textVolume2'));
+					});
 				}
+				$('#checkAllCheckbox').click(function(e){
+					t_weight = 0;
+					t_volume = 0;
+					for(var i=0;i<q_bbsCount;i++){
+						t_weight += ($('#chkSel_'+i).prop('checked')?q_float('txtWeight_'+i):0);
+						t_volume += ($('#chkSel_'+i).prop('checked')?q_float('txtVolume_'+i):0);
+					}
+					$('#textWeight2').val(t_weight);
+					$('#textVolume2').val(t_volume);
+					$('#textWeight3').val(q_float('textWeight')-q_float('textWeight2'));
+					$('#textVolume3').val(q_float('textVolume')-q_float('textVolume2'));
+				});
+				
+				t_weight = 0;
+				t_volume = 0;
+				for(var i=0;i<q_bbsCount;i++){
+					t_weight += ($('#chkSel_'+i).prop('checked')?q_float('txtWeight_'+i):0);
+					t_volume += ($('#chkSel_'+i).prop('checked')?q_float('txtVolume_'+i):0);
+				}
+				$('#textWeight2').val(t_weight);
+				$('#textVolume2').val(t_volume);
+				$('#textWeight3').val(q_float('textWeight')-q_float('textWeight2'));
+				$('#textVolume3').val(q_float('textVolume')-q_float('textVolume2'));
 				//_readonlys(true);
 			}
 		</script>
@@ -146,9 +196,13 @@
 				</tr>
 			</table>
 		</div>
-		<div　style="display:none;">
-			<a>訂單重量：</a>
-			<a>訂單才積：</a>
+		<div　style="width:100%;">
+			<a style="float:left;">訂單重量：</a><input id="textWeight" style="float:left;width:100px;text-align: right;"/>
+			<a style="float:left;width:100px;text-align: right;">訂單材積：</a><input id="textVolume" style="float:left;width:100px;text-align: right;"/>
+			<a style="float:left;width:100px;float:left;display:none;">車輛總載重：</a><input id="textWeight2" style="float:left;width:100px;text-align: right;display:none;"/>
+			<a style="float:left;width:100px;text-align: right;display:none;">車輛總材積：</a><input id="textVolume2" style="float:left;width:100px;text-align: right;display:none;"/>
+			<a style="float:left;width:100px;float:left;">未承載重：</a><input id="textWeight3" style="float:left;width:100px;text-align: right;"/>
+			<a style="float:left;width:100px;text-align: right;">未承載材積：</a><input id="textVolume3" style="float:left;width:100px;text-align: right;"/>
 		</div>
 		<!--#include file="../inc/pop_ctrl.inc"-->
 	</body>
