@@ -67,11 +67,11 @@
 					}
 					maxAbbsCount = abbs.length;
 				}
-				abbs.sort(function(a,b){
+				/*abbs.sort(function(a,b){
 					var x = (a.sel==true || a.sel=="true"?1:0);
 					var y = (b.sel==true || b.sel=="true"?1:0);
 					return y-x;
-				});
+				});*/
 				/*for(var i=0;i<abbs.length;i++){
 					if(abbs[i].kind == ''){
 						abbs.splice(i,1);

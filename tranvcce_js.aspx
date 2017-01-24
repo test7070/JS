@@ -455,8 +455,8 @@
 			}
 			function initMap() {
                 directionsService = new google.maps.DirectionsService();
-                directionsDisplay = new google.maps.DirectionsRenderer();
-                //directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+                //directionsDisplay = new google.maps.DirectionsRenderer();
+                directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
                 map = new google.maps.Map(document.getElementById('map'), {
                     zoom : 14,
                     center : {
@@ -502,8 +502,8 @@
                 }
                 
                 directionsService.route({
-                    origin : new google.maps.LatLng(q_float('txtLat'),q_float('txtLng')),
-                    destination : new google.maps.LatLng(q_float('txtEndlat'),q_float('txtEndlng')),
+                    origin : new google.maps.LatLng(parseFloat($('#txtLat').val()),parseFloat($('#txtLng').val())),
+                    destination : new google.maps.LatLng(parseFloat($('#txtEndlat').val()),parseFloat($('#txtEndlng').val())),
                     waypoints : waypts,
                     optimizeWaypoints : true,
                     travelMode : google.maps.TravelMode.DRIVING
@@ -688,7 +688,7 @@
                     });
                 }
                
-                var str = {lat:q_float('txtLat'),lng:q_float('txtLng')};
+                var str = {lat:parseFloat($('#txtLat').val()),lng:parseFloat($('#txtLng').val())};
                 for(var i=0;i<data_orde.length;i++){
                 	 //計算訂單與起點的距離
                 	target = {lat:data_orde[i].lat,lng:data_orde[i].lng};
@@ -926,9 +926,13 @@
                 	if($('#txtCarno__'+j).val()!=carno)
                 		continue;
             		for(var i=0;i<q_bbsCount;i++){
-	                	if($('#txtOrdeno_'+i).val()==$('#txtOrdeno__'+j).val() && $('#txtNo2_'+i).val()==$('#txtNo2__'+j).val()){
+	                	if($('#txtOrdeno__'+j).val().length>0 && $('#txtOrdeno_'+i).val()==$('#txtOrdeno__'+j).val() && $('#txtNo2_'+i).val()==$('#txtNo2__'+j).val()){
+	                		console.log(i+':'+$('#txtLat_'+i).val()+','+$('#txtLng_'+i).val());
 	                		waypts.push({
-		                        location : new google.maps.LatLng(q_float('txtLat_'+i),q_float('txtLng_'+i)),
+		                        //location : new google.maps.LatLng(q_float('txtLat_'+i),q_float('txtLng_'+i)),
+		                       
+		                        location : new google.maps.LatLng(parseFloat($('#txtLat_'+i).val()),parseFloat($('#txtLng_'+i).val())),
+		                        //location : {lat:$('#txtLat_'+i).val(),lng:$('#txtLng_'+i).val()},
 		                        stopover : true
 		                    });
 		                    break;
@@ -939,8 +943,8 @@
 				markers = [];
 				locations = [];
 				locations.push({
-					lat : q_float('txtLat'),
-					lng : q_float('txtLng'),
+					lat : parseFloat($('#txtLat').val()),
+					lng : parseFloat($('#txtLng').val()),
 					label : 'S',
 					color : 'green'
 				});
@@ -953,8 +957,8 @@
 					});
 				}
 				locations.push({
-					lat : q_float('txtEndlat'),
-					lng : q_float('txtEndlng'),
+					lat : parseFloat($('#txtEndlat').val()),
+					lng : parseFloat($('#txtEndlng').val()),
 					label : 'E',
 					color : 'blue'
 				});
@@ -967,10 +971,10 @@
 						, locations[i].color
 						, i*300);
 				}
-												
+											
                 directionsService.route({
-                    origin : new google.maps.LatLng(q_float('txtLat'),q_float('txtLng')),
-                    destination : new google.maps.LatLng(q_float('txtEndlat'),q_float('txtEndlng')),
+                    origin : new google.maps.LatLng(parseFloat($('#txtLat').val()),parseFloat($('#txtLng').val())),
+                    destination : new google.maps.LatLng(parseFloat($('#txtEndlat').val()),parseFloat($('#txtEndlng').val())),
                     waypoints : waypts,
                     //optimizeWaypoints : true,
                     travelMode : google.maps.TravelMode.DRIVING
