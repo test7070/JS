@@ -38,11 +38,17 @@ z_tranorde_js01:--z_tranorde_js01
 		--提貨
 		,gmount1 float
 		,gweight1 float
-		,gvolume1 float
+		,gvolume1 float		
+		,emount1 float
+		,eweight1 float
+		,evolume1 float
 		--卸貨
 		,gmount2 float
 		,gweight2 float
 		,gvolume2 float
+		,emount2 float
+		,eweight2 float
+		,evolume2 float
 	)
 	insert into @tmp(pno,gno,accy,noa,noq,addrno,addr,productno,product,lengthb
 		,width,height,[weight],volume,theight,tvolume
@@ -66,7 +72,15 @@ z_tranorde_js01:--z_tranorde_js01
 	from @tmp a
 	outer apply(select SUM(mount) mount,SUM([weight]) [weight],SUM(tvolume) tvolume 
 		from view_tranvcces where ordeno=a.noa and no2=a.noq and chk2=1) b
+	
+	update @tmp set emount1 = ISNULL(mount,0) - ISNULL(gmount1,0)
+		,eweight1 = ISNULL([weight],0) - ISNULL(gweight1,0)
+		,evolume1 = ISNULL([tvolume],0) - ISNULL(gvolume1,0)
+		,emount2 = ISNULL(mount,0) - ISNULL(gmount2,0)
+		,eweight2 = ISNULL([weight],0) - ISNULL(gweight2,0)
+		,evolume2 = ISNULL([tvolume],0) - ISNULL(gvolume2,0)
 	------------------------------------------------------------
+	
 	
 	
 	select * from @tmp;
