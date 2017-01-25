@@ -1,0 +1,72 @@
+z_tranorde_js01:--z_tranorde_js01	
+	SET QUOTED_IDENTIFIER OFF
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_bdate nvarchar(20) = ''
+	declare @t_edate nvarchar(20) = char(255)
+	declare @t_bcustno nvarchar(20) = ''
+	declare @t_ecustno nvarchar(20) = char(255)
+	declare @t_baddrno nvarchar(20) = ''
+	declare @t_eaddrno nvarchar(20) = char(255)
+	declare @t_bstraddrno nvarchar(20) = ''
+	declare @t_estraddrno nvarchar(20) = char(255)
+	declare @t_option nvarchar(max) = '' 
+	declare @t_enda nvarchar(max)=''
+	------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(20)
+		,pno int
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,addrno nvarchar(20)
+		,addr nvarchar(50)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,lengthb float
+		,width float
+		,height float
+		,[weight] float
+		,volume float
+		,theight float
+		,tvolume float
+		
+		,mount float
+		,price float
+		,total float
+		--提貨
+		,gmount1 float
+		,gweight1 float
+		,gvolume1 float
+		--卸貨
+		,gmount2 float
+		,gweight2 float
+		,gvolume2 float
+	)
+	insert into @tmp(pno,gno,accy,noa,noq,addrno,addr,productno,product,lengthb
+		,width,height,[weight],volume,theight,tvolume
+		,mount,price,total)
+	select '1','1',a.accy,a.noa,a.noq,a.addrno,a.addr,a.productno,a.product,a.lengthb
+		,a.width,a.height,a.[weight],a.volume,a.theight,a.tvolume
+		,a.mount,a.price,a.[money]
+	from view_tranordes a
+	left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @t_bdate and @t_edate 
+	and b.custno between @t_bcustno and @t_ecustno
+	and a.addrno between @t_baddrno and @t_eaddrno
+	and b.addrno between @t_bstraddrno and @t_estraddrno
+	
+	update @tmp set gmount1=isnull(b.mount,0),gweight1=ISNULL(b.[weight],0),gvolume1=ISNULL(b.tvolume,0)
+	from @tmp a
+	outer apply(select SUM(mount) mount,SUM([weight]) [weight],SUM(tvolume) tvolume 
+		from view_tranvcces where ordeno=a.noa and no2=a.noq and chk1=1) b
+	
+	update @tmp set gmount2=isnull(b.mount,0),gweight2=ISNULL(b.[weight],0),gvolume2=ISNULL(b.tvolume,0)
+	from @tmp a
+	outer apply(select SUM(mount) mount,SUM([weight]) [weight],SUM(tvolume) tvolume 
+		from view_tranvcces where ordeno=a.noa and no2=a.noq and chk2=1) b
+	------------------------------------------------------------
+	
+	
+	select * from @tmp;
