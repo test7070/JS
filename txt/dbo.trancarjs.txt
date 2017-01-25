@@ -1,0 +1,63 @@
+
+
+ALTER  function [dbo].[trancarjs](@tranvcceno nvarchar(20),@trandate nvarchar(20))
+returns @tmp table(
+	carno nvarchar(20)
+	,driverno nvarchar(20)
+	,driver nvarchar(50)
+	,[weight] float
+	,volume float
+	,memo nvarchar(max) --已派地點
+	,mins1 float --運輸時間
+	,mins2 float --裝卸時間
+) as
+begin
+	insert into @tmp(carno,driverno,[weight],volume,memo)
+	select carno,driverno,[weight2],cast(isnull(volume,0) as float),''
+	from car2 order by carno
+	update @tmp set driver = isnull(b.namea,'')
+	from @tmp a
+	left join driver b on a.driverno=b.noa
+	
+	declare @tmpb table(
+		carno nvarchar(20)
+		,addrno nvarchar(20)
+	)
+	
+	declare @memo nvarchar(max)
+	declare @carno nvarchar(20)
+	declare @addrno nvarchar(20)
+	declare @addr nvarchar(50)
+	declare @mins1 float
+	declare @mins2 float
+	
+	declare cursor_table cursor for 
+	select a.carno,a.addrno,a.addr,isnull(a.mins1,0),isnull(a.mins2,0)
+	from view_tranvccet a
+	left join view_tranvcce b on a.accy=b.accy and a.noa=b.noa 
+	left join @tmp c on a.carno=c.carno
+	where b.noa != @tranvcceno 
+	and b.datea=@trandate 
+	and len(a.ordeno)>0
+	order by a.carno, a.addrno
+	open cursor_table 
+	fetch next from cursor_table 
+	into @carno,@addrno,@addr,@mins1,@mins2
+	while(@@FETCH_STATUS <> -1) 
+	begin 
+		if not exists(select * from @tmpb where carno=@carno and addrno=@addrno)
+		begin
+			insert into @tmpb(carno,addrno)values(@carno,@addrno)
+			update @tmp set memo=isnull(memo,'') + case when len(isnull(memo,0))>0 then ',' else '' end + @addr where carno=@carno
+		end
+		update @tmp set  mins1 = isnull(mins1,0) + @mins1, mins2 = isnull(mins2,0) + @mins2 where carno=@carno
+		fetch next from cursor_table 
+		into @carno,@addrno,@addr,@mins1,@mins2
+	end 
+	close cursor_table 
+	deallocate cursor_table 
+	
+	return 
+end
+
+
