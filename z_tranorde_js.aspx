@@ -32,38 +32,52 @@
 						value : q_db
 					},{
 						type : '6', //[3]      1
-						name : 'noa'
+						name : 'xnoa'
 					}, {
 						type : '1', //[4][5]   2
 						name : 'xdate'
 					}, {
-						type : '2', //[6][7]   3
+						type : '1', //[6][7]   3
+						name : 'xdate1'
+					}, {
+						type : '1', //[8][9]   4
+						name : 'xdate2'
+					}, {
+						type : '2', //[10][11]   5
 						name : 'xcust',
 						dbf : 'cust',
 						index : 'noa,comp',
 						src : 'cust_b.aspx'
 					}, {
-						type : '2', //[8][9]    4
+						type : '2', //[12][13]    6
 						name : 'xproduct',
 						dbf : 'ucc',
 						index : 'noa,product',
 						src : 'ucc_b.aspx'
 					}, {
-						type : '2', //[10][11]   5
-						name : 'xaddr',
-						dbf : 'addr2',
-						index : 'noa,addr',
-						src : 'addr2_b.aspx'
-					}, {
-						type : '2', //[12][13]   6
+						type : '2', //[14][15]   7
 						name : 'xstraddr',
 						dbf : 'addr2',
 						index : 'noa,addr',
 						src : 'addr2_b.aspx'
 					}, {
-						type : '5', //[14]        7
-						name : 'xcancel',
-						value : [q_getPara('report.all')].concat(new Array('1@Y', '0@N'))
+						type : '2', //[16][17]  8
+						name : 'xaddr',
+						dbf : 'addr2',
+						index : 'noa,addr',
+						src : 'addr2_b.aspx'
+					}, {
+						type : '5', //[18]       9
+						name : 'xchk1',
+						value : [q_getPara('report.all')].concat(new Array('1@已提貨', '0@未提貨'))
+					}, {
+						type : '5', //[19]       10
+						name : 'xchk2',
+						value : [q_getPara('report.all')].concat(new Array('1@已卸貨', '0@未卸貨'))
+					}, {
+						type : '5', //[20]       11
+						name : 'xenda',
+						value : [q_getPara('report.all')].concat(new Array('1@已結案', '0@未結案'))
 					}]
 				});
 				q_popAssign();
@@ -75,13 +89,23 @@
 	            }    
 	            if(t_para.length==0 || t_para.noa==undefined){
 	            }else{
-	            	$('#txtNoa').val(t_para.noa);
+	            	$('#txtXnoa').val(t_para.noa);
 	            }
 	            
 	            $('#txtXdate1').mask('999/99/99');
 				$('#txtXdate1').datepicker();
 				$('#txtXdate2').mask('999/99/99');
 				$('#txtXdate2').datepicker();
+				
+				$('#txtXdate11').mask('999/99/99');
+				$('#txtXdate11').datepicker();
+				$('#txtXdate12').mask('999/99/99');
+				$('#txtXdate12').datepicker();
+				
+				$('#txtXdate21').mask('999/99/99');
+				$('#txtXdate21').datepicker();
+				$('#txtXdate22').mask('999/99/99');
+				$('#txtXdate22').datepicker();
             }
 
 			function q_funcPost(t_func, result) {
