@@ -496,7 +496,8 @@
 				</table>
 			</div>
 		</div>
-		<div class='dbbs'>
+		<!--2017/2/2  改由集團控制可進廠之車輛 -->
+		<div class='dbbs' style="display:none;">
             <table id="tbbs" class='tbbs'>
                 <tr style='color:white; background:#003366;' >
                     <td  align="center" style="width:30px;">
