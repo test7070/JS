@@ -32,7 +32,7 @@
             q_copy = 1;
             aPop = new Array(
     			['txtCarno_', 'btnCarno_', 'car2', 'a.noa,driverno,driver', 'txtCarno_', 'car2_b.aspx']
-    			,['txtCustno', 'lblCustno', 'addr3', 'noa,namea', 'txtCustno', 'addr3js_b.aspx']);
+    			,['txtCustno', 'lblCustno', 'addr3', 'noa,namea', 'txtCustno', 'addr3_b.aspx']);
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'noq'];
