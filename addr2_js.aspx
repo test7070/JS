@@ -436,7 +436,7 @@
 						<td align="center" style="width:100px; color:black;"><a>聯絡電話</a></td>
 						<tr>
 							<td >
-							<input id="chkBrow.*" type="checkbox" style=' '/>
+							<input id="chkBrow.*" type="checkbox"/>
 							</td>
 							<td id='noa' style="text-align: left;">~noa</td>
 							<td id='addr' style="text-align:left;">~addr</td>
@@ -497,7 +497,7 @@
 			</div>
 		</div>
 		<!--2017/2/2  改由集團控制可進廠之車輛 -->
-		<div class='dbbs' style="display:none;">
+		<div class='dbbs'>
             <table id="tbbs" class='tbbs'>
                 <tr style='color:white; background:#003366;' >
                     <td  align="center" style="width:30px;">
@@ -518,7 +518,29 @@
                     </td>
                 </tr>
             </table>
-        </div>
+     	</div>
+		<!--<div class='dbbs'>
+            <table id="tbbs" class='tbbs'>
+                <tr style='color:white; background:#003366;' >
+                    <td  align="center" style="width:30px;">
+                    	<input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  />
+                    </td>
+                    <td align="center" style="width:20px;"> </td>
+                    <td align="center" style="width:100px;"><a>可進廠車牌</a></td>
+                </tr>
+                <tr  style='background:#cad3ff;'>
+                    <td align="center">
+                    	<input class="btn"  id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
+                    	<input id="txtNoq.*" type="text" style="display: none;" />
+                    </td>
+                    <td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+                    <td>
+                    	<input type="text" id="txtCarno.*" style="width:95%;" />
+                    	<input type="button" id="btnCarno.*" style="display:none;"/>
+                    </td>
+                </tr>
+            </table>
+     </div>-->
 		<input id="q_sys" type="hidden" />
 	</body>
 </html>
