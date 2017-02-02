@@ -28,12 +28,11 @@
 			var q_readonly = ['txtNoa','txtWorker', 'txtWorker2'];
 			var q_readonlys = ['txtOrdeno','txtNo2'];
 			var q_readonlyt = ['txtCust','txtAddrno','txtAddr','txtProduct'];
-			var bbsNum = new Array();
-			var bbsMask = new Array();
-			var bbtMask = new Array(); 
 			var bbmNum = new Array();
 			var bbmMask = new Array(['txtDatea', '999/99/99'],['txtTimea', '99:99']);
+			var bbsNum = new Array();
 			var bbsMask = new Array();
+			var bbtNum  = new Array(); 
 			var bbtMask = new Array(['txtTime1', '99:99'],['txtTime2', '99:99']);
 			q_sqlCount = 6;
 			brwCount = 6;

@@ -30,7 +30,9 @@
             brwCount2 = 20;
             q_xchg = 1;
             q_copy = 1;
-            aPop = new Array(['txtCarno_', 'btnCarno_', 'car2', 'a.noa,driverno,driver', 'txtCarno_', 'car2_b.aspx']);
+            aPop = new Array(
+    			['txtCarno_', 'btnCarno_', 'car2', 'a.noa,driverno,driver', 'txtCarno_', 'car2_b.aspx']
+    			,['txtCustno', 'lblCustno', 'addr3', 'noa,namea', 'txtCustno', 'addr3js_b.aspx']);
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'noq'];
@@ -458,6 +460,8 @@
 					<tr>
 						<td><span> </span><a class="lbl">編號</a></td>
 						<td><input id="txtNoa"  type="text"  class="txt c1"/></td>
+						<td><span> </span><a class="lbl" id="lblCustno">集團</a></td>
+						<td><input id="txtCustno" type="text"  class="txt c1"/></td>
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">地點</a></td>
