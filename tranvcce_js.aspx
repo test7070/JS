@@ -132,10 +132,50 @@
 						calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
 					}
 				});
-				
-				
+				$('#btnIns').before($('#btnIns').clone().attr('id', 'btnMap').attr('value', '地圖'));
+                $('#btnMap').click(function() {
+                    $('#mapForm').toggle();
+                    if($('#mapForm').is(':visible')){
+                    	initMap();
+                    	//refreshMarker();	
+                    }
+                });
+                //window.onload = addListeners;
+				$('#mapStatus').mousedown(function(e) {
+					if(e.button==2){			   		
+						$(this).parent().data('xtop',parseInt($(this).parent().css('top')) - e.clientY);
+						$(this).parent().data('xleft',parseInt($(this).parent().css('left')) - e.clientX);
+					}
+				}).mousemove(function(e) {
+					if(e.button==2 && e.target.nodeName!='INPUT'){ 
+						$(this).parent().css('top',$(this).parent().data('xtop')+e.clientY);
+						$(this).parent().css('left',$(this).parent().data('xleft')+e.clientX);
+					}
+				}).bind('contextmenu', function(e) {
+					if(e.target.nodeName!='INPUT')
+						e.preventDefault();
+				});
 			}
+			/*function addListeners() {
+                document.getElementById('mapStatus').addEventListener('mousedown', mouseDown, false);
+                window.addEventListener('mouseup', mouseUp, false);
+            }
 
+            function mouseUp() {
+                window.removeEventListener('mousemove', divMove, true);
+            }
+
+            function mouseDown(e) {
+                window.addEventListener('mousemove', divMove, true);
+            }
+
+            function divMove(e) {
+                var div = document.getElementById('mapForm');
+                div.style.position = 'absolute';
+                div.style.top = e.clientY + 'px';
+                div.style.left = e.clientX + 'px';
+            }*/
+            
 			function bbsAssign() {
 				for (var i = 0; i < q_bbsCount; i++) {
 					$('#lblNo_' + i).text(i + 1);
@@ -196,7 +236,7 @@
                     });	
                     $('#btnMap__' + i).click(function(e) {
                     	var n = $(this).attr('id').replace(/^(.*)__(\d+)$/,'$2');
-                    	$('#map').show().offset({left:$(this).offset().left+250,top:$(this).offset().top});  
+                    	$('#mapForm').show().offset({left:$(this).offset().left+250,top:$(this).offset().top});  
                 		initMap();
                         displayRoute(directionsService, directionsDisplay,$('#txtCarno__'+n).val());
                     });	
@@ -570,7 +610,8 @@
                             $('#txtLng__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lng()));
                         	$('#txtMins1__'+(i+strn_bbt)).val(Math.round(route.legs[i].duration.value/60));
                 			$('#txtMemo__'+(i+strn_bbt)).val(route.legs[i].distance.text);
-                			date.setMinutes(date.getMinutes() + q_float('txtMins1__'+(i+strn_bbt)));
+                			//時間 +25%
+                			date.setMinutes(date.getMinutes() + round((q_float('txtMins1__'+(i+strn_bbt))*1.25),0));
                 			hour = '00'+date.getHours();
                 			hour = hour.substring(hour.length-2,hour.length);
                 			minute = '00'+date.getMinutes();
@@ -1422,7 +1463,11 @@
 		</div>
 		<input id="q_sys" type="hidden" />
 		<div id="pathImg"> </div>
-		<div id="map" style="width:400px;height:400px;display:none;position: absolute;"> </div>
+		<div id="mapForm" style="width:820px;height:650px;position: absolute;top:50px;left:600px;border-width: 0px;z-index: 80; background-color:pink;display:none;">
+			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;color:white;">滑鼠右鍵拖曳</div>
+			<div id="map" style="width:800px;height:600px;position: relative; top:5px;left:10px; "> </div>
+		</div>
+		<!--<div id="map" style="width:400px;height:400px;display:none;position: absolute;"> </div>-->
 		<canvas id="canvas" style="display:none;"> </canvas>
 	</body>
 </html>

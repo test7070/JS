@@ -90,12 +90,25 @@
                     	refreshMarker();	
                     }
                 });
-                //$('#mapForm').hide();
-
-                window.onload = addListeners;
+                $('#mapStatus').mousedown(function(e) {
+					console.log(e.button);
+					if(e.button==2){				   		
+						$(this).parent().data('xtop',parseInt($(this).parent().css('top')) - e.clientY);
+						$(this).parent().data('xleft',parseInt($(this).parent().css('left')) - e.clientX);
+					}
+				}).mousemove(function(e) {
+					if(e.button==2 && e.target.nodeName!='INPUT'){ 
+						$(this).parent().css('top',$(this).parent().data('xtop')+e.clientY);
+						$(this).parent().css('left',$(this).parent().data('xleft')+e.clientX);
+					}
+				}).bind('contextmenu', function(e) {
+					if(e.target.nodeName!='INPUT')
+						e.preventDefault();
+				});
+                //window.onload = addListeners;
             }
 
-            function addListeners() {
+            /*function addListeners() {
                 document.getElementById('mapStatus').addEventListener('mousedown', mouseDown, false);
                 window.addEventListener('mouseup', mouseUp, false);
             }
@@ -113,7 +126,7 @@
                 div.style.position = 'absolute';
                 div.style.top = e.clientY + 'px';
                 div.style.left = e.clientX + 'px';
-            }
+            }*/
 
             function q_boxClose(s2) {
                 var ret;
@@ -795,7 +808,7 @@
 			</table>
 		</div>
 		<div id="mapForm" style="width:820px;height:650px;position: absolute;top:50px;left:600px;border-width: 0px;z-index: 80; background-color:pink;display:none;">
-			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;"></div>
+			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;color:white;">滑鼠右鍵拖曳</div>
 			<div id="map" style="width:800px;height:600px;position: relative; top:5px;left:10px; "></div>
 		</div>
 
