@@ -85,6 +85,10 @@
                 $('#btnIns').before($('#btnIns').clone().attr('id', 'btnMap').attr('value', '地圖'));
                 $('#btnMap').click(function() {
                     $('#mapForm').toggle();
+                    if($('#mapForm').is(':visible')){
+                    	initMap();
+                    	refreshMarker();	
+                    }
                 });
                 //$('#mapForm').hide();
 
@@ -178,7 +182,7 @@
             function q_popPost(id) {
                 switch(id) {
                 case 'txtAddrno_':
-                    //refreshBbm();
+                    refreshMarker();
                     break;
                 default:
                     break;
@@ -197,16 +201,6 @@
                     Unlock(1);
                     return;
                 }
-                /*console.log(markers);
-                 for(var i=0;i<q_bbsCount;i++){
-                 $('#btnMinus_'+i).click();
-                 }
-                 while(q_bbsCount<markers.length)
-                 $('#btnPlus').click();
-                 for(var i=0;i<markers.length;i++){
-                 $('#txtLat_'+i).val(markers[i].position.lat());
-                 $('#txtLng_'+i).val(markers[i].position.lng());
-                 }*/
 
                 if (q_cur == 1) {
                     t_where = "where=^^ noa='" + $('#txtNoa').val() + "'^^";
@@ -230,6 +224,10 @@
             function refresh(recno) {
                 _refresh(recno);
                 refreshBbm();
+                if($('#mapForm').is(':visible')){
+                	initMap();
+                	refreshMarker();	
+                }
             }
 
             function readonly(t_para, empty) {
@@ -266,12 +264,12 @@
                         var n = $(this).attr('id').replace(/^(.*)_(\d+)$/, '$2');
                         $('#btnAddr_' + n).click();
                     });
-                   /* $('#txtLat_' + i).change(function(e) {
+                    $('#txtLat_' + i).change(function(e) {
                         refreshBbm();
                     });
                     $('#txtLng_' + i).change(function(e) {
                         refreshBbm();
-                    });*/
+                    });
                 }
                 _bbsAssign();
 
@@ -288,8 +286,13 @@
 
             function btnMinus(id) {
                 _btnMinus(id);
-                var n = $('#' + id).data('marker_index');
-                removeMarker(n);
+                var n = id.replace(/^(.*)_(\d+)$/, '$2');
+                if(markers[n]!=null){
+					markers[n].setMap(null);
+					markers[n] = null;
+				}
+				$('#btnMinus_'+n).data('infowindow_address','');
+                refreshMarker();
             }
 
             function btnPlus(org_htm, dest_tag, afield) {
@@ -378,6 +381,7 @@
             var map,
                 directionsService,
                 directionsDisplay;
+            var markers = [],infowindow;
             function initMap() {
                 map = new google.maps.Map(document.getElementById('map'));
                 map.setZoom(13);
@@ -385,7 +389,7 @@
                     lat : 24.8013848,
                     lng : 120.9494774
                 });
-
+				markers = [];
                 //滑鼠左鍵 新增地點
                 map.addListener('click', function(e) {
                     if (!(q_cur == 1 || q_cur == 2)) {
@@ -394,6 +398,7 @@
                     }
                     addMarker(e.latLng.lat(),e.latLng.lng());
                 });
+                infowindow = new google.maps.InfoWindow({content: ''});
             }
 			
 			function addMarker(lat,lng){
@@ -413,35 +418,63 @@
                 $('#txtLng_' + n).val(getLatLngString(lng));
                 refreshMarker();
 			}
-			
             function refreshMarker(){
+            	if(!$('#mapForm').is(':visible'))
+            		return;
+        		if(q_xchg==1)
+        			$('#btnXchg').click();
             	//initMap();
             	//reset marker
-            	for(var i=0;i<q_bbsCount;i++){
-            		if($('#btnMinus_'+i).data('marker')!=undefined && $('#btnMinus_'+i).data('marker')!=null){
-            			$('#btnMinus_'+i).data('marker').setMap(null);
-            			$('#btnMinus_'+i).data('marker',null);
-            		}
-            			
+            	for(var i=0;i<markers.length;i++){
+            		if(markers[i]!=null){
+						markers[i].setMap(null);
+						markers[i] = null;
+					}
             	}
-            	var n = 0,m=-1;
+            	markers = [];
+            	var first = -1, last=-1;
             	for(var i=0;i<q_bbsCount;i++){
-            		//經度有值的才算
-            		if ($('#txtLat_' + i).val().length == 0)
-                        continue;
-                    m=i;    
+            		//經度有值的才算,   起點
+            		if ($('#txtLat_' + i).val().length > 0){
+            			first = i;
+            			break;
+            		}
                	}
+            	for(var i=q_bbsCount-1;i>=0;i--){
+            		//經度有值的才算,   終點
+            		if ($('#txtLat_' + i).val().length > 0){
+            			last = i;
+            			break;
+            		}    
+               	}
+               	var marker,n=0;
             	for(var i=0;i<q_bbsCount;i++){
             		//經度有值的才算
-            		if ($('#txtLat_' + i).val().length == 0)
-                        continue;
-            		n++;
-            		var marker = new google.maps.Marker({
-                        position : new google.maps.LatLng(parseFloat($('#txtLat_'+i).val()), parseFloat($('#txtLng_'+i).val())),
-                        opacity : 0.6,
-                        map : map
-                    });
-            		if(n==1){
+            		if ($('#txtLat_' + i).val().length == 0){
+            			marker = null ;
+            		}else{
+            			marker = new google.maps.Marker({
+	                        position : new google.maps.LatLng(parseFloat($('#txtLat_'+i).val()), parseFloat($('#txtLng_'+i).val())),
+	                        opacity : 0.6,
+	                        map : map
+	                    });
+	                    marker.addListener('click', function(e) {
+	                    	var n = -1;
+	                    	for(var i=0;i<markers.length;i++){
+	                    		if(markers[i] === this){
+									n = i ;
+									break;	                    			
+	                    		}
+	                    	}
+		                    var contentString = '<div id="__infowindow" style="width:200px;height:150px;"><a>名稱：</a><a>' + this.label.text + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="' + n + '" style="display:none;"/></div>';
+		                    infowindow.close();
+			                infowindow.setContent(contentString);
+			                infowindow.open(map,markers[n]);
+		                    infowindow.addListener('domready',infowindowReady(n));
+		                });
+	                    n++;
+            		}
+            		if(first==i){
             			//起點
             			marker.setIcon(pinSymbol('green'));
             			marker.setLabel({
@@ -450,7 +483,8 @@
                             fontSize : "16px",
                             fontFamily : "微軟正黑體"
                        	});
-            		}else if(m==i){
+                       	map.setCenter(marker.position);
+            		}else if(last==i){
             			//終點
             			marker.setIcon(pinSymbol('blue'));
             			marker.setLabel({
@@ -460,94 +494,57 @@
                             fontFamily : "微軟正黑體"
                        	});
             		}else{
-            			marker.setIcon(pinSymbol('red'));
-            			marker.setLabel({
-                            text : (n-1)+'',
-                            color : "darkred",
-                            fontSize : "16px",
-                            fontFamily : "微軟正黑體"
-                       	});
+            			if(marker!=null){
+            				marker.setIcon(pinSymbol('red'));
+	            			marker.setLabel({
+	                            text : (n-1)+'',
+	                            color : "darkred",
+	                            fontSize : "16px",
+	                            fontFamily : "微軟正黑體"
+	                       	});
+            			}
             		}
-            		marker.addListener('click', function(e) {
-	                	var n = -1;
-	                	for(var i=0;i<q_bbsCount;i++){
-	                		if ($('#btnMinus_'+i).data('marker') === this){
-	                			n = $('#btnMinus_'+i).data('marker_index');
-	                			break;
-	                		}
-	                	}
-	                	alert(n);
-	                	var id = 'infowindow_' + n;
-	                    var ss = '<div id="' + id + '" style="width:200px;height:150px;"><a>名稱：</a><a>' + this.label.text + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="' + n + '"/></div>';
-	                    var infowindow = new google.maps.InfoWindow({
-	                        content : ss,
-	                        position : this.position
-	                    });
-	                    infowindow.addListener('domready',infoWindowReady(infowindow,n));
-	                });
-                
-            		$('#btnMinus_' + i).data('marker',marker);
-            		$('#btnMinus_' + i).data('marker_index',n);
-            		marker.setMap(map);
+            		if(marker!=null){marker.setMap(map);}
+                	markers.push(marker);
             	}
             }
-			function infoWindowReady(obj,n){
-				obj.setMap(map);
-                $('#infowindow_' + n).find('.remove').click(function(e) {
+            function infowindowReady(n){
+            	$('#__infowindow').find('.remove').click(function(e) {
                     if (!(q_cur == 1 || q_cur == 2)) {
                         alert('新增、修改狀態才能移除');
                         return;
                     }
                     var n = parseInt($(this).attr('memo'));
-                    removeMarker(n);
-                });
-                var geocoder = new google.maps.Geocoder();
-                // 傳入 latLng 資訊至 geocoder.geocode
-                geocoder.geocode({
-                    'latLng' : obj.position
-                }, makeCallback(n));
-			}
-			function makeCallback(n) {
-                var geocodeCallBack = function(results, status) {
+                    $('#btnMinus_'+n).click();
+                }).show();
+                if($('#btnMinus_'+n).data('infowindow_address')!=undefined && $('#btnMinus_'+n).data('infowindow_address').length>0){
+                	$('#__infowindow').find('.address').text($('#btnMinus_'+n).data('infowindow_address'));	
+               		console.log(n+':'+$('#btnMinus_'+n).data('infowindow_address'));
+                }else{
+                	var geocoder = new google.maps.Geocoder();
+	                // 傳入 latLng 資訊至 geocoder.geocode
+	                geocoder.geocode({
+	                    'latLng' : infowindow.position
+	                }, geocoderBackCall(n));
+                }
+            }
+            function geocoderBackCall(n){
+            	return function(results, status) {
                     if (status === google.maps.GeocoderStatus.OK) {
                         // 如果有資料就會回傳
                         if (results) {
-                            $('#infowindow_' + n).find('.address').text(results[0].formatted_address);
+                        	$('#btnMinus_'+n).data('infowindow_address',results[0].formatted_address);
+                            $('#__infowindow').find('.address').text(results[0].formatted_address);
                         }
                     }
                     // 經緯度資訊錯誤
                     else {
+                    	$('#btnModi_'+n).data('infowindow_address','');
                         alert("Reverse Geocoding failed because: " + status);
                     }
-                };
-                return geocodeCallBack;
+               };
             }
 			
-            function removeMarker(n) {
-               return;
-              /*  markers[n].setMap(null);
-                markers.splice(n, 1);
-                if (directionsDisplay != undefined)
-                    directionsDisplay.setMap(null);
-                //dele infowindow
-                if(infowindows[n]!=null){
-	                infowindows[n].close();
-	                infowindows[n].setMap(null);
-                }
-                infowindows.splice(n, 1);
-                //refreshMarkers();
-                for(var i=0;i<q_bbsCount;i++){
-                	if($('#btnMinus_' + i).data('marker_index') == n){
-                		$('#btnMinus_' + i).click();
-                		break;
-                	}
-                }
-            	refreshBbm();*/
-            }
-
-			
-            
-
             function pinSymbol(color) {
                 return {
                     path : 'M 0,0 C -1,-10 -5,-11 -5,-15 A 5,5 0 1,1 5,-15 C 5,-11 1,-10 0,0 z',
@@ -797,7 +794,7 @@
 				</tr>
 			</table>
 		</div>
-		<div id="mapForm" style="width:820px;height:650px;position: absolute;top:50px;left:600px;border-width: 0px;z-index: 80; background-color:pink;">
+		<div id="mapForm" style="width:820px;height:650px;position: absolute;top:50px;left:600px;border-width: 0px;z-index: 80; background-color:pink;display:none;">
 			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;"></div>
 			<div id="map" style="width:800px;height:600px;position: relative; top:5px;left:10px; "></div>
 		</div>
