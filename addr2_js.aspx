@@ -13,9 +13,9 @@
 		<script src="css/jquery/ui/jquery.ui.core.js"></script>
 		<script src="css/jquery/ui/jquery.ui.widget.js"></script>
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8&sensor=true"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8&signed_in=true&libraries=drawing&callback=initMap" async defer></script>
 		<script type="text/javascript">
-			q_tables = 's';
+            q_tables = 's';
             var q_name = "addr2";
             var q_readonly = [];
             var bbmNum = [];
@@ -30,9 +30,7 @@
             brwCount2 = 20;
             q_xchg = 1;
             q_copy = 1;
-            aPop = new Array(
-    			['txtCarno_', 'btnCarno_', 'car2', 'a.noa,driverno,driver', 'txtCarno_', 'car2_b.aspx']
-    			,['txtCustno', 'lblCustno', 'addr3', 'noa,namea', 'txtCustno', 'addr3_b.aspx']);
+            aPop = new Array(['txtCarno_', 'btnCarno_', 'car2', 'a.noa,driverno,driver', 'txtCarno_', 'car2_b.aspx'], ['txtCustno', 'lblCustno', 'addr3', 'noa,namea', 'txtCustno', 'addr3_b.aspx'], ['txtAddrno_', 'btnAddr_', 'addr2', 'noa,addr,address,lat,lng', 'txtAddrno_,txtAddr_,txtAddress_,txtLat_,txtLng_', 'addr2_b.aspx']);
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'noq'];
@@ -49,7 +47,7 @@
 
             function mainPost() {
                 q_mask(bbmMask);
-				document.title = '運送地點';
+                document.title = '運送地點';
                 $('#txtNoa').change(function(e) {
                     $(this).val($.trim($(this).val()).toUpperCase());
                     if ($(this).val().length > 0) {
@@ -57,32 +55,60 @@
                         q_gt('addr2', t_where, 0, 0, 0, "chkNoa_change", r_accy);
                     }
                 });
-                
-                $('#btnRun').click(function(e){
-                	var address = $.trim($('#txtAddress').val());
-                	if(address.length == 0){
-                		alert('請輸入地址!');
-                		return;
-                	}
-                	geocoder = new google.maps.Geocoder();
-                	geocoder.geocode({ address: address }, function (results, status) {
-                        
+
+                $('#btnRun').click(function(e) {
+                    var address = $.trim($('#txtAddress').val());
+                    if (address.length == 0) {
+                        alert('請輸入地址!');
+                        return;
+                    }
+                    geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({
+                        address : address
+                    }, function(results, status) {
+
                         //檢查執行結果
                         if (status == google.maps.GeocoderStatus.OK) {
                             var loc = results[0].geometry.location;
-                           
+
                             $('#txtLat').val(getLatLngString(results[0].geometry.location.lat()));
                             $('#txtLng').val(getLatLngString(results[0].geometry.location.lng()));
                             //執行成功
-                        }
-                        else
-                        {
+                        } else {
                             //執行失敗
                             alert('Error!');
                         }
                     });
-                	
+
                 });
+
+                $('#btnIns').before($('#btnIns').clone().attr('id', 'btnMap').attr('value', '地圖'));
+                $('#btnMap').click(function() {
+                    $('#mapForm').toggle();
+                });
+                //$('#mapForm').hide();
+
+                window.onload = addListeners;
+            }
+
+            function addListeners() {
+                document.getElementById('mapStatus').addEventListener('mousedown', mouseDown, false);
+                window.addEventListener('mouseup', mouseUp, false);
+            }
+
+            function mouseUp() {
+                window.removeEventListener('mousemove', divMove, true);
+            }
+
+            function mouseDown(e) {
+                window.addEventListener('mousemove', divMove, true);
+            }
+
+            function divMove(e) {
+                var div = document.getElementById('mapForm');
+                div.style.position = 'absolute';
+                div.style.top = e.clientY + 'px';
+                div.style.left = e.clientX + 'px';
             }
 
             function q_boxClose(s2) {
@@ -126,7 +152,7 @@
             }
 
             function btnIns() {
-            	$('#btnXchg').click();
+                $('#btnXchg').click();
                 _btnIns();
                 refreshBbm();
                 $('#txtNoa').focus();
@@ -149,6 +175,16 @@
                 Unlock();
             }
 
+            function q_popPost(id) {
+                switch(id) {
+                case 'txtAddrno_':
+                    //refreshBbm();
+                    break;
+                default:
+                    break;
+                }
+            }
+
             function btnOk() {
                 Lock(1, {
                     opacity : 0
@@ -161,6 +197,17 @@
                     Unlock(1);
                     return;
                 }
+                /*console.log(markers);
+                 for(var i=0;i<q_bbsCount;i++){
+                 $('#btnMinus_'+i).click();
+                 }
+                 while(q_bbsCount<markers.length)
+                 $('#btnPlus').click();
+                 for(var i=0;i<markers.length;i++){
+                 $('#txtLat_'+i).val(markers[i].position.lat());
+                 $('#txtLng_'+i).val(markers[i].position.lng());
+                 }*/
+
                 if (q_cur == 1) {
                     t_where = "where=^^ noa='" + $('#txtNoa').val() + "'^^";
                     q_gt('addr2', t_where, 0, 0, 0, "chkNoa_btnOk", r_accy);
@@ -187,10 +234,10 @@
 
             function readonly(t_para, empty) {
                 _readonly(t_para, empty);
-                if(t_para){
-                	$('#btnRun').attr('disabled','disabled');
-                }else{
-                	$('#btnRun').removeAttr('disabled');
+                if (t_para) {
+                    $('#btnRun').attr('disabled', 'disabled');
+                } else {
+                    $('#btnRun').removeAttr('disabled');
                 }
             }
 
@@ -201,32 +248,48 @@
                     $('#txtNoa').css('color', 'green').css('background', 'RGB(237,237,237)').attr('readonly', 'readonly');
                 }
             }
-            
+
             function bbsAssign() {
-				for (var i = 0; i < q_bbsCount; i++) {
-					$('#lblNo_' + i).text(i + 1);
-					if($('#btnMinus_' + i).hasClass('isAssign'))
-                    	continue;
-                	$('#txtCarno_' + i).bind('contextmenu', function(e) {
+                for (var i = 0; i < q_bbsCount; i++) {
+                    $('#lblNo_' + i).text(i + 1);
+                    if ($('#btnMinus_' + i).hasClass('isAssign'))
+                        continue;
+                    $('#txtCarno_' + i).bind('contextmenu', function(e) {
                         /*滑鼠右鍵*/
                         e.preventDefault();
-                        var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
-                        $('#btnCarno_'+n).click();
+                        var n = $(this).attr('id').replace(/^(.*)_(\d+)$/, '$2');
+                        $('#btnCarno_' + n).click();
                     });
-				}
-				_bbsAssign();
-			}
-			function bbsSave(as) {
-				if (!as['carno']) {
-					as[bbsKey[1]] = '';
-					return;
-				}
-				q_nowf();
-				return true;
-			}
+                    $('#txtAddrno_' + i).bind('contextmenu', function(e) {
+                        /*滑鼠右鍵*/
+                        e.preventDefault();
+                        var n = $(this).attr('id').replace(/^(.*)_(\d+)$/, '$2');
+                        $('#btnAddr_' + n).click();
+                    });
+                   /* $('#txtLat_' + i).change(function(e) {
+                        refreshBbm();
+                    });
+                    $('#txtLng_' + i).change(function(e) {
+                        refreshBbm();
+                    });*/
+                }
+                _bbsAssign();
+
+            }
+
+            function bbsSave(as) {
+                if (!as['lat']) {
+                    as[bbsKey[1]] = '';
+                    return;
+                }
+                q_nowf();
+                return true;
+            }
 
             function btnMinus(id) {
                 _btnMinus(id);
+                var n = $('#' + id).data('marker_index');
+                removeMarker(n);
             }
 
             function btnPlus(org_htm, dest_tag, afield) {
@@ -276,36 +339,224 @@
             function btnCancel() {
                 _btnCancel();
             }
-            
-            function getLatLngString(tmp){
-            	var patt = /^(\d*)\.(\d{0,6})(\d*)$/g;
-            	tmp = tmp + '';
-            	switch(tmp.replace(patt,'$2').length){
-               		case 0:
-               			tmp = tmp.replace(patt,'$1.$2')+ '.000000';
-               			break;
-           			case 1:
-               			tmp = tmp.replace(patt,'$1.$2')+ '00000';
-               			break;
-           			case 2:
-               			tmp = tmp.replace(patt,'$1.$2')+ '0000';
-               			break;
-           			case 3:
-               			tmp = tmp.replace(patt,'$1.$2')+ '000';
-               			break;
-           			case 4:
-               			tmp = tmp.replace(patt,'$1.$2')+ '00';
-               			break;
-           			case 5:
-               			tmp = tmp.replace(patt,'$1.$2')+ '0';
-               			break;
-           			case 6:
-               			tmp = tmp.replace(patt,'$1.$2');
-               			break;
-           			default:
-           				break;
+
+            function getLatLngString(tmp) {
+                var patt = /^(\d*)\.(\d{0,7})(\d*)$/g;
+                tmp = tmp + '';
+                switch(tmp.replace(patt,'$2').length) {
+                case 0:
+                    tmp = tmp.replace(patt, '$1.$2') + '.0000000';
+                    break;
+                case 1:
+                    tmp = tmp.replace(patt, '$1.$2') + '.000000';
+                    break;
+                case 2:
+                    tmp = tmp.replace(patt, '$1.$2') + '00000';
+                    break;
+                case 3:
+                    tmp = tmp.replace(patt, '$1.$2') + '0000';
+                    break;
+                case 4:
+                    tmp = tmp.replace(patt, '$1.$2') + '000';
+                    break;
+                case 5:
+                    tmp = tmp.replace(patt, '$1.$2') + '00';
+                    break;
+                case 6:
+                    tmp = tmp.replace(patt, '$1.$2') + '0';
+                    break;
+                case 7:
+                    tmp = tmp.replace(patt, '$1.$2');
+                    break;
+                default:
+                    break;
+                }
+                return tmp;
+            }
+
+            //MAP
+            var map,
+                directionsService,
+                directionsDisplay;
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'));
+                map.setZoom(13);
+                map.setCenter({
+                    lat : 24.8013848,
+                    lng : 120.9494774
+                });
+
+                //滑鼠左鍵 新增地點
+                map.addListener('click', function(e) {
+                    if (!(q_cur == 1 || q_cur == 2)) {
+                        alert('新增、修改狀態才能新增地點');
+                        return;
+                    }
+                    addMarker(e.latLng.lat(),e.latLng.lng());
+                });
+            }
+			
+			function addMarker(lat,lng){
+				//加到BBS去
+                var n = -1;//對應到哪筆BBS
+				for (var i = q_bbsCount - 1; i >= 0; i--) {
+                    if ($('#txtLat_' + i).val().length > 0) {
+                        break;
+                    }
+                    n = i;
+                }
+                if (n == -1) {
+                    n = q_bbsCount;
+                    $('#btnPlus').click();
+                }
+				$('#txtLat_' + n).val(getLatLngString(lat));
+                $('#txtLng_' + n).val(getLatLngString(lng));
+                refreshMarker();
+			}
+			
+            function refreshMarker(){
+            	//initMap();
+            	//reset marker
+            	for(var i=0;i<q_bbsCount;i++){
+            		if($('#btnMinus_'+i).data('marker')!=undefined && $('#btnMinus_'+i).data('marker')!=null){
+            			$('#btnMinus_'+i).data('marker').setMap(null);
+            			$('#btnMinus_'+i).data('marker',null);
+            		}
+            			
+            	}
+            	var n = 0,m=-1;
+            	for(var i=0;i<q_bbsCount;i++){
+            		//經度有值的才算
+            		if ($('#txtLat_' + i).val().length == 0)
+                        continue;
+                    m=i;    
                	}
-               	return tmp;
+            	for(var i=0;i<q_bbsCount;i++){
+            		//經度有值的才算
+            		if ($('#txtLat_' + i).val().length == 0)
+                        continue;
+            		n++;
+            		var marker = new google.maps.Marker({
+                        position : new google.maps.LatLng(parseFloat($('#txtLat_'+i).val()), parseFloat($('#txtLng_'+i).val())),
+                        opacity : 0.6,
+                        map : map
+                    });
+            		if(n==1){
+            			//起點
+            			marker.setIcon(pinSymbol('green'));
+            			marker.setLabel({
+                            text : '起點',
+                            color : "black",
+                            fontSize : "16px",
+                            fontFamily : "微軟正黑體"
+                       	});
+            		}else if(m==i){
+            			//終點
+            			marker.setIcon(pinSymbol('blue'));
+            			marker.setLabel({
+                            text : '終點',
+                            color : "black",
+                            fontSize : "16px",
+                            fontFamily : "微軟正黑體"
+                       	});
+            		}else{
+            			marker.setIcon(pinSymbol('red'));
+            			marker.setLabel({
+                            text : (n-1)+'',
+                            color : "darkred",
+                            fontSize : "16px",
+                            fontFamily : "微軟正黑體"
+                       	});
+            		}
+            		marker.addListener('click', function(e) {
+	                	var n = -1;
+	                	for(var i=0;i<q_bbsCount;i++){
+	                		if ($('#btnMinus_'+i).data('marker') === this){
+	                			n = $('#btnMinus_'+i).data('marker_index');
+	                			break;
+	                		}
+	                	}
+	                	alert(n);
+	                	var id = 'infowindow_' + n;
+	                    var ss = '<div id="' + id + '" style="width:200px;height:150px;"><a>名稱：</a><a>' + this.label.text + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="' + n + '"/></div>';
+	                    var infowindow = new google.maps.InfoWindow({
+	                        content : ss,
+	                        position : this.position
+	                    });
+	                    infowindow.addListener('domready',infoWindowReady(infowindow,n));
+	                });
+                
+            		$('#btnMinus_' + i).data('marker',marker);
+            		$('#btnMinus_' + i).data('marker_index',n);
+            		marker.setMap(map);
+            	}
+            }
+			function infoWindowReady(obj,n){
+				obj.setMap(map);
+                $('#infowindow_' + n).find('.remove').click(function(e) {
+                    if (!(q_cur == 1 || q_cur == 2)) {
+                        alert('新增、修改狀態才能移除');
+                        return;
+                    }
+                    var n = parseInt($(this).attr('memo'));
+                    removeMarker(n);
+                });
+                var geocoder = new google.maps.Geocoder();
+                // 傳入 latLng 資訊至 geocoder.geocode
+                geocoder.geocode({
+                    'latLng' : obj.position
+                }, makeCallback(n));
+			}
+			function makeCallback(n) {
+                var geocodeCallBack = function(results, status) {
+                    if (status === google.maps.GeocoderStatus.OK) {
+                        // 如果有資料就會回傳
+                        if (results) {
+                            $('#infowindow_' + n).find('.address').text(results[0].formatted_address);
+                        }
+                    }
+                    // 經緯度資訊錯誤
+                    else {
+                        alert("Reverse Geocoding failed because: " + status);
+                    }
+                };
+                return geocodeCallBack;
+            }
+			
+            function removeMarker(n) {
+               return;
+              /*  markers[n].setMap(null);
+                markers.splice(n, 1);
+                if (directionsDisplay != undefined)
+                    directionsDisplay.setMap(null);
+                //dele infowindow
+                if(infowindows[n]!=null){
+	                infowindows[n].close();
+	                infowindows[n].setMap(null);
+                }
+                infowindows.splice(n, 1);
+                //refreshMarkers();
+                for(var i=0;i<q_bbsCount;i++){
+                	if($('#btnMinus_' + i).data('marker_index') == n){
+                		$('#btnMinus_' + i).click();
+                		break;
+                	}
+                }
+            	refreshBbm();*/
+            }
+
+			
+            
+
+            function pinSymbol(color) {
+                return {
+                    path : 'M 0,0 C -1,-10 -5,-11 -5,-15 A 5,5 0 1,1 5,-15 C 5,-11 1,-10 0,0 z',
+                    fillColor : color,
+                    fillOpacity : 1,
+                    strokeColor : '#fff',
+                    strokeWeight : 1,
+                    scale : 2
+                };
             }
 		</script>
 		<style type="text/css">
@@ -397,23 +648,23 @@
                 margin: -1px;
             }
             .dbbs {
-				width: 200px;
-			}
-			.dbbt {
-				width: 1000px;
-			}
-			.tbbs a {
-				font-size: medium;
-			}
-			input[type="text"], input[type="button"] {
-				font-size: medium;
-			}
-			.num {
-				text-align: right;
-			}
-			select {
-				font-size: medium;
-			}
+                width: 800px;
+            }
+            .dbbt {
+                width: 1000px;
+            }
+            .tbbs a {
+                font-size: medium;
+            }
+            input[type="text"], input[type="button"] {
+                font-size: medium;
+            }
+            .num {
+                text-align: right;
+            }
+            select {
+                font-size: medium;
+            }
 		</style>
 	</head>
 	<body ondragstart="return false" draggable="false"
@@ -459,88 +710,120 @@
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">編號</a></td>
-						<td><input id="txtNoa"  type="text"  class="txt c1"/></td>
+						<td>
+						<input id="txtNoa"  type="text"  class="txt c1"/>
+						</td>
 						<td><span> </span><a class="lbl" id="lblCustno">集團</a></td>
-						<td><input id="txtCustno" type="text"  class="txt c1"/></td>
+						<td>
+						<input id="txtCustno" type="text"  class="txt c1"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">地點</a></td>
-						<td><input id="txtAddr" type="text"  class="txt c1"/></td>
-						<td> </td>
-						<td><input id="btnRun" type="button" class="c1" value="取得經、緯度"/></td>
+						<td>
+						<input id="txtAddr" type="text"  class="txt c1"/>
+						</td>
+						<td></td>
+						<td>
+						<input id="btnRun" type="button" class="c1" value="取得經、緯度"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">地址</a></td>
-						<td colspan="3"><input id="txtAddress" type="text"  class="txt c1"/></td>
+						<td colspan="3">
+						<input id="txtAddress" type="text"  class="txt c1"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">經度</a></td>
-						<td><input id="txtLat" type="text"  class="txt c1"/></td>
+						<td>
+						<input id="txtLat" type="text"  class="txt c1"/>
+						</td>
 						<td><span> </span><a class="lbl">緯度</a></td>
-						<td><input id="txtLng" type="text"  class="txt c1"/></td>
+						<td>
+						<input id="txtLng" type="text"  class="txt c1"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">聯絡人</a></td>
-						<td colspan="3"><input id="txtConn" type="text" class="txt c1"/></td>
+						<td colspan="3">
+						<input id="txtConn" type="text" class="txt c1"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">電話</a></td>
-						<td colspan="3"><input id="txtTel" type="text" class="txt c1"/></td>
+						<td colspan="3">
+						<input id="txtTel" type="text" class="txt c1"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblMemo" class="lbl">注意事項</a></td>
-						<td colspan="3">
-							<textarea id="txtMemo" class="txt c1" style="height:50px;"> </textarea>
-						</td>
+						<td colspan="3">						<textarea id="txtMemo" class="txt c1" style="height:50px;"> </textarea></td>
 					</tr>
 				</table>
 			</div>
 		</div>
 		<!--2017/2/2  改由集團控制可進廠之車輛 -->
 		<div class='dbbs'>
-            <table id="tbbs" class='tbbs'>
-                <tr style='color:white; background:#003366;' >
-                    <td  align="center" style="width:30px;">
-                    	<input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  />
-                    </td>
-                    <td align="center" style="width:20px;"> </td>
-                    <td align="center" style="width:100px;"><a>可進廠車牌</a></td>
-                </tr>
-                <tr  style='background:#cad3ff;'>
-                    <td align="center">
-                    	<input class="btn"  id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
-                    	<input id="txtNoq.*" type="text" style="display: none;" />
-                    </td>
-                    <td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
-                    <td>
-                    	<input type="text" id="txtCarno.*" style="width:95%;" />
-                    	<input type="button" id="btnCarno.*" style="display:none;"/>
-                    </td>
-                </tr>
-            </table>
-     	</div>
+			<table id="tbbs" class='tbbs'>
+				<tr style='color:white; background:#003366;' >
+					<td  align="center" style="width:30px;">
+					<input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  />
+					</td>
+					<td align="center" style="width:20px;"></td>
+					<td align="center" style="width:150px;"><a>地點</a></td>
+					<td align="center" style="width:150px;"><a>經緯</a></td>
+					<td align="center" style="width:200px;"><a>備註</a></td>
+				</tr>
+				<tr  style='background:#cad3ff;'>
+					<td align="center">
+					<input class="btn"  id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
+					<input id="txtNoq.*" type="text" style="display: none;" />
+					</td>
+					<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+					<td>
+					<input type="text" id="txtAddrno.*" style="float:left;width:40%;" />
+					<input type="text" id="txtAddr.*" style="float:left;width:55%;" />
+					<input type="button" id="btnAddr.*" style="display:none;"/>
+					</td>
+					<td>
+					<input type="text" id="txtAddress.*" style="display:none;" />
+					<input type="text" id="txtLat.*" style="float:left;width:45%;" />
+					<input type="text" id="txtLng.*" style="float:left;width:45%;" />
+					</td>
+					<td>
+					<input type="text" id="txtMemo.*" style="float:left;width:95%;" />
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="mapForm" style="width:820px;height:650px;position: absolute;top:50px;left:600px;border-width: 0px;z-index: 80; background-color:pink;">
+			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;"></div>
+			<div id="map" style="width:800px;height:600px;position: relative; top:5px;left:10px; "></div>
+		</div>
+
 		<!--<div class='dbbs'>
-            <table id="tbbs" class='tbbs'>
-                <tr style='color:white; background:#003366;' >
-                    <td  align="center" style="width:30px;">
-                    	<input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  />
-                    </td>
-                    <td align="center" style="width:20px;"> </td>
-                    <td align="center" style="width:100px;"><a>可進廠車牌</a></td>
-                </tr>
-                <tr  style='background:#cad3ff;'>
-                    <td align="center">
-                    	<input class="btn"  id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
-                    	<input id="txtNoq.*" type="text" style="display: none;" />
-                    </td>
-                    <td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
-                    <td>
-                    	<input type="text" id="txtCarno.*" style="width:95%;" />
-                    	<input type="button" id="btnCarno.*" style="display:none;"/>
-                    </td>
-                </tr>
-            </table>
-     </div>-->
+		<table id="tbbs" class='tbbs'>
+		<tr style='color:white; background:#003366;' >
+		<td  align="center" style="width:30px;">
+		<input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  />
+		</td>
+		<td align="center" style="width:20px;"> </td>
+		<td align="center" style="width:100px;"><a>可進廠車牌</a></td>
+		</tr>
+		<tr  style='background:#cad3ff;'>
+		<td align="center">
+		<input class="btn"  id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
+		<input id="txtNoq.*" type="text" style="display: none;" />
+		</td>
+		<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+		<td>
+		<input type="text" id="txtCarno.*" style="width:95%;" />
+		<input type="button" id="btnCarno.*" style="display:none;"/>
+		</td>
+		</tr>
+		</table>
+		</div>-->
 		<input id="q_sys" type="hidden" />
 	</body>
 </html>

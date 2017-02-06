@@ -457,10 +457,10 @@
                 //directionsDisplay = new google.maps.DirectionsRenderer();
                 directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
                 map = new google.maps.Map(document.getElementById('map'), {
-                    zoom : 14,
+                    zoom : 13,
                     center : {
-                        lat : 22.5682808,
-                        lng : 120.325935
+                        lat : 24.8013848,
+                    	lng : 120.9494774
                     }
                 });
                 directionsDisplay.setMap(map);
@@ -873,28 +873,31 @@
             }
 
             function getLatLngString(tmp){
-            	var patt = /^(\d*)\.(\d{0,6})(\d*)$/g;
+            	var patt = /^(\d*)\.(\d{0,7})(\d*)$/g;
             	tmp = tmp + '';
             	switch(tmp.replace(patt,'$2').length){
-               		case 0:
+            		case 0:
+               			tmp = tmp.replace(patt,'$1.$2')+ '.0000000';
+               			break;
+               		case 1:
                			tmp = tmp.replace(patt,'$1.$2')+ '.000000';
                			break;
-           			case 1:
+           			case 2:
                			tmp = tmp.replace(patt,'$1.$2')+ '00000';
                			break;
-           			case 2:
+           			case 3:
                			tmp = tmp.replace(patt,'$1.$2')+ '0000';
                			break;
-           			case 3:
+           			case 4:
                			tmp = tmp.replace(patt,'$1.$2')+ '000';
                			break;
-           			case 4:
+           			case 5:
                			tmp = tmp.replace(patt,'$1.$2')+ '00';
                			break;
-           			case 5:
+           			case 6:
                			tmp = tmp.replace(patt,'$1.$2')+ '0';
                			break;
-           			case 6:
+           			case 7:
                			tmp = tmp.replace(patt,'$1.$2');
                			break;
            			default:
