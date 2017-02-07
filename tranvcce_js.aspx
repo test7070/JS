@@ -1323,6 +1323,7 @@
 					<td align="center" style="width:70px"><a>運送需<br>耗高度</a></td>
 					<td align="center" style="width:70px"><a>運送需<br>耗材積</a></td>
 					<td align="center" style="width:70px"><a>裝卸貨<br>時間(分)</a></td>
+					<td align="center" style="width:30px"><a>指<br>定</a></td>
 					<td align="center" style="width:150px"><a>地點</a></td>
 					<td align="center" style="width:300px"><a>地址</a></td>
 					<td align="center" style="width:70px"><a>聯絡人</a></td>
@@ -1332,8 +1333,8 @@
 					<td align="center" style="width:100px"><a>卸貨完<br>工時間</a></td>
 					<td align="center" style="width:100px"><a>空瓶完<br>工時間</a></td>
 					<td align="center" style="width:120px"><a>訂單</a></td>
-					<td align="center" style="width:40px"><a>提貨</a></td>
-					<td align="center" style="width:40px"><a>卸貨</a></td>
+					<td align="center" style="width:30px"><a>提<br>貨</a></td>
+					<td align="center" style="width:30px"><a>卸<br>貨</a></td>
 					<td align="center" style="display:none;width:40px"><a>空瓶</a></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
@@ -1367,6 +1368,7 @@
 					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtTvolume.*" class="num bbsVolume" style="width:95%;"/></td>
 					<td><input type="text" id="txtMins.*" class="num" style="width:95%;"/></td>
+					<td align="center"><input type="checkbox" id="chkIsassign.*"/></td>
 					<td>
 						<input type="text" id="txtAddrno.*" style="float:left;width:45%;"/>
 						<input type="text" id="txtAddr.*" style="float:left;width:45%;"/>
@@ -1388,8 +1390,8 @@
 						<input type="text" id="txtOrdeno.*" style="float:left;width:70%;"/>
 						<input type="text" id="txtNo2.*" style="float:left;width:20%;"/>
 					</td>
-					<td><input type="checkbox" id="chkChk1.*" /></td>
-					<td><input type="checkbox" id="chkChk2.*" /></td>
+					<td align="center"><input type="checkbox" id="chkChk1.*"/></td>
+					<td align="center"><input type="checkbox" id="chkChk2.*"/></td>
 					<td style="display:none;"><input type="checkbox" id="chkChk3.*" /></td>
 				</tr>
 
