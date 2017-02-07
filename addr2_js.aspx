@@ -453,19 +453,23 @@
             			break;
             		}
                	}
+            	/*  終點抓BBM上的
             	for(var i=q_bbsCount-1;i>=0;i--){
             		//經度有值的才算,   終點
             		if ($('#txtLat_' + i).val().length > 0){
             			last = i;
             			break;
             		}    
-               	}
+               	}*/
                	var marker,n=0;
+               	var t_lat = [],t_lng=[];
             	for(var i=0;i<q_bbsCount;i++){
             		//經度有值的才算
             		if ($('#txtLat_' + i).val().length == 0){
             			marker = null ;
             		}else{
+            			t_lat.push(parseFloat($('#txtLat_' + i).val()));
+            			t_lng.push(parseFloat($('#txtLng_' + i).val()));
             			marker = new google.maps.Marker({
 	                        position : new google.maps.LatLng(parseFloat($('#txtLat_'+i).val()), parseFloat($('#txtLng_'+i).val())),
 	                        opacity : 0.6,
@@ -479,7 +483,8 @@
 									break;	                    			
 	                    		}
 	                    	}
-		                    var contentString = '<div id="__infowindow" style="width:200px;height:150px;"><a>名稱：</a><a>' + this.label.text + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="' + n + '" style="display:none;"/></div>';
+	                    	var addr = $('#txtAddr_'+n).val().length>0?$('#txtAddr_'+n).val():this.label.text;
+		                    var contentString = '<div id="__infowindow" style="width:200px;height:150px;"><a>名稱：</a><a>' + addr + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="' + n + '" style="display:none;"/></div>';
 		                    infowindow.close();
 			                infowindow.setContent(contentString);
 			                infowindow.open(map,markers[n]);
@@ -496,7 +501,7 @@
                             fontSize : "16px",
                             fontFamily : "微軟正黑體"
                        	});
-                       	map.setCenter(marker.position);
+                       	//map.setCenter(marker.position);
             		}else if(last==i){
             			//終點
             			marker.setIcon(pinSymbol('blue'));
@@ -520,6 +525,50 @@
             		if(marker!=null){marker.setMap(map);}
                 	markers.push(marker);
             	}
+            	//終點改抓BBM
+            	if($('#txtLat').val().length > 0){
+            		t_lat.push(parseFloat($('#txtLat').val()));
+            		t_lng.push(parseFloat($('#txtLng').val()));
+            		marker = new google.maps.Marker({
+                        position : new google.maps.LatLng(parseFloat($('#txtLat').val()), parseFloat($('#txtLng').val())),
+                        opacity : 0.6,
+                        label : {
+	                            text : '終點',
+	                            color : "black",
+	                            fontSize : "16px",
+	                            fontFamily : "微軟正黑體"
+	                       	},
+                       	icon : pinSymbol('blue'),
+                        map : map
+                    });
+                    marker.addListener('click', function(e) {
+                    	var n = -1;
+                    	for(var i=0;i<markers.length;i++){
+                    		if(markers[i] === this){
+								n = i ;
+								break;	                    			
+                    		}
+                    	}
+	                    var contentString = '<div id="__infowindow" style="width:200px;height:150px;"><a>名稱：</a><a>' + $('#txtAddr').val() + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="-1" style="display:none;"/></div>';
+	                    infowindow.close();
+		                infowindow.setContent(contentString);
+		                infowindow.open(map,markers[n]);
+	                    infowindow.addListener('domready',infowindowReady(-1));
+	                });
+	                markers.push(marker);
+            	}
+            	//地圖中心點
+            	if(t_lat.length>0){
+            		var lat = 0, lng = 0;
+            		for(var i=0;i<t_lat.length;i++)
+            			lat += t_lat[i];
+        			for(var i=0;i<t_lng.length;i++)
+            			lng += t_lng[i];
+            		lat = lat/t_lat.length;
+            		lng = lng/t_lng.length;
+            		console.log(lat+','+lng);
+            		map.setCenter(new google.maps.LatLng(lat,lng));
+            	}
             }
             function infowindowReady(n){
             	$('#__infowindow').find('.remove').click(function(e) {
@@ -528,12 +577,22 @@
                         return;
                     }
                     var n = parseInt($(this).attr('memo'));
-                    $('#btnMinus_'+n).click();
-                }).show();
-                if($('#btnMinus_'+n).data('infowindow_address')!=undefined && $('#btnMinus_'+n).data('infowindow_address').length>0){
+                    if(n=="-1"){
+                    	markers[markers.length].setMap(null);
+						markers[markers.length] = null;
+                    }else{
+                    	$('#btnMinus_'+n).click();
+                    }
+                });
+                if(n==-1){
+                	//不顯示移除按鍵
+                	$('#__infowindow').find('.address').text($('#txtAddress').val());
+                }else if($('#btnMinus_'+n).data('infowindow_address')!=undefined && $('#btnMinus_'+n).data('infowindow_address').length>0){
+                	$('#__infowindow').find('.remove').show();
                 	$('#__infowindow').find('.address').text($('#btnMinus_'+n).data('infowindow_address'));	
-               		console.log(n+':'+$('#btnMinus_'+n).data('infowindow_address'));
+               		//console.log(n+':'+$('#btnMinus_'+n).data('infowindow_address'));
                 }else{
+                	$('#__infowindow').find('.remove').show();
                 	var geocoder = new google.maps.Geocoder();
 	                // 傳入 latLng 資訊至 geocoder.geocode
 	                geocoder.geocode({
@@ -552,7 +611,7 @@
                     }
                     // 經緯度資訊錯誤
                     else {
-                    	$('#btnModi_'+n).data('infowindow_address','');
+                    	$('#btnMinus_'+n).data('infowindow_address','');
                         alert("Reverse Geocoding failed because: " + status);
                     }
                };
