@@ -87,39 +87,40 @@ begin
 	from @tmp a
 	left join addr2 b on a.addrno=b.noa
 	
-	declare @addrno nvarchar(20)
-	declare @carno nvarchar(20)
-	declare @t_carno nvarchar(max)
+	--已移除自訂車牌,改為指定路徑
+	--declare @addrno nvarchar(20)
+	--declare @carno nvarchar(20)
+	--declare @t_carno nvarchar(max)
 	
-	declare cursor_table cursor for
-	select addrno from @tmp group by addrno
-	open cursor_table
-	fetch next from cursor_table
-	into @addrno
-	while(@@FETCH_STATUS <> -1)
-	begin	
-		set @t_carno = ''
+	--declare cursor_table cursor for
+	--select addrno from @tmp group by addrno
+	--open cursor_table
+	--fetch next from cursor_table
+	--into @addrno
+	--while(@@FETCH_STATUS <> -1)
+	--begin	
+	--	set @t_carno = ''
 			
-		declare cursor_table2 cursor for
-		select carno from addr2s where noa=@addrno
-		open cursor_table2
-		fetch next from cursor_table2
-		into @carno
-		while(@@FETCH_STATUS <> -1)
-		begin		
-			set @t_carno = @t_carno+case when len(@t_carno)=0 then '' else ',' end + @carno
-			fetch next from cursor_table2
-			into @carno
-		end
-		close cursor_table2
-		deallocate cursor_table2
+	--	declare cursor_table2 cursor for
+	--	select carno from addr2s where noa=@addrno
+	--	open cursor_table2
+	--	fetch next from cursor_table2
+	--	into @carno
+	--	while(@@FETCH_STATUS <> -1)
+	--	begin		
+	--		set @t_carno = @t_carno+case when len(@t_carno)=0 then '' else ',' end + @carno
+	--		fetch next from cursor_table2
+	--		into @carno
+	--	end
+	--	close cursor_table2
+	--	deallocate cursor_table2
 		
-		update @tmp set allowcar = 	@t_carno where addrno=@addrno
-		fetch next from cursor_table
-		into @addrno
-	end
-	close cursor_table
-	deallocate cursor_table
+	--	update @tmp set allowcar = 	@t_carno where addrno=@addrno
+	--	fetch next from cursor_table
+	--	into @addrno
+	--end
+	--close cursor_table
+	--deallocate cursor_table
 	
 	return 
 end

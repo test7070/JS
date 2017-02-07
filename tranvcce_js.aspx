@@ -97,8 +97,7 @@
 			function mainPost() {
 				q_mask(bbmMask);
 				
-				$('body').append('<div id="_orde" style="display:none"></div>');
-				$('body').append('<div id="_carno" style="display:none"></div>');
+				
 				
 				$('#btnOrde').click(function(e){
                 	var t_where ='';
@@ -107,11 +106,18 @@
                 $('#btnCar').click(function(e){
                 	var t_where ='',t_date=$('#txtDatea').val();
                 	var t_weight=0,t_volume=0;
+                	var t_ordeno='';//依訂單來顯示哪些車能夠跑
                 	for(var i=0;i<q_bbsCount;i++){
                 		t_weight+=q_float('txtWeight_'+i);
                 		t_volume+=q_float('txtTvolume_'+i);
+                	
+                		if($('#txtOrdeno_'+i).val().length>0){
+                			t_ordeno += (t_ordeno.length>0?'&':'') + $('#txtOrdeno_'+i).val()+'-'+$('#txtNo2_'+i).val(); 
+                		}
                 	}
-                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),date:t_date,weight:t_weight,volume:t_volume}), "car_tranvcce", "95%", "95%", '');
+                	
+                	
+                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),date:t_date,weight:t_weight,volume:t_volume,ordeno:t_ordeno}), "car_tranvcce", "95%", "95%", '');
                 });
                 
 				$('#btnRun').click(function() {
@@ -142,6 +148,20 @@
                 });
                 //window.onload = addListeners;
 				$('#mapStatus').mousedown(function(e) {
+					if(e.button==2){			   		
+						$(this).parent().data('xtop',parseInt($(this).parent().css('top')) - e.clientY);
+						$(this).parent().data('xleft',parseInt($(this).parent().css('left')) - e.clientX);
+					}
+				}).mousemove(function(e) {
+					if(e.button==2 && e.target.nodeName!='INPUT'){ 
+						$(this).parent().css('top',$(this).parent().data('xtop')+e.clientY);
+						$(this).parent().css('left',$(this).parent().data('xleft')+e.clientX);
+					}
+				}).bind('contextmenu', function(e) {
+					if(e.target.nodeName!='INPUT')
+						e.preventDefault();
+				});
+				$('#carStatus').mousedown(function(e) {
 					if(e.button==2){			   		
 						$(this).parent().data('xtop',parseInt($(this).parent().css('top')) - e.clientY);
 						$(this).parent().data('xleft',parseInt($(this).parent().css('left')) - e.clientX);
@@ -283,10 +303,10 @@
                         	as = b_ret;
                         	$('#_carno').children().remove();
                         	for(var i=0;i<as.length;i++){
-                        		$('#_carno').append('<div style="display:none">'
+                        		$('#_carno').append('<div>'
                         			+'<a class="carno">'+as[i].carno+'</a>'
-                        			+'<a class="weight">'+as[i].weight+'</a>'
-                        			+'<a class="volume">'+as[i].volume+'</a>'
+                        			+'<a style="display:none" class="weight">'+as[i].weight+'</a>'
+                        			+'<a style="display:none" class="volume">'+as[i].volume+'</a>'
                         			+'</div>');
                         	}
                         	carSchedule();
@@ -406,6 +426,7 @@
 			function refresh(recno) {
 				_refresh(recno);
 				$('#img').attr('src',$('#txtImg').val());
+				$('#_carno').children().remove();
 			}
 
 			function readonly(t_para, empty) {
@@ -675,8 +696,10 @@
             			+'<a class="chk1">'+$('#chkChk1_'+i).prop('checked')+'</a>'
             			+'<a class="chk2">'+$('#chkChk2_'+i).prop('checked')+'</a>'
             			+'<a class="chk3">'+$('#chkChk3_'+i).prop('checked')+'</a>'
+            			+'<a class="isassign">'+$('#chkIsassign_'+i).prop('checked')+'</a>'
             			+'</div>');
             	}
+            	
 				var obj;
 				data_car_current = -1;
                 data_car = [];
@@ -724,10 +747,10 @@
             			,chk1:obj.find('.chk1').eq(0).text()=="true"?1:0
             			,chk2:obj.find('.chk2').eq(0).text()=="true"?1:0
             			,chk3:obj.find('.chk3').eq(0).text()=="true"?1:0
+            			,isassign:obj.find('.isassign').eq(0).text()=="true"?1:0
             			,orderange : []
                     });
                 }
-               
                 var str = {lat:parseFloat($('#txtLat').val()),lng:parseFloat($('#txtLng').val())};
                 for(var i=0;i<data_orde.length;i++){
                 	 //計算訂單與起點的距離
@@ -762,6 +785,7 @@
 							return 1;
 					});						
 				}
+				//
 				
 				//有指定車輛的先
 				for(var i=0;i<data_orde.length;i++){
@@ -1471,5 +1495,11 @@
 		</div>
 		<!--<div id="map" style="width:400px;height:400px;display:none;position: absolute;"> </div>-->
 		<canvas id="canvas" style="display:none;"> </canvas>
+		
+		<div id="carForm" style="width:80px;position: absolute;top:40px;left:920px;border-width: 0px;z-index: 80; background-color:pink;">
+			<div id="carStatus" style="width:80px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;color:white;">車輛</div>
+			<div id="_carno" style="width:70px;position: relative; top:5px;left:5px;"> </div>
+		</div>
+		<div id="_orde" style="display:none"> </div>
 	</body>
 </html>

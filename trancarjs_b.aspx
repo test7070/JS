@@ -28,9 +28,10 @@
                 var t_para = new Array();
 	            try{
 	            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
-	            	t_content = "where=^^['"+t_para.noa+"','"+t_para.date+"')^^";
+	            	t_content = "where=^^['"+t_para.noa+"','"+t_para.date+"','"+t_para.ordeno+"')^^";
 	            	$('#textWeight').val(t_para.weight);
 					$('#textVolume').val(t_para.volume);
+	            	console.log(t_para.ordeno);
 	            }catch(e){
 	            }    
                 brwCount = -1;

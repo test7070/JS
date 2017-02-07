@@ -868,7 +868,7 @@
 		</div>
 		<div id="mapForm" style="width:820px;height:650px;position: absolute;top:50px;left:600px;border-width: 0px;z-index: 80; background-color:pink;display:none;">
 			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;color:white;">滑鼠右鍵拖曳</div>
-			<div id="map" style="width:800px;height:600px;position: relative; top:5px;left:10px; "></div>
+			<div id="map" style="width:800px;height:600px;position: relative; top:5px;left:10px; "> </div>
 		</div>
 
 		<!--<div class='dbbs'>

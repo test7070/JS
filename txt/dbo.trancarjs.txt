@@ -1,6 +1,6 @@
 
 
-ALTER  function [dbo].[trancarjs](@tranvcceno nvarchar(20),@trandate nvarchar(20))
+ALTER  function [dbo].[trancarjs](@tranvcceno nvarchar(20),@trandate nvarchar(20),@ordeno nvarchar(max))
 returns @tmp table(
 	carno nvarchar(20)
 	,driverno nvarchar(20)

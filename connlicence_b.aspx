@@ -26,7 +26,7 @@
             var bbsNum = [];
             var bbmMask = [];
             var bbsMask = [];
-			aPop = new Array(['txtJob_', 'btnJob_', 'addr3', 'noa,namea', 'txtJob_,txtNamea_', 'addr3_js_b.aspx']);
+			aPop = new Array(['txtJob_', 'btnJob_', 'licence', 'noa,licence', 'txtJob_,txtNamea_', 'licence_b.aspx']);
             	
             $(document).ready(function() {
                 bbmKey = [];
