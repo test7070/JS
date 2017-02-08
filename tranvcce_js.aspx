@@ -106,18 +106,19 @@
                 $('#btnCar').click(function(e){
                 	var t_where ='',t_date=$('#txtDatea').val();
                 	var t_weight=0,t_volume=0;
-                	var t_ordeno='';//依訂單來顯示哪些車能夠跑
+                	//var t_ordeno='';//依訂單來顯示哪些車能夠跑
+                	var t_addrno='';
                 	for(var i=0;i<q_bbsCount;i++){
                 		t_weight+=q_float('txtWeight_'+i);
                 		t_volume+=q_float('txtTvolume_'+i);
-                	
-                		if($('#txtOrdeno_'+i).val().length>0){
-                			t_ordeno += (t_ordeno.length>0?'&':'') + $('#txtOrdeno_'+i).val()+'-'+$('#txtNo2_'+i).val(); 
+                		if($('#txtAddrno_'+i).val().length>0){
+                			t_addrno += (t_addrno.length>0?'@':'') + $('#txtAddrno_'+i).val(); 
                 		}
+                		/*if($('#txtOrdeno_'+i).val().length>0){
+                			t_ordeno += (t_ordeno.length>0?'&':'') + $('#txtOrdeno_'+i).val()+'-'+$('#txtNo2_'+i).val(); 
+                		}*/
                 	}
-                	
-                	
-                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),date:t_date,weight:t_weight,volume:t_volume,ordeno:t_ordeno}), "car_tranvcce", "95%", "95%", '');
+                	q_box("trancarjs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),date:t_date,weight:t_weight,volume:t_volume,addrno:t_addrno}), "car_tranvcce", "95%", "95%", '');
                 });
                 
 				$('#btnRun').click(function() {
@@ -234,6 +235,11 @@
                     });
 				}
 				_bbsAssign();
+				$('#tbbs').find('tr.data').children().hover(function(e){
+					$(this).parent().css('background','yellow');
+				},function(e){
+					$(this).parent().css('background','#cad3ff');
+				});
 			}
 			function refreshWV(n){
 				var t_productno = $.trim($('#txtProductno_'+n).val());
@@ -264,6 +270,11 @@
                 _bbtAssign();
                 $('#btnMap_close').click(function(e){
 					$('#map').hide();
+				});
+				$('#tbbt').find('tr.data').children().hover(function(e){
+					$(this).parent().css('background','yellow');
+				},function(e){
+					$(this).parent().css('background','pink');
 				});
             }
 
@@ -1361,7 +1372,7 @@
 					<td align="center" style="width:30px"><a>卸<br>貨</a></td>
 					<td align="center" style="display:none;width:40px"><a>空瓶</a></td>
 				</tr>
-				<tr style='background:#cad3ff;'>
+				<tr class="data" style='background:#cad3ff;'>
 					<td align="center">
 						<input class="btn"  id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
 						<input type="text" id="txtNoq.*" style="display:none;"/>
@@ -1442,7 +1453,7 @@
 					<td align="center" style="width:150px"><a>訂單</a></td>
 					<td align="center" style="width:300px"><a>地址</a></td>
 				</tr>
-				<tr style='background:pink;'>
+				<tr class="data" style='background:pink;'>
 					<td align="center">
 						<input class="btn"  id="btnMinut..*" type="button" value='-' style=" font-weight: bold; display:noxne;" />
 						<input type="text" id="txtNoq..*" style="display:none;"/>

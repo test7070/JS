@@ -85,6 +85,11 @@
                     $('#txtHeight_'+i).change(function(e){sum();});
 				}
 				_bbsAssign();
+				$('#tbbs').find('tr.data').children().hover(function(e){
+					$(this).parent().css('background','yellow');
+				},function(e){
+					$(this).parent().css('background','#cad3ff');
+				});
 			}
 			function bbtAssign() {
                 for (var i = 0; i < q_bbtCount; i++) {
@@ -588,7 +593,7 @@
 					<td align="center" style="width:150px"><a>提貨日期</a></td>
 					<td align="center" style="width:150px"><a>卸貨日期</a></td>
 				</tr>
-				<tr  style='background:#cad3ff;'>
+				<tr class="data" style='background:#cad3ff;'>
 					<td align="center">
 						<input class="btn"  id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
 						<input type="text" id="txtNoq.*" style="display:none;"/>
