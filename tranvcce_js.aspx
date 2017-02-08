@@ -22,6 +22,7 @@
  			var map;
  			var markers;
 			var locations;
+			var isRun = false;//執行carSchedule須等待,才能排路徑
 			
 			q_tables = 't';
 			var q_name = "tranvcce";
@@ -97,8 +98,6 @@
 			function mainPost() {
 				q_mask(bbmMask);
 				
-				
-				
 				$('#btnOrde').click(function(e){
                 	var t_where ='';
                 	q_box("tranordejs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),chk1:$('#chkChk1').prop('checked')?1:0,chk2:$('#chkChk2').prop('checked')?1:0}), "tranorde_tranvcce", "95%", "95%", '');
@@ -122,22 +121,8 @@
                 });
                 
 				$('#btnRun').click(function() {
+					isRun = true;
 					carSchedule();
-					
-					if(data_orde.length==0)
-						alert('無訂單或訂單地點未設定');
-					if(data_car.length==0)
-						alert('無車輛');
-					if(data_car.length>0 && data_orde.length>0){
-						data_car_current = 0;
-						for (var i = 0; i < q_bbtCount; i++) {
-                        	$('#btnMinut__'+i).click();
-                        }
-                        $('#pathImg').html('');
-                        $('#map').hide();
-						initMap();
-						calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
-					}
 				});
 				$('#btnIns').before($('#btnIns').clone().attr('id', 'btnMap').attr('value', '地圖'));
                 $('#btnMap').click(function() {
@@ -352,13 +337,29 @@
                     				$('#txtVolume_'+n).val(0);
                     				$('#txtTvolume_'+n).val(0);
                     			}
-                    		}else {
-                    			$('#txtWeight_'+n).val(0);
+                    		}else if(t_para.action=="getAssignPath"){
+                				var n = t_para.n;
+                				data_orde[n].assignpath = [];
+                    			as = _q_appendData("addr2s", "", true);
+                    			if(as[0]!=undefined){
+	                    			for(var i=0;i<as.length;i++){
+	                    				data_orde[n].assignpath.push({
+	                    					addrno : as[i].addrno,
+	                    					addr : as[i].addr,
+	                    					address : as[i].address,
+	                    					lat : parseFloat(as[i].lat),
+	                    					lng : parseFloat(as[i].lng)
+	                    				});
+	                    			}
+                    			}
+                    			getAssignPath(n+1);
+                			}else {
+                    			/*$('#txtWeight_'+n).val(0);
                 				$('#txtVolume_'+n).val(0);
-                				$('#txtTvolume_'+n).val(0);
+                				$('#txtTvolume_'+n).val(0);*/
 							}
 							sum();
-                    	}catch(e){
+                		}catch(e){
                     		Unlock(1);
                     	}
                         break;
@@ -540,6 +541,7 @@
             }
 
             function calculateAndDisplayRoute(directionsService, directionsDisplay, orde, car) {
+               	//console.log('xx '+data_car_current+':'+car.isassign);
                 /*var waypts = [];
                 for(var i=0;i<q_bbsCount;i++){
                 	$('#txtAddress_'+i).val($.trim($('#txtAddress_'+i).val()));	
@@ -551,30 +553,53 @@
                 	}
                 }*/
                 waypts = [];
-                for(var i=0;i<car.orde.length;i++){
-                	for(var j=0;j<orde.length;j++){
-                		if(car.orde[i].ordeno != orde[j].ordeno)
-                			continue;
-                		console.log(car.carno+':'+i+'  '+orde[j].ordeno+'  '+orde[j].address);
-                		waypts.push({
-	                        location : new google.maps.LatLng(orde[j].lat,orde[j].lng),
-	                        stopover : true
-	                    });
-                		break;
+                var origin,destination;
+                if(car.isassign==1){
+                	if(car.orde[0].assignpath.length==0){
+                		origin = new google.maps.LatLng(parseFloat(car.orde[0].lat),parseFloat(car.orde[0].lng));
+                    	destination = new google.maps.LatLng(parseFloat(car.orde[0].lat),parseFloat(car.orde[0].lng));
+                	}else{
+                		origin = new google.maps.LatLng(car.orde[0].assignpath[0].lat,car.orde[0].assignpath[0].lng);
+                		destination = new google.maps.LatLng(car.orde[0].assignpath[car.orde[0].assignpath.length-1].lat,car.orde[0].assignpath[car.orde[0].assignpath.length-1].lng);
+                		for(var i=1;i<car.orde[0].assignpath.length-2;i++){
+                			waypts.push({
+		                        location : new google.maps.LatLng(car.orde[0].assignpath[i].lat,car.orde[0].assignpath[i].lng),
+		                        stopover : false
+		                    });
+                		}
                 	}
+                }else{
+                	origin = new google.maps.LatLng(parseFloat($('#txtLat').val()),parseFloat($('#txtLng').val()));
+                    destination = new google.maps.LatLng(parseFloat($('#txtEndlat').val()),parseFloat($('#txtEndlng').val()));
+                	for(var i=0;i<car.orde.length;i++){
+	                	for(var j=0;j<orde.length;j++){
+	                		if(car.orde[i].ordeno != orde[j].ordeno)
+	                			continue;
+	                		//console.log(car.carno+':'+i+'  '+orde[j].ordeno+'  '+orde[j].address);
+	                		waypts.push({
+		                        location : new google.maps.LatLng(orde[j].lat,orde[j].lng),
+		                        stopover : true
+		                    });
+	                		break;
+	                	}
+	                }
+	                if(waypts.length==0){
+	                	data_car_current++;
+	                    if(data_car_current<data_car.length){
+						   	initMap();
+						   //	console.log('func '+data_car_current+':'+data_car[data_car_current].isassign);
+						   	calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
+					    }
+					    return;
+	                }
                 }
-                if(waypts.length==0){
-                	data_car_current++;
-                    if(data_car_current<data_car.length){
-					   	initMap();
-					   	calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
-				    }
-				    return;
-                }
-                
+                /*console.log(car.carno);
+                console.log(origin);
+                console.log(destination);
+                console.log(waypts);*/
                 directionsService.route({
-                    origin : new google.maps.LatLng(parseFloat($('#txtLat').val()),parseFloat($('#txtLng').val())),
-                    destination : new google.maps.LatLng(parseFloat($('#txtEndlat').val()),parseFloat($('#txtEndlng').val())),
+                    origin : origin,
+                    destination : destination,
                     waypoints : waypts,
                     optimizeWaypoints : true,
                     travelMode : google.maps.TravelMode.DRIVING
@@ -663,6 +688,7 @@
                         data_car_current++;
                         if(data_car_current<data_car.length){
 						   	initMap();
+						   	//console.log('func2 '+data_car_current+':'+data_car[data_car_current].isassign);
 						   	calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
 					    }else{
 					    	//done
@@ -673,7 +699,8 @@
                 });
             }
             
-            function  carSchedule(){
+            function carSchedule(){
+            	//原則上, 車輛應該都是符合訂單的要求, 因此就當做已選的車輛都可以跑這些訂單
             	$('#_orde').children().remove();
             	for(var i=0;i<q_bbsCount;i++){
             		if($('#txtAddrno_'+i).val().length==0)
@@ -728,6 +755,7 @@
             			,ordevolume:[]
             			,ordeweight:[]
             			,ordemount:[]
+            			,isassign:0 //假如跑指定地點,那就只跑那一次
         			});
                 }
                 data_orde = [];
@@ -796,156 +824,151 @@
 							return 1;
 					});						
 				}
-				//
-				
-				//有指定車輛的先
-				for(var i=0;i<data_orde.length;i++){
-					//只看有指定車輛的訂單
-                	if(data_orde[i].allowcar.length==0)
-                		continue;
-					if(data_orde[i].emount<=0)
-                		continue;
-					for(var j=0;j<data_car.length;j++){
-						if(data_orde[i].allowcar.indexOf(data_car[j].carno)<0)
-                			continue;
-						if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
-                			continue;
-                		t_mount = data_orde[i].emount;
-                		while(t_mount>=0){
-            				t_weight = round(data_orde[i].uweight * t_mount,2);
-            				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
-            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
-            					data_car[j].gvolume += t_cuft;
-                				data_car[j].evolume -= t_cuft;
-                				data_car[j].gweight += t_weight;
-        						data_car[j].eweight -= t_weight;
-                				data_orde[i].gmount += t_mount;
-                				data_orde[i].emount -= t_mount;
-                				data_car[j].orde.push(data_orde[i]);
-                				data_car[j].ordevolume.push(t_cuft);
-                				data_car[j].ordeweight.push(t_weight);
-                				data_car[j].ordemount.push(t_mount);
-            					break;
-            				}
-            				t_mount--;
-            			}	
-						//一次就把那台車排完
-						for(var k;k<data_orde[i].orderange.length;k++){					
-							t_nextOrdeno = data_orde[i].orderange[k].ordeno;
-							for(var l=0;l<data_orde.length;l++){
-								//剩餘的單子先不管有沒有指定車輛,先跑近的
-								if(data_orde[l].ordeno != t_nextOrdeno)
-									continue;
-								if(data_orde[l].emount<=0)
-                					continue;
-            					if(data_orde[l].allowcar.indexOf(data_car[j].carno)<0)
-                					continue;
-								t_mount = data_orde[l].emount;
-		                		while(t_mount>=0){
-	                				t_weight = round(data_orde[l].uweight * t_mount,2);
-	                				t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
-	                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
-	                					data_car[j].gvolume += t_cuft;
-		                				data_car[j].evolume -= t_cuft;
-		                				data_car[j].gweight += t_weight;
-	            						data_car[j].eweight -= t_weight;
-		                				data_orde[l].gmount += t_mount;
-		                				data_orde[l].emount -= t_mount;
-		                				data_car[j].orde.push(data_orde[l]);
-		                				data_car[j].ordevolume.push(t_cuft);
-		                				data_car[j].ordeweight.push(t_weight);
-		                				data_car[j].ordemount.push(t_mount);
-	                					break;
-	                				}
-	                				t_mount--;
-	                			}
+				//載入指定路徑資料
+				getAssignPath(0);
+            }
+            function getAssignPath(n){
+            	if(n<data_orde.length){
+            		if(data_orde[n].isassign == 1)
+            			q_gt('addr2s', "where=^^noa='"+data_orde[n].addrno+"' order by noq^^", 0, 0, 0, JSON.stringify({action:"getAssignPath",n:n}));
+            		else
+            			getAssignPath(n+1);
+            	}else{
+            		//排程
+					/*
+					 * 指定路徑
+					 * 原則上,一個地點能多台車跑,但跑該點的車輛就不再跑其他的地方
+					 */
+					for(var i=0;i<data_orde.length;i++){
+						if(data_orde[i].isassign==0 || data_orde[i].emount<=0)
+	                		continue;
+	                	for(var j=0;j<data_car.length;j++){
+	                		if(data_car[j].isassign==1)//有指定地點,就不再跑其他地方
+								continue;
+	                		if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
+	                			continue;
+	                		t_mount = data_orde[i].emount;
+	                		while(t_mount>=0){
+	            				t_weight = round(data_orde[i].uweight * t_mount,2);
+	            				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+	            					data_car[j].gvolume += t_cuft;
+	                				data_car[j].evolume -= t_cuft;
+	                				data_car[j].gweight += t_weight;
+	        						data_car[j].eweight -= t_weight;
+	                				data_orde[i].gmount += t_mount;
+	                				data_orde[i].emount -= t_mount;
+	                				data_car[j].orde.push(data_orde[i]);
+	                				data_car[j].ordevolume.push(t_cuft);
+	                				data_car[j].ordeweight.push(t_weight);
+	                				data_car[j].ordemount.push(t_mount);
+	                				data_car[j].isassign = 1; //有指定地點,就只跑那一趟
+	            					break;
+	            				}
+	            				t_mount--;
+	            			}
+                		}	
+                	}
+					//無指定路徑
+					for(var i=0;i<data_orde.length;i++){
+						if(data_orde[i].isassign==1 || data_orde[i].emount<=0)
+	                		continue;
+						for(var j=0;j<data_car.length;j++){
+							if(data_car[j].isassign==1)//有指定地點,就不再跑其他地方
+								continue;
+							if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
+	                			continue;
+	                		t_mount = data_orde[i].emount;
+	                		while(t_mount>=0){
+	            				t_weight = round(data_orde[i].uweight * t_mount,2);
+	            				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+	            					data_car[j].gvolume += t_cuft;
+	                				data_car[j].evolume -= t_cuft;
+	                				data_car[j].gweight += t_weight;
+	        						data_car[j].eweight -= t_weight;
+	                				data_orde[i].gmount += t_mount;
+	                				data_orde[i].emount -= t_mount;
+	                				data_car[j].orde.push(data_orde[i]);
+	                				data_car[j].ordevolume.push(t_cuft);
+	                				data_car[j].ordeweight.push(t_weight);
+	                				data_car[j].ordemount.push(t_mount);
+	            					break;
+	            				}
+	            				t_mount--;
+	            			}	
+							//一次就把那台車排完
+							for(var k;k<data_orde[i].orderange.length;k++){					
+								t_nextOrdeno = data_orde[i].orderange[k].ordeno;
+								for(var l=0;l<data_orde.length;l++){
+									//先跑近的單子
+									if(data_orde[l].ordeno != t_nextOrdeno)
+										continue;
+									if(data_orde[i].isassign==1 || data_orde[l].emount<=0)
+	                					continue;
+									t_mount = data_orde[l].emount;
+			                		while(t_mount>=0){
+		                				t_weight = round(data_orde[l].uweight * t_mount,2);
+		                				t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
+		                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+		                					data_car[j].gvolume += t_cuft;
+			                				data_car[j].evolume -= t_cuft;
+			                				data_car[j].gweight += t_weight;
+		            						data_car[j].eweight -= t_weight;
+			                				data_orde[l].gmount += t_mount;
+			                				data_orde[l].emount -= t_mount;
+			                				data_car[j].orde.push(data_orde[l]);
+			                				data_car[j].ordevolume.push(t_cuft);
+			                				data_car[j].ordeweight.push(t_weight);
+			                				data_car[j].ordemount.push(t_mount);
+		                					break;
+		                				}
+		                				t_mount--;
+		                			}
+								}
 							}
+						}	
+					}
+					
+					if(data_orde.length>0 && data_car.length>0){
+						//列出未派完的訂單
+				    	data_orde.sort(function(a, b) {
+							if(a.ordeno+a.no2 < b.ordeno+b.no2)
+								return -1;
+							else if(a.ordeno+a.no2 == b.ordeno+b.no2)
+								return 0;
+							else
+								return 1;
+						});
+						var msg = '';
+				    	for (var i=0;i<data_orde.length;i++){
+				    		if(data_orde[i].emount>0){
+				    			msg += (msg.length>0?'\n':'') + data_orde[i].ordeno+' '+data_orde[i].addr+'  數量:'+data_orde[i].mount+'  未派:'+data_orde[i].emount;
+				    		}
+				    	}
+				    	if(msg.length>0){
+				    		alert('未派完訂單:\n'+msg);
+				    	}
+					}
+					//等全部資料都載入才執行路徑
+					if(isRun){
+	            		isRun = false;
+	            		if(data_orde.length==0)
+							alert('無訂單或訂單地點未設定');
+						if(data_car.length==0)
+							alert('無車輛');
+						if(data_car.length>0 && data_orde.length>0){
+							data_car_current = 0;
+							for (var i = 0; i < q_bbtCount; i++) {
+	                        	$('#btnMinut__'+i).click();
+	                        }
+	                        $('#pathImg').html('');
+	                        $('#map').hide();
+							initMap();
+							calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
 						}
-					}	
-				}
-				//NO指定車輛
-				for(var i=0;i<data_orde.length;i++){
-                	if(data_orde[i].allowcar.length>0)
-                		continue;
-					if(data_orde[i].emount<=0)
-                		continue;
-					for(var j=0;j<data_car.length;j++){
-						if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
-                			continue;
-                		t_mount = data_orde[i].emount;
-                		while(t_mount>=0){
-            				t_weight = round(data_orde[i].uweight * t_mount,2);
-            				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
-            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
-            					data_car[j].gvolume += t_cuft;
-                				data_car[j].evolume -= t_cuft;
-                				data_car[j].gweight += t_weight;
-        						data_car[j].eweight -= t_weight;
-                				data_orde[i].gmount += t_mount;
-                				data_orde[i].emount -= t_mount;
-                				data_car[j].orde.push(data_orde[i]);
-                				data_car[j].ordevolume.push(t_cuft);
-                				data_car[j].ordeweight.push(t_weight);
-                				data_car[j].ordemount.push(t_mount);
-            					break;
-            				}
-            				t_mount--;
-            			}	
-						//一次就把那台車排完
-						for(var k;k<data_orde[i].orderange.length;k++){					
-							t_nextOrdeno = data_orde[i].orderange[k].ordeno;
-							for(var l=0;l<data_orde.length;l++){
-								//剩餘的單子先不管有沒有指定車輛,先跑近的
-								if(data_orde[l].ordeno != t_nextOrdeno)
-									continue;
-								if(data_orde[l].emount<=0)
-                					continue;
-            					if(data_orde[l].allowcar.indexOf(data_car[j].carno)<0)
-                					continue;
-								t_mount = data_orde[l].emount;
-		                		while(t_mount>=0){
-	                				t_weight = round(data_orde[l].uweight * t_mount,2);
-	                				t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
-	                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
-	                					data_car[j].gvolume += t_cuft;
-		                				data_car[j].evolume -= t_cuft;
-		                				data_car[j].gweight += t_weight;
-	            						data_car[j].eweight -= t_weight;
-		                				data_orde[l].gmount += t_mount;
-		                				data_orde[l].emount -= t_mount;
-		                				data_car[j].orde.push(data_orde[l]);
-		                				data_car[j].ordevolume.push(t_cuft);
-		                				data_car[j].ordeweight.push(t_weight);
-		                				data_car[j].ordemount.push(t_mount);
-	                					break;
-	                				}
-	                				t_mount--;
-	                			}
-							}
-						}
-					}	
-				}
-				
-				if(data_orde.length>0 && data_car.length>0){
-					//列出未派完的訂單
-			    	data_orde.sort(function(a, b) {
-						if(a.ordeno+a.no2 < b.ordeno+b.no2)
-							return -1;
-						else if(a.ordeno+a.no2 == b.ordeno+b.no2)
-							return 0;
-						else
-							return 1;
-					});
-					var msg = '';
-			    	for (var i=0;i<data_orde.length;i++){
-			    		if(data_orde[i].emount>0){
-			    			msg += (msg.length>0?'\n':'') + data_orde[i].ordeno+' '+data_orde[i].addr+'  數量:'+data_orde[i].mount+'  未派:'+data_orde[i].emount;
-			    		}
-			    	}
-			    	if(msg.length>0){
-			    		alert('未派完訂單:\n'+msg);
-			    	}
-				}
+	            	}
+            	}
             }
 
             function getLatLngString(tmp){
@@ -997,7 +1020,6 @@
 		
 			function displayRoute(directionsService, directionsDisplay,carno) {
 				
-				
                 waypts = [];
                 
                 for(j=0;j<q_bbtCount;j++){
@@ -1005,7 +1027,7 @@
                 		continue;
             		for(var i=0;i<q_bbsCount;i++){
 	                	if($('#txtOrdeno__'+j).val().length>0 && $('#txtOrdeno_'+i).val()==$('#txtOrdeno__'+j).val() && $('#txtNo2_'+i).val()==$('#txtNo2__'+j).val()){
-	                		console.log(i+':'+$('#txtLat_'+i).val()+','+$('#txtLng_'+i).val());
+	                		//console.log(i+':'+$('#txtLat_'+i).val()+','+$('#txtLng_'+i).val());
 	                		waypts.push({
 		                        //location : new google.maps.LatLng(q_float('txtLat_'+i),q_float('txtLng_'+i)),
 		                       
@@ -1329,10 +1351,10 @@
 						<td><input id="txtWorker" type="text"  class="txt c1"/></td>
 						<td><span> </span><a id="lblWorker2" class="lbl"> </a></td>
 						<td><input id="txtWorker2" type="text"  class="txt c1"/></td>
-						<td><input id="btnOrde" type="button" value="訂單匯入" style="width:100%;"/></td>
-						<td><input id="btnCar" type="button" value="車輛選擇" style="width:100%;"/></td>
+						<td><input id="btnOrde" type="button" value="1.訂單匯入" style="width:100%;"/></td>
+						<td><input id="btnCar" type="button" value="2.車輛選擇" style="width:100%;"/></td>
 						<td>
-							<input id="btnRun" type="button" value="排程" style="width:100%;"/>
+							<input id="btnRun" type="button" value="3.排程" style="width:100%;"/>
 							<input id="txtImg" type="text" style="display:none;"/>
 						</td>
 					</tr>
