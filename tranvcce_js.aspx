@@ -218,6 +218,13 @@
                     $('#txtHeight_' + i).change(function(e) {
                         sum();
                     });
+                    $('#btnLicence_'+i).click(function(e){
+                    	var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
+                    	var t_addrno = $.trim($('#txtAddrno_'+n).val());
+                    	//alert(t_addrno);
+                    	if(t_addrno.length>0)
+                    		q_gt('addr2', "where=^^noa='"+t_addrno+"'^^", 0, 0, 0, JSON.stringify({action:"getAddrno",n:n}));
+                    });
 				}
 				_bbsAssign();
 				$('#tbbs').find('tr.data').children().hover(function(e){
@@ -361,6 +368,18 @@
                 					lng : parseFloat(data_orde[n].lng)
                 				});
                     			getAssignPath(n+1);
+                			}else if(t_para.action=="getAddrno"){
+                				var n = t_para.n;
+                    			as = _q_appendData("addr2", "", true);
+                    			if(as[0]!=undefined){
+                    				if(as[0].custno.length>0){
+                    					q_box("addr3_js.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";noa='" + as[0].custno + "';" + r_accy, 'addr3', "95%", "95%", q_getMsg("popAddr3"));
+                    				}else{
+                    					alert('無設定');
+                    				}
+                    			}else{
+                    				alert('無地點');	
+                    			}
                 			}else {
                     			/*$('#txtWeight_'+n).val(0);
                 				$('#txtVolume_'+n).val(0);
@@ -627,16 +646,16 @@
                         		break;
                         	strn_bbt++;	
                         }
-                        while(route.legs.length+strn_bbt>q_bbtCount){
+                        
+                        while(route.legs.length+strn_bbt+2>q_bbtCount)
                         	$('#btnPlut').click();
-                        }
+	                    
                         //var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?center='+$('#txtLat').val()+','+$('#txtLng').val()+'&size=300x300&maptype=roadmap';
                         var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?size=300x300&maptype=roadmap';
                         
                         imgsrc += '&markers=color:green|label:S|'+response.request.origin.lat()+','+response.request.origin.lng();
                         
-                        
-                        
+                        var gvolume=0,evolume=data_car[data_car_current].volume;
                         
                         for (var i = 0; i < route.legs.length; i++) {
                         	if(i<route.legs.length-1){
@@ -645,6 +664,10 @@
                         			if(i==0){
                         				//起點也顯示到BBT,以便"圖"抓資料
 				                        $('#txtCarno__'+(strn_bbt)).val(data_car[data_car_current].carno);
+				                        $('#txtCarvolume__'+(strn_bbt)).val(data_car[data_car_current].volume);
+				                        $('#txtGvolume__'+(strn_bbt)).val(gvolume);
+				                        $('#txtEvolume__'+(strn_bbt)).val(evolume);
+				                        
 			                        	$('#txtAddrno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[0].addrno);
 				                		$('#txtAddr__'+(strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[0].addr);
 				                		$('#txtAddress__'+(strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[0].address);
@@ -664,8 +687,11 @@
 			                			$('#txtMemo__'+(strn_bbt)).val('起點');
 			                			$('#txtTime2__'+(strn_bbt)).val($('#txtTimea').val());
 				                        strn_bbt++;
-                        			}
+                        			} 
                         			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
+                        			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
+			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
                         			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].addrno);
 	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].addr);
 	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].address);
@@ -678,10 +704,41 @@
 	                        		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].cust);
 	                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].productno);
 	                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].product);
+                        			
+                        			/*if(i==data_car[data_car_current].orde[0].assignpath-1){
+                        				$('#txtCarno__'+(i+1+strn_bbt)).val(data_car[data_car_current].carno);
+				                        $('#txtCarvolume__'+(i+1+strn_bbt)).val(data_car[data_car_current].volume);
+				                        gvolume+=data_car[data_car_current].ordevolume[n];
+                        				evolume-=data_car[data_car_current].ordevolume[n];
+				                        $('#txtGvolume__'+(i+1+strn_bbt)).val(gvolume);
+				                        $('#txtEvolume__'+(i+1+strn_bbt)).val(evolume);
+				                        
+			                        	$('#txtAddrno__'+(i+1+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].addrno);
+				                		$('#txtAddr__'+(i+1+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].addr);
+				                		$('#txtAddress__'+(i+1+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].address);
+				            		
+				            			t_orde = data_car[data_car_current].orde[0].ordeno;
+				                		$('#txtOrdeno__'+(i+1+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
+				                		$('#txtNo2__'+(i+1+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
+				                	
+				                		$('#txtCustno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].custno);
+				                		$('#txtCust__'+(strn_bbt)).val(data_car[data_car_current].orde[0].cust);
+				                		$('#txtProductno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].productno);
+				                		$('#txtProduct__'+(strn_bbt)).val(data_car[data_car_current].orde[0].product);
+			                        	
+			                        	$('#txtLat__'+(i+1+strn_bbt)).val(getLatLngString(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].lat));
+			                            $('#txtLng__'+(i+1+strn_bbt)).val(getLatLngString(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].lng));
+			                        	$('#txtMins1__'+(i+1+strn_bbt)).val(0);
+			                			$('#txtMemo__'+(i+1+strn_bbt)).val('終點');
+			                			$('#txtTime2__'+(i+1+strn_bbt)).val($('#txtTimea').val());
+                        			}*/
                         		}else{
                         			if(i==0){
                         				//起點也顯示到BBT,以便"圖"抓資料
                         				$('#txtCarno__'+(strn_bbt)).val(data_car[data_car_current].carno);
+                        				$('#txtCarvolume__'+(strn_bbt)).val(data_car[data_car_current].volume);
+                        				$('#txtGvolume__'+(strn_bbt)).val(gvolume);
+			                        	$('#txtEvolume__'+(strn_bbt)).val(evolume);
                         				$('#txtAddrno__'+(strn_bbt)).val($('#txtAddrno').val());
 		                        		$('#txtAddr__'+(strn_bbt)).val($('#txtAddr').val());
 		                        		$('#txtAddress__'+(strn_bbt)).val($('#txtAddress').val());
@@ -694,6 +751,11 @@
                         				strn_bbt++;
                         			}
                         			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
+                        			gvolume+=data_car[data_car_current].ordevolume[n];
+                        			evolume-=data_car[data_car_current].ordevolume[n];
+                        			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
+			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
                         			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addrno);
 	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addr);
 	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].address);
@@ -721,6 +783,11 @@
                         		//response.request.destination.lat()
                         		if(data_car[data_car_current].isassign==1){
                         			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
+                        			gvolume+=data_car[data_car_current].ordevolume[0];
+                        			evolume-=data_car[data_car_current].ordevolume[0];
+                        			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
+			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
                         			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].addrno);
 	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].addr);
 	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].address);
@@ -742,6 +809,7 @@
 	                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].product);
                         		}else{
                         			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
                         			$('#txtAddrno__'+(i+strn_bbt)).val($('#txtEndaddrno').val());
 	                        		$('#txtAddr__'+(i+strn_bbt)).val($('#txtEndaddr').val());
 	                        		$('#txtAddress__'+(i+strn_bbt)).val($('#txtEndaddress').val());
@@ -1457,7 +1525,7 @@
 					<td align="center" style="width:70px"><a>運送需<br>耗材積</a></td>
 					<td align="center" style="width:70px"><a>裝卸貨<br>時間(分)</a></td>
 					<td align="center" style="width:30px"><a>指<br>定</a></td>
-					<td align="center" style="width:150px"><a>地點</a></td>
+					<td align="center" style="width:170px"><a>地點</a></td>
 					<td align="center" style="width:300px"><a>地址</a></td>
 					<td align="center" style="width:70px"><a>聯絡人</a></td>
 					<td align="center" style="width:70px"><a>聯絡電話</a></td>
@@ -1503,9 +1571,10 @@
 					<td><input type="text" id="txtMins.*" class="num" style="width:95%;"/></td>
 					<td align="center"><input type="checkbox" id="chkIsassign.*"/></td>
 					<td>
-						<input type="text" id="txtAddrno.*" style="float:left;width:45%;"/>
-						<input type="text" id="txtAddr.*" style="float:left;width:45%;"/>
+						<input type="text" id="txtAddrno.*" style="float:left;width:40%;"/>
+						<input type="text" id="txtAddr.*" style="float:left;width:40%;"/>
 						<input type="button" id="btnAddr.*" style="display:none;"/>
+						<input type="button" id="btnLicence.*" style="float:left;width:15%;" value="證"/>
 					</td>
 					<td>
 						<input type="text" id="txtAddress.*" style="width:95%;"/>
@@ -1550,6 +1619,8 @@
 					<td align="center" style="width:150px"><a>備註</a></td>
 					<td align="center" style="width:150px"><a>訂單</a></td>
 					<td align="center" style="width:300px"><a>地址</a></td>
+					<td align="center" style="width:70px"><a>已承載</a></td>
+					<td align="center" style="width:70px"><a>可承載</a></td>
 				</tr>
 				<tr class="data" style='background:pink;'>
 					<td align="center">
@@ -1576,7 +1647,11 @@
 						<input type="text" id="txtProduct..*" style="width:95%;"/>
 					</td>
 					<td><input type="text" id="txtMount..*" class="num" style="width:95%;"/></td>
-					<td><input type="text" id="txtVolume..*" class="num" style="width:95%;"/></td>
+					<td>
+						<input type="text" id="txtVolume..*" class="num" style="width:95%;"/>
+						<!--記錄車輛 承載量(材積)-->
+						<input type="text" id="txtCarvolume..*" style="display:none;"/>
+					</td>
 					<td><input type="text" id="txtWeight..*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtMins1..*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtTime1..*" style="width:95%;text-align: center;" /></td>
@@ -1593,6 +1668,8 @@
 						<input type="text" id="txtLat..*" style="float:left;width:40%;display:none;"/>
 						<input type="text" id="txtLng..*" style="float:left;width:40%;display:none;"/>
 					</td>
+					<td><input type="text" id="txtGvolume..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtEvolume..*" class="num" style="width:95%;"/></td>
 				</tr>
 			</table>
 		</div>
