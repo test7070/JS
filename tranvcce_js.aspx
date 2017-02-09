@@ -23,6 +23,7 @@
  			var markers;
 			var locations;
 			var isRun = false;//執行carSchedule須等待,才能排路徑
+			var infowindow;//訊息視窗
 			
 			q_tables = 't';
 			var q_name = "tranvcce";
@@ -564,6 +565,15 @@
                     }
                 });
                 directionsDisplay.setMap(map);
+                
+                infowindow = new google.maps.InfoWindow({content: ''});
+              /*  infowindow.click(function );
+                
+                var contentString = '<div id="__infowindow" style="width:200px;height:150px;"><a>名稱：</a><a>' + $('#txtAddr').val() + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="-1" style="display:none;"/></div>';
+	                    infowindow.close();
+		                infowindow.setContent(contentString);
+		                infowindow.open(map,markers[n]);
+	                    infowindow.addListener('domready',infowindowReady(-1));*/
                // map.setOptions({styles: stylesArray});
             }
 
