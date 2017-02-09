@@ -31,7 +31,7 @@
 	            	t_content = "where=^^['"+t_para.noa+"','"+t_para.date+"','"+t_para.addrno+"')^^";
 	            	$('#textWeight').val(t_para.weight);
 					$('#textVolume').val(t_para.volume);
-	            	console.log(t_para.addrno);
+	            	//console.log(t_para.addrno);
 	            }catch(e){
 	            }    
                 brwCount = -1;

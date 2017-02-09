@@ -254,7 +254,7 @@
                 }
                 _bbtAssign();
                 $('#btnMap_close').click(function(e){
-					$('#map').hide();
+					$('#mapForm').hide();
 				});
 				$('#tbbt').find('tr.data').children().hover(function(e){
 					$(this).parent().css('background','yellow');
@@ -272,7 +272,7 @@
 				return true;
 			}
 			function bbtSave(as) {
-				if (!as['addrno']) {
+				if (!as['addrno'] && !as['lat']) {
 					as[bbtKey[1]] = '';
 					return;
 				}
@@ -352,6 +352,14 @@
 	                    				});
 	                    			}
                     			}
+                    			//終點就addr2的BBM
+                    			data_orde[n].assignpath.push({
+                					addrno : data_orde[n].addrno,
+                					addr : data_orde[n].addr,
+                					address : data_orde[n].address,
+                					lat : parseFloat(data_orde[n].lat),
+                					lng : parseFloat(data_orde[n].lng)
+                				});
                     			getAssignPath(n+1);
                 			}else {
                     			/*$('#txtWeight_'+n).val(0);
@@ -561,10 +569,10 @@
                 	}else{
                 		origin = new google.maps.LatLng(car.orde[0].assignpath[0].lat,car.orde[0].assignpath[0].lng);
                 		destination = new google.maps.LatLng(car.orde[0].assignpath[car.orde[0].assignpath.length-1].lat,car.orde[0].assignpath[car.orde[0].assignpath.length-1].lng);
-                		for(var i=1;i<car.orde[0].assignpath.length-2;i++){
+                		for(var i=1;i<car.orde[0].assignpath.length-1;i++){
                 			waypts.push({
 		                        location : new google.maps.LatLng(car.orde[0].assignpath[i].lat,car.orde[0].assignpath[i].lng),
-		                        stopover : false
+		                        stopover : true
 		                    });
                 		}
                 	}
@@ -601,7 +609,7 @@
                     origin : origin,
                     destination : destination,
                     waypoints : waypts,
-                    optimizeWaypoints : true,
+                    optimizeWaypoints : (data_car[data_car_current].isassign==1?false:true),//指定路徑就照原先所設定的
                     travelMode : google.maps.TravelMode.DRIVING
                 }, function(response, status) {
                     if (status === google.maps.DirectionsStatus.OK) {
@@ -625,50 +633,128 @@
                         //var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?center='+$('#txtLat').val()+','+$('#txtLng').val()+'&size=300x300&maptype=roadmap';
                         var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?size=300x300&maptype=roadmap';
                         
-                        imgsrc += '&markers=color:green|label:S|'+$('#txtLat').val()+','+$('#txtLng').val();
+                        imgsrc += '&markers=color:green|label:S|'+response.request.origin.lat()+','+response.request.origin.lng();
+                        
+                        
+                        
+                        
                         for (var i = 0; i < route.legs.length; i++) {
-                        	$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
-                        	
                         	if(i<route.legs.length-1){
-                        		/*n=-1;
-                        		for(var j=0;j<data_car[data_car_current].orde.length;j++){
-                        			if(data_car[data_car_current].orde)
-                        		}*/
-                        		
                         		n = route.waypoint_order[i];
-                        		$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addrno);
-                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addr);
-                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].address);
-                        		for(var j=0;j<q_bbsCount;j++){
-                        			if(data_car[data_car_current].orde[n].ordeno == $('#txtOrdeno_'+j).val()+'-'+$('#txtNo2_'+j).val()){
-                        				$('#txtMins2__'+(i+strn_bbt)).val($('#txtMins_'+j).val());
+                        		if(data_car[data_car_current].isassign==1){
+                        			if(i==0){
+                        				//起點也顯示到BBT,以便"圖"抓資料
+				                        $('#txtCarno__'+(strn_bbt)).val(data_car[data_car_current].carno);
+			                        	$('#txtAddrno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[0].addrno);
+				                		$('#txtAddr__'+(strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[0].addr);
+				                		$('#txtAddress__'+(strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[0].address);
+				            		
+				            			t_orde = data_car[data_car_current].orde[0].ordeno;
+				                		$('#txtOrdeno__'+(strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
+				                		$('#txtNo2__'+(strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
+				                	
+				                		/*$('#txtCustno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].custno);
+				                		$('#txtCust__'+(strn_bbt)).val(data_car[data_car_current].orde[0].cust);
+				                		$('#txtProductno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].productno);
+				                		$('#txtProduct__'+(strn_bbt)).val(data_car[data_car_current].orde[0].product);*/
+			                        	
+			                        	$('#txtLat__'+(strn_bbt)).val(getLatLngString(data_car[data_car_current].orde[0].assignpath[0].lat));
+			                            $('#txtLng__'+(strn_bbt)).val(getLatLngString(data_car[data_car_current].orde[0].assignpath[0].lng));
+			                        	$('#txtMins1__'+(strn_bbt)).val(0);
+			                			$('#txtMemo__'+(strn_bbt)).val('起點');
+			                			$('#txtTime2__'+(strn_bbt)).val($('#txtTimea').val());
+				                        strn_bbt++;
                         			}
+                        			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].addrno);
+	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].addr);
+	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].address);
+                        		
+                        			t_orde = data_car[data_car_current].orde[0].ordeno;
+	                        		$('#txtOrdeno__'+(i+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
+	                        		$('#txtNo2__'+(i+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
+	                        	
+	                        		$('#txtCustno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].custno);
+	                        		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].cust);
+	                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].productno);
+	                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].product);
+                        		}else{
+                        			if(i==0){
+                        				//起點也顯示到BBT,以便"圖"抓資料
+                        				$('#txtCarno__'+(strn_bbt)).val(data_car[data_car_current].carno);
+                        				$('#txtAddrno__'+(strn_bbt)).val($('#txtAddrno').val());
+		                        		$('#txtAddr__'+(strn_bbt)).val($('#txtAddr').val());
+		                        		$('#txtAddress__'+(strn_bbt)).val($('#txtAddress').val());
+		                        		
+		                        		$('#txtLat__'+(strn_bbt)).val($('#txtLat').val());
+			                            $('#txtLng__'+(strn_bbt)).val($('#txtLng').val());
+			                        	$('#txtMins1__'+(strn_bbt)).val(0);
+			                			$('#txtMemo__'+(strn_bbt)).val('起點');
+			                			$('#txtTime2__'+(strn_bbt)).val($('#txtTimea').val());
+                        				strn_bbt++;
+                        			}
+                        			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addrno);
+	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addr);
+	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].address);
+	                        		for(var j=0;j<q_bbsCount;j++){
+	                        			if(data_car[data_car_current].orde[n].ordeno == $('#txtOrdeno_'+j).val()+'-'+$('#txtNo2_'+j).val()){
+	                        				$('#txtMins2__'+(i+strn_bbt)).val($('#txtMins_'+j).val());
+	                        			}
+	                        		}
+	                        		$('#txtMount__'+(i+strn_bbt)).val(data_car[data_car_current].ordemount[n]);
+	                        		$('#txtVolume__'+(i+strn_bbt)).val(data_car[data_car_current].ordevolume[n]);
+	                        		$('#txtWeight__'+(i+strn_bbt)).val(data_car[data_car_current].ordeweight[n]);
+	                        		t_orde = data_car[data_car_current].orde[n].ordeno;
+	                        		$('#txtOrdeno__'+(i+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
+	                        		$('#txtNo2__'+(i+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
+	                        	
+	                        		$('#txtCustno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].custno);
+	                        		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].cust);
+	                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].productno);
+	                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].product);
                         		}
-                        		$('#txtMount__'+(i+strn_bbt)).val(data_car[data_car_current].ordemount[n]);
-                        		$('#txtVolume__'+(i+strn_bbt)).val(data_car[data_car_current].ordevolume[n]);
-                        		$('#txtWeight__'+(i+strn_bbt)).val(data_car[data_car_current].ordeweight[n]);
-                        		t_orde = data_car[data_car_current].orde[n].ordeno;
-                        		$('#txtOrdeno__'+(i+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
-                        		$('#txtNo2__'+(i+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
-                        	
-                        		$('#txtCustno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].custno);
-                        		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].cust);
-                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].productno);
-                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].product);
+                        		
                         		imgsrc += '&markers=color:red|label:'+(i+1)+'|'+getLatLngString(route.legs[i].end_location.lat())+','+getLatLngString(route.legs[i].end_location.lng());
                         	}else{
-                        		$('#txtAddrno__'+(i+strn_bbt)).val($('#txtEndaddrno').val());
-                        		$('#txtAddr__'+(i+strn_bbt)).val($('#txtEndaddr').val());
-                        		$('#txtAddress__'+(i+strn_bbt)).val($('#txtEndaddress').val());
+                        		
+                        		//response.request.destination.lat()
+                        		if(data_car[data_car_current].isassign==1){
+                        			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].addrno);
+	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].addr);
+	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].address);
+                        			for(var j=0;j<q_bbsCount;j++){
+	                        			if(data_car[data_car_current].orde[0].ordeno == $('#txtOrdeno_'+j).val()+'-'+$('#txtNo2_'+j).val()){
+	                        				$('#txtMins2__'+(i+strn_bbt)).val($('#txtMins_'+j).val());
+	                        			}
+	                        		}
+                        			$('#txtMount__'+(i+strn_bbt)).val(data_car[data_car_current].ordemount[0]);
+	                        		$('#txtVolume__'+(i+strn_bbt)).val(data_car[data_car_current].ordevolume[0]);
+	                        		$('#txtWeight__'+(i+strn_bbt)).val(data_car[data_car_current].ordeweight[0]);
+	                        		t_orde = data_car[data_car_current].orde[0].ordeno;
+	                        		$('#txtOrdeno__'+(i+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
+	                        		$('#txtNo2__'+(i+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
+	                        	
+	                        		$('#txtCustno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].custno);
+	                        		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].cust);
+	                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].productno);
+	                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].product);
+                        		}else{
+                        			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
+                        			$('#txtAddrno__'+(i+strn_bbt)).val($('#txtEndaddrno').val());
+	                        		$('#txtAddr__'+(i+strn_bbt)).val($('#txtEndaddr').val());
+	                        		$('#txtAddress__'+(i+strn_bbt)).val($('#txtEndaddress').val());
+                        		}
                         		imgsrc += '&markers=color:blue|label:E|'+getLatLngString(route.legs[i].end_location.lat())+','+getLatLngString(route.legs[i].end_location.lng());
                         	}
                         	$('#txtEndaddress__'+(i+strn_bbt)).val(route.legs[i].end_address);
                         	$('#txtLat__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lat()));
                             $('#txtLng__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lng()));
-                        	$('#txtMins1__'+(i+strn_bbt)).val(Math.round(route.legs[i].duration.value/60));
-                			$('#txtMemo__'+(i+strn_bbt)).val(route.legs[i].distance.text);
-                			//時間 +25%
-                			date.setMinutes(date.getMinutes() + round((q_float('txtMins1__'+(i+strn_bbt))*1.25),0));
+                        	$('#txtMemo__'+(i+strn_bbt)).val(route.legs[i].distance.text);
+                        	//時間 +25%
+                        	$('#txtMins1__'+(i+strn_bbt)).val(Math.round(route.legs[i].duration.value*1.25/60));
+                			date.setMinutes(date.getMinutes() + round((q_float('txtMins1__'+(i+strn_bbt))),0));
                 			hour = '00'+date.getHours();
                 			hour = hour.substring(hour.length-2,hour.length);
                 			minute = '00'+date.getMinutes();
@@ -1019,96 +1105,68 @@
            // var stylesArray = [{"featureType":"administrative","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"administrative.province","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"saturation":-100},{"lightness":65},{"visibility":"on"}]},{"featureType":"poi","elementType":"all","stylers":[{"saturation":-100},{"lightness":"50"},{"visibility":"simplified"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"all","stylers":[{"lightness":"30"}]},{"featureType":"road.local","elementType":"all","stylers":[{"lightness":"40"}]},{"featureType":"transit","elementType":"all","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"water","elementType":"geometry","stylers":[{"hue":"#ffff00"},{"lightness":-25},{"saturation":-97}]},{"featureType":"water","elementType":"labels","stylers":[{"lightness":-25},{"saturation":-100}]}];
 		
 			function displayRoute(directionsService, directionsDisplay,carno) {
-				
+				markers = [];
+				locations = [];
                 waypts = [];
                 
+                var begin=-1,end = -1;
                 for(j=0;j<q_bbtCount;j++){
                 	if($('#txtCarno__'+j).val()!=carno)
                 		continue;
-            		for(var i=0;i<q_bbsCount;i++){
-	                	if($('#txtOrdeno__'+j).val().length>0 && $('#txtOrdeno_'+i).val()==$('#txtOrdeno__'+j).val() && $('#txtNo2_'+i).val()==$('#txtNo2__'+j).val()){
-	                		//console.log(i+':'+$('#txtLat_'+i).val()+','+$('#txtLng_'+i).val());
-	                		waypts.push({
-		                        //location : new google.maps.LatLng(q_float('txtLat_'+i),q_float('txtLng_'+i)),
-		                       
-		                        location : new google.maps.LatLng(parseFloat($('#txtLat_'+i).val()),parseFloat($('#txtLng_'+i).val())),
-		                        //location : {lat:$('#txtLat_'+i).val(),lng:$('#txtLng_'+i).val()},
-		                        stopover : true
-		                    });
-		                    break;
-	                	}
-	                }
+                	if(begin==-1)
+                		begin = j;
+                	end = j;
+                }
+                var n = 0;
+                for(j=0;j<q_bbtCount;j++){
+                	if($('#txtCarno__'+j).val()!=carno)
+                		continue;
+                	if(j==begin){
+                		locations.push({
+							lat : parseFloat($('#txtLat__'+j).val()),
+							lng : parseFloat($('#txtLng__'+j).val()),
+							label : 'S',
+							color : 'green'
+						});
+						origin = new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val()));
+                	}else if(j==end){
+                		locations.push({
+							lat : parseFloat($('#txtLat__'+j).val()),
+							lng : parseFloat($('#txtLng__'+j).val()),
+							label : 'E',
+							color : 'blue'
+						});
+						destination = new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val()));
+                	}else{
+                		n++;
+                		locations.push({
+							lat : parseFloat($('#txtLat__'+j).val()),
+							lng : parseFloat($('#txtLng__'+j).val()),
+							label : (n)+'',
+							color : 'red'
+						});
+						waypts.push({
+	                        location : new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val())),
+	                        stopover : true
+	                    });
+                	}	
+            		
                 }      
-				//MARKER
-				markers = [];
-				locations = [];
-				locations.push({
-					lat : parseFloat($('#txtLat').val()),
-					lng : parseFloat($('#txtLng').val()),
-					label : 'S',
-					color : 'green'
-				});
-				for(var i=0;i<waypts.length;i++){
-					locations.push({
-						lat : waypts[i].location.lat(),
-						lng : waypts[i].location.lng(),
-						label : (i+1)+'',
-						color : 'red'
-					});
-				}
-				locations.push({
-					lat : parseFloat($('#txtEndlat').val()),
-					lng : parseFloat($('#txtEndlng').val()),
-					label : 'E',
-					color : 'blue'
-				});
-				/*for (var i = 0; i < markers.length; i++) {
-					markers[i].setMap(null);
-				}*/
 				for(var i=0;i<locations.length;i++){
 					addMarkerWithTimeout({lat:locations[i].lat,lng:locations[i].lng}
 						, locations[i].label
 						, locations[i].color
 						, i*300);
 				}
-											
                 directionsService.route({
-                    origin : new google.maps.LatLng(parseFloat($('#txtLat').val()),parseFloat($('#txtLng').val())),
-                    destination : new google.maps.LatLng(parseFloat($('#txtEndlat').val()),parseFloat($('#txtEndlng').val())),
+                    origin : origin,
+                    destination : destination,
                     waypoints : waypts,
                     //optimizeWaypoints : true,
                     travelMode : google.maps.TravelMode.DRIVING
                 }, function(response, status) {
                     if (status === google.maps.DirectionsStatus.OK) {
                         directionsDisplay.setDirections(response);
-						
-						
-						
-						
-		              /*  var marker = new google.maps.Marker({
-							position: {},
-							map: map,
-							label: 'S',
-							color: 'green'
-						});
-						//marker.setMap(map);
-		                
-		                marker = new google.maps.Marker({
-							position: {lat:q_float('txtEndlat'),lng:q_float('txtEndlng')},
-							map: map,
-							label: 'E',
-							color: 'blue'
-						});
-						//marker.setMap(map);
-		                for(var i=0;i<waypts.length;i++){
-							marker = new google.maps.Marker({
-								position: {lat:waypts[i].location.lat(),lng:waypts[i].location.lng()},
-								map: map,
-								label: (i+1)+'',
-								color: 'red'
-							});
-							//marker.setMap(map);
-						}*/
                     } else {
                         alert('Directions request failed due to ' + status);
                     }
@@ -1116,15 +1174,33 @@
             }
             function addMarkerWithTimeout(position, label, color, timeout) {
 				window.setTimeout(function() {
-				markers.push(new google.maps.Marker({
-					position: position,
-					label: label,
-					color: color,
-					map: map,
-					animation: google.maps.Animation.DROP
-					}));
+					var marker = new google.maps.Marker({
+						position: position,
+						label: label,
+						color: color,
+						map: map,
+						animation: google.maps.Animation.DROP
+						});
+					marker.setIcon(pinSymbol(color));
+					marker.setLabel({
+                            text : label,
+                            color : "darkred",
+                            fontSize : "16px",
+                            fontFamily : "微軟正黑體"
+                       	});
+					markers.push(marker);
 				}, timeout);
 			}
+			function pinSymbol(color) {
+                return {
+                    path : 'M 0,0 C -1,-10 -5,-11 -5,-15 A 5,5 0 1,1 5,-15 C 5,-11 1,-10 0,0 z',
+                    fillColor : color,
+                    fillOpacity : 1,
+                    strokeColor : '#fff',
+                    strokeWeight : 1,
+                    scale : 2
+                };
+            }
 		</script>
 		
 		<style type="text/css">
