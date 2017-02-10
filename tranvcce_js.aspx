@@ -19,6 +19,7 @@
 			var waypts;
 			var directionsService;
             var directionsDisplay;
+            var direction;
  			var map;
  			var markers;
 			var locations;
@@ -161,6 +162,10 @@
 				}).bind('contextmenu', function(e) {
 					if(e.target.nodeName!='INPUT')
 						e.preventDefault();
+				});
+				
+				$('#mapDirection').click(function(e){
+					displayDirections();
 				});
 			}
 			/*function addListeners() {
@@ -554,6 +559,7 @@
 				}
 			}
 			function initMap() {
+				direction = null;
                 directionsService = new google.maps.DirectionsService();
                 //directionsDisplay = new google.maps.DirectionsRenderer();
                 directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
@@ -567,14 +573,6 @@
                 directionsDisplay.setMap(map);
                 
                 infowindow = new google.maps.InfoWindow({content: ''});
-              /*  infowindow.click(function );
-                
-                var contentString = '<div id="__infowindow" style="width:200px;height:150px;"><a>名稱：</a><a>' + $('#txtAddr').val() + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="-1" style="display:none;"/></div>';
-	                    infowindow.close();
-		                infowindow.setContent(contentString);
-		                infowindow.open(map,markers[n]);
-	                    infowindow.addListener('domready',infowindowReady(-1));*/
-               // map.setOptions({styles: stylesArray});
             }
 
             function calculateAndDisplayRoute(directionsService, directionsDisplay, orde, car) {
@@ -714,34 +712,6 @@
 	                        		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].cust);
 	                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].productno);
 	                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].product);
-                        			
-                        			/*if(i==data_car[data_car_current].orde[0].assignpath-1){
-                        				$('#txtCarno__'+(i+1+strn_bbt)).val(data_car[data_car_current].carno);
-				                        $('#txtCarvolume__'+(i+1+strn_bbt)).val(data_car[data_car_current].volume);
-				                        gvolume+=data_car[data_car_current].ordevolume[n];
-                        				evolume-=data_car[data_car_current].ordevolume[n];
-				                        $('#txtGvolume__'+(i+1+strn_bbt)).val(gvolume);
-				                        $('#txtEvolume__'+(i+1+strn_bbt)).val(evolume);
-				                        
-			                        	$('#txtAddrno__'+(i+1+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].addrno);
-				                		$('#txtAddr__'+(i+1+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].addr);
-				                		$('#txtAddress__'+(i+1+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].address);
-				            		
-				            			t_orde = data_car[data_car_current].orde[0].ordeno;
-				                		$('#txtOrdeno__'+(i+1+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
-				                		$('#txtNo2__'+(i+1+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
-				                	
-				                		$('#txtCustno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].custno);
-				                		$('#txtCust__'+(strn_bbt)).val(data_car[data_car_current].orde[0].cust);
-				                		$('#txtProductno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].productno);
-				                		$('#txtProduct__'+(strn_bbt)).val(data_car[data_car_current].orde[0].product);
-			                        	
-			                        	$('#txtLat__'+(i+1+strn_bbt)).val(getLatLngString(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].lat));
-			                            $('#txtLng__'+(i+1+strn_bbt)).val(getLatLngString(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath-1].lng));
-			                        	$('#txtMins1__'+(i+1+strn_bbt)).val(0);
-			                			$('#txtMemo__'+(i+1+strn_bbt)).val('終點');
-			                			$('#txtTime2__'+(i+1+strn_bbt)).val($('#txtTimea').val());
-                        			}*/
                         		}else{
                         			if(i==0){
                         				//起點也顯示到BBT,以便"圖"抓資料
@@ -820,6 +790,8 @@
                         		}else{
                         			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
                         			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
+                        			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
+			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
                         			$('#txtAddrno__'+(i+strn_bbt)).val($('#txtEndaddrno').val());
 	                        		$('#txtAddr__'+(i+strn_bbt)).val($('#txtEndaddr').val());
 	                        		$('#txtAddress__'+(i+strn_bbt)).val($('#txtEndaddress').val());
@@ -1127,7 +1099,7 @@
 	                        	$('#btnMinut__'+i).click();
 	                        }
 	                        $('#pathImg').html('');
-	                        $('#map').hide();
+	                        $('#mapForm').hide();
 							initMap();
 							calculateAndDisplayRoute(directionsService, directionsDisplay, data_orde, data_car[data_car_current]);
 						}
@@ -1183,7 +1155,7 @@
            // var stylesArray = [{"featureType":"administrative","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"administrative.province","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"saturation":-100},{"lightness":65},{"visibility":"on"}]},{"featureType":"poi","elementType":"all","stylers":[{"saturation":-100},{"lightness":"50"},{"visibility":"simplified"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"all","stylers":[{"lightness":"30"}]},{"featureType":"road.local","elementType":"all","stylers":[{"lightness":"40"}]},{"featureType":"transit","elementType":"all","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"water","elementType":"geometry","stylers":[{"hue":"#ffff00"},{"lightness":-25},{"saturation":-97}]},{"featureType":"water","elementType":"labels","stylers":[{"lightness":-25},{"saturation":-100}]}];
 		
 			function displayRoute(directionsService, directionsDisplay,carno) {
-				markers = [];
+				
 				locations = [];
                 waypts = [];
                 
@@ -1203,16 +1175,24 @@
                 		locations.push({
 							lat : parseFloat($('#txtLat__'+j).val()),
 							lng : parseFloat($('#txtLng__'+j).val()),
-							label : 'S',
-							color : 'green'
+							text : 'S',
+							color : 'green',
+							carvolume : q_float('txtCarvolume__'+j),
+							volume : q_float('txtVolume__'+j),
+							gvolume : q_float('txtGvolume__'+j),
+							evolume : q_float('txtEvolume__'+j)
 						});
 						origin = new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val()));
                 	}else if(j==end){
                 		locations.push({
 							lat : parseFloat($('#txtLat__'+j).val()),
 							lng : parseFloat($('#txtLng__'+j).val()),
-							label : 'E',
-							color : 'blue'
+							text : 'E',
+							color : 'blue',
+							carvolume : q_float('txtCarvolume__'+j),
+							volume : q_float('txtVolume__'+j),
+							gvolume : q_float('txtGvolume__'+j),
+							evolume : q_float('txtEvolume__'+j)
 						});
 						destination = new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val()));
                 	}else{
@@ -1220,8 +1200,12 @@
                 		locations.push({
 							lat : parseFloat($('#txtLat__'+j).val()),
 							lng : parseFloat($('#txtLng__'+j).val()),
-							label : (n)+'',
-							color : 'red'
+							text : (n)+'',
+							color : 'red',
+							carvolume : q_float('txtCarvolume__'+j),
+							volume : q_float('txtVolume__'+j),
+							gvolume : q_float('txtGvolume__'+j),
+							evolume : q_float('txtEvolume__'+j)
 						});
 						waypts.push({
 	                        location : new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val())),
@@ -1229,12 +1213,10 @@
 	                    });
                 	}	
             		
-                }      
+                }     
+                markers = []; 
 				for(var i=0;i<locations.length;i++){
-					addMarkerWithTimeout({lat:locations[i].lat,lng:locations[i].lng}
-						, locations[i].label
-						, locations[i].color
-						, i*300);
+					addMarkerWithTimeout(i, 300);
 				}
                 directionsService.route({
                     origin : origin,
@@ -1244,13 +1226,59 @@
                     travelMode : google.maps.TravelMode.DRIVING
                 }, function(response, status) {
                     if (status === google.maps.DirectionsStatus.OK) {
-                        directionsDisplay.setDirections(response);
+                    	direction = response;
+                        displayDirections();
                     } else {
                         alert('Directions request failed due to ' + status);
                     }
                 });
             }
-            function addMarkerWithTimeout(position, label, color, timeout) {
+            function displayDirections(){
+            	if($('#mapDirection').prop('checked'))
+            		directionsDisplay.setDirections(direction);
+            	else
+            		directionsDisplay.set('directions', null);
+            }
+            function addMarkerWithTimeout(i, timeout){
+            	window.setTimeout(function() {
+            		var marker = new google.maps.Marker({
+						position: {lat:locations[i].lat,lng:locations[i].lng},
+						opacity : 0.6,
+                        label : {
+	                            text : locations[i].text,
+	                            color : "darkred",
+	                            fontSize : "16px",
+	                            fontWeight : "900",
+	                            fontFamily : "微軟正黑體"
+	                       	},
+                       	map : map,
+						animation: google.maps.Animation.DROP
+						});
+					marker.setIcon(pinSymbol(locations[i].color));
+					marker.addListener('click', function(e) {
+                    	var n = -1;
+                    	for(var i=0;i<markers.length;i++){
+                    		if(markers[i] === this){
+								n = i ;
+								break;	                    			
+                    		}
+                    	}
+                    	//承載量、承載率、已承載、可承載
+                    	var text = locations[i].text;
+                    	var carvolume = locations[n].carvolume;
+                    	var volume = locations[n].volume;
+                    	var gvolume = locations[n].gvolume;
+                    	var evolume = locations[n].evolume;
+                    	var rate = locations[n].carvolume==0?'':round(locations[n].gvolume/locations[n].carvolume*100,2)+'%';
+	                    var contentString = '<div id="infowindow" style="width:120px;height:100px;"><a>' + text + '</a><br><a>材積：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+rate+'</a><br><a>可承載：</a><a>'+evolume+'</a></div>';
+	                    infowindow.close();
+		                infowindow.setContent(contentString);
+		                infowindow.open(map,markers[n]);
+	                });
+	                markers.push(marker);
+				}, timeout);
+            }
+            /*function addMarkerWithTimeout(position, label, color, timeout) {
 				window.setTimeout(function() {
 					var marker = new google.maps.Marker({
 						position: position,
@@ -1266,9 +1294,25 @@
                             fontSize : "16px",
                             fontFamily : "微軟正黑體"
                        	});
+                   	marker.addListener('click', function(e) {
+                    	var n = -1;
+                    	for(var i=0;i<markers.length;i++){
+                    		if(markers[i] === this){
+								n = i ;
+								break;	                    			
+                    		}
+                    	}
+                    	//承載量、承載率、已承載、可承載
+                    	var a = 0;
+	                    var contentString = '<div id="infowindow" style="width:200px;height:150px;"><a>名稱：</a><a>' + $('#txtAddr').val() + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="-1" style="display:none;"/></div>';
+	                    infowindow.close();
+		                infowindow.setContent(contentString);
+		                infowindow.open(map,markers[n]);
+	                    infowindow.addListener('domready',infowindowReady(-1));
+	                });
 					markers.push(marker);
 				}, timeout);
-			}
+			}*/
 			function pinSymbol(color) {
                 return {
                     path : 'M 0,0 C -1,-10 -5,-11 -5,-15 A 5,5 0 1,1 5,-15 C 5,-11 1,-10 0,0 z',
@@ -1613,7 +1657,7 @@
 			<table id="tbbt" class='tbbt'>
 				<tr style="color:white; background:#003366;">
 					<td align="center" style="width:25px"><input class="btn"  id="btnPlut" type="button" value='+' style="font-weight: bold;display:noxne;"  /></td>
-					<td align="center" style="width:20px;"><input id="btnMap_close" type="button" value='關閉' style="font-size: 8"/></td>
+					<td align="center" style="width:20px;"><input id="btnMap_close" type="button" value='關閉' style="font-size: 8;white-space:'normal';width:50px;"/></td>
 					<td align="center" style="width:20px;"> </td>
 					<td align="center" style="width:100px"><a>車牌</a></td>
 					<td align="center" style="width:100px"><a>貨主</a></td>
@@ -1686,7 +1730,7 @@
 		<input id="q_sys" type="hidden" />
 		<div id="pathImg"> </div>
 		<div id="mapForm" style="width:820px;height:650px;position: absolute;top:50px;left:600px;border-width: 0px;z-index: 80; background-color:pink;display:none;">
-			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;color:white;">滑鼠右鍵拖曳</div>
+			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;color:white;"><a style="float:left;">滑鼠右鍵拖曳</a><span style="display:block;width:50px;height:1px;float:left;"></span><a style="float:left;">路徑</a><input type="checkbox" id="mapDirection" style="float:left;"/></div>
 			<div id="map" style="width:800px;height:600px;position: relative; top:5px;left:10px; "> </div>
 		</div>
 		<!--<div id="map" style="width:400px;height:400px;display:none;position: absolute;"> </div>-->
