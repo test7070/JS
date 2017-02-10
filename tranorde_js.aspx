@@ -113,7 +113,8 @@
 				if (!(q_cur == 1 || q_cur == 2))
 					return;
 				for(var i=0;i<q_bbsCount;i++){
-					cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
+					//cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
+					cuft = q_float('txtMount_'+i)*Math.ceil(q_float('txtLengthb_'+i)* q_float('txtWidth_'+i));
 					$('#txtVolume_'+i).val(cuft);
 					if(q_float('txtTvolume_'+i)==0){
 						$('#txtTvolume_'+i).val(Math.ceil(cuft));
@@ -585,7 +586,7 @@
 					<td align="center" style="width:100px"><a>注意事項</a></td>
 					<td align="center" style="width:70px"><a>長cm</a></td>
 					<td align="center" style="width:70px"><a>寬cm</a></td>
-					<td align="center" style="width:70px"><a>高cm</a></td>
+					<td align="center" style="width:70px;display:none;"><a>高cm</a></td>
 					<td align="center" style="width:70px"><a>材積</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
 					<td align="center" style="width:70px"><a>運送需<br>耗高度 </a></td>
@@ -619,7 +620,7 @@
 					<td><input type="text" id="txtMemo.*" style="width:95%;" /></td>
 					<td><input type="text" id="txtLengthb.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtWidth.*" class="num" style="width:95%;" /> </td>
-					<td><input type="text" id="txtHeight.*" class="num" style="width:95%;" /> </td>
+					<td style="display:none;"><input type="text" id="txtHeight.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtVolume.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtWeight.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;" /> </td>

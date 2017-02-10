@@ -58,7 +58,9 @@
 				if (!(q_cur == 1 || q_cur == 2))
 					return;
 				for(var i=0;i<q_bbsCount;i++){
-					cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
+					//只算面積  length*width
+					//cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
+					cuft = Math.ceil(q_float('txtLengthb_'+i)* q_float('txtWidth_'+i));
 					$('#txtVolume_'+i).val(cuft);
 					$('#txtWeight_'+i).val(round(q_float('txtMount_'+i)*q_float('txtUweight_'+i),0));
 					if(q_float('txtTvolume_'+i)==0){
@@ -70,7 +72,9 @@
 					t_weight = 0;
 					for(var j=0;j<q_bbsCount;j++){
 						if($('#txtOrdeno__'+i).val()==$('#txtOrdeno_'+j).val() && $('#txtNo2__'+i).val()==$('#txtNo2_'+j).val()){
-							cuft = round(0.0000353 *q_float('txtMount__'+i)* q_float('txtLengthb_'+j)* q_float('txtWidth_'+j)* q_float('txtHeight_'+j),2); 
+							//只算面積  length*width
+							//cuft = round(0.0000353 *q_float('txtMount__'+i)* q_float('txtLengthb_'+j)* q_float('txtWidth_'+j)* q_float('txtHeight_'+j),2); 
+							cuft = q_float('txtMount__'+i)*Math.ceil(q_float('txtLengthb__'+i)* q_float('txtWidth__'+i));
 							t_weight = round(q_float('txtMount__'+i)*q_float('txtUweight_'+j),0);
 							break;
 						}
@@ -167,6 +171,9 @@
 				$('#mapDirection').click(function(e){
 					displayDirections();
 				});
+				$('#mapAll').click(function(e){
+					displayAll();
+				});
 			}
 			/*function addListeners() {
                 document.getElementById('mapStatus').addEventListener('mousedown', mouseDown, false);
@@ -260,6 +267,8 @@
                     });	
                     $('#btnMap__' + i).click(function(e) {
                     	var n = $(this).attr('id').replace(/^(.*)__(\d+)$/,'$2');
+                    	if($('#txtCarno__'+n).val().length==0)
+                    		return;
                     	$('#mapForm').show().offset({left:$(this).offset().left+250,top:$(this).offset().top});  
                 		initMap();
                         displayRoute(directionsService, directionsDisplay,$('#txtCarno__'+n).val());
@@ -385,6 +394,38 @@
                     				}
                     			}else{
                     				alert('無地點');	
+                    			}
+                			}else if(t_para.action=="tranvccejs"){
+                				var carno = t_para.carno;
+                				as = _q_appendData("tranvccejs", "", true);
+                    			if(as[0]!=undefined){
+                    				markers = [];
+                    				locations = [];
+                    				for(var i=0;i<as.length;i++){
+                    					if(parseFloat(as[i].mount)==0)
+                    						continue;
+                    					locations.push({
+											lat : parseFloat(as[i].lat),
+											lng : parseFloat(as[i].lng),
+											ordeno : as[i].ordeno+'-'+as[i].no2,
+											cust : as[i].cust,
+											text : (i+1)+'',
+											color : 'red',
+											carvolume : as[i].carvolume,
+											volume : as[i].volume,
+											gvolume : as[i].gvolume,
+											evolume : as[i].evolume,
+											ratevolume : as[i].ratevolume,
+											carweight : as[i].carweight,
+											weight : as[i].weight,
+											gweight : as[i].gweight,
+											eweight : as[i].eweight,
+											rateweight : as[i].rateweight
+										});
+                    				}
+                    				for(var i=0;i<locations.length;i++){
+										addMarkerWithTimeout2(i, 300);
+									}
                     			}
                 			}else {
                     			/*$('#txtWeight_'+n).val(0);
@@ -560,6 +601,13 @@
 			}
 			function initMap() {
 				direction = null;
+				
+				if(markers!=undefined && markers.length>0)
+					for(var i=0;i<markers.length;i++){
+						markers[i].setMap(null);	
+					}
+				markers = [];
+				
                 directionsService = new google.maps.DirectionsService();
                 //directionsDisplay = new google.maps.DirectionsRenderer();
                 directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
@@ -664,6 +712,7 @@
                         imgsrc += '&markers=color:green|label:S|'+response.request.origin.lat()+','+response.request.origin.lng();
                         
                         var gvolume=0,evolume=data_car[data_car_current].volume;
+                        var gweight=0,eweight=data_car[data_car_current].weight;
                         
                         for (var i = 0; i < route.legs.length; i++) {
                         	if(i<route.legs.length-1){
@@ -675,6 +724,14 @@
 				                        $('#txtCarvolume__'+(strn_bbt)).val(data_car[data_car_current].volume);
 				                        $('#txtGvolume__'+(strn_bbt)).val(gvolume);
 				                        $('#txtEvolume__'+(strn_bbt)).val(evolume);
+				                        $('#txtCarweight__'+(strn_bbt)).val(data_car[data_car_current].weight);
+				                        $('#txtGweight__'+(strn_bbt)).val(gweight);
+				                        $('#txtEweight__'+(strn_bbt)).val(eweight);
+				                        
+				                        ratevolume = data_car[data_car_current].volume==0?0:round(gvolume/data_car[data_car_current].volume*100,2);
+				                        rateweight = data_car[data_car_current].weight==0?0:round(gweight/data_car[data_car_current].weight*100,2);
+				                        $('#txtRatevolume__'+(strn_bbt)).val(ratevolume);
+				                        $('#txtRateweight__'+(strn_bbt)).val(rateweight);
 				                        
 			                        	$('#txtAddrno__'+(strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[0].addrno);
 				                		$('#txtAddr__'+(strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[0].addr);
@@ -700,6 +757,15 @@
                         			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
                         			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
 			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
+			                        $('#txtCarweight__'+(i+strn_bbt)).val(data_car[data_car_current].weight);
+                        			$('#txtGweight__'+(i+strn_bbt)).val(gweight);
+			                        $('#txtEweight__'+(i+strn_bbt)).val(eweight);
+			                        
+			                        ratevolume = data_car[data_car_current].volume==0?0:round(gvolume/data_car[data_car_current].volume*100,2);
+			                        rateweight = data_car[data_car_current].weight==0?0:round(gweight/data_car[data_car_current].weight*100,2);
+			                        $('#txtRatevolume__'+(i+strn_bbt)).val(ratevolume);
+			                        $('#txtRateweight__'+(i+strn_bbt)).val(rateweight);
+				                        
                         			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].addrno);
 	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].addr);
 	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[n+1].address);
@@ -719,6 +785,15 @@
                         				$('#txtCarvolume__'+(strn_bbt)).val(data_car[data_car_current].volume);
                         				$('#txtGvolume__'+(strn_bbt)).val(gvolume);
 			                        	$('#txtEvolume__'+(strn_bbt)).val(evolume);
+			                        	$('#txtCarweight__'+(strn_bbt)).val(data_car[data_car_current].weight);
+                        				$('#txtGweight__'+(strn_bbt)).val(gweight);
+			                        	$('#txtEweight__'+(strn_bbt)).val(eweight);
+			                        	
+			                        	ratevolume = data_car[data_car_current].volume==0?0:round(gvolume/data_car[data_car_current].volume*100,2);
+				                        rateweight = data_car[data_car_current].weight==0?0:round(gweight/data_car[data_car_current].weight*100,2);
+				                        $('#txtRatevolume__'+(strn_bbt)).val(ratevolume);
+				                        $('#txtRateweight__'+(strn_bbt)).val(rateweight);
+				                        
                         				$('#txtAddrno__'+(strn_bbt)).val($('#txtAddrno').val());
 		                        		$('#txtAddr__'+(strn_bbt)).val($('#txtAddr').val());
 		                        		$('#txtAddress__'+(strn_bbt)).val($('#txtAddress').val());
@@ -736,6 +811,17 @@
                         			evolume-=data_car[data_car_current].ordevolume[n];
                         			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
 			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
+                        			$('#txtCarweight__'+(i+strn_bbt)).val(data_car[data_car_current].weight);
+                        			gweight+=data_car[data_car_current].ordeweight[n];
+                        			eweight-=data_car[data_car_current].ordeweight[n];
+                        			$('#txtGweight__'+(i+strn_bbt)).val(gweight);
+			                        $('#txtEweight__'+(i+strn_bbt)).val(eweight);
+                        			
+                        			ratevolume = data_car[data_car_current].volume==0?0:round(gvolume/data_car[data_car_current].volume*100,2);
+			                        rateweight = data_car[data_car_current].weight==0?0:round(gweight/data_car[data_car_current].weight*100,2);
+			                        $('#txtRatevolume__'+(i+strn_bbt)).val(ratevolume);
+			                        $('#txtRateweight__'+(i+strn_bbt)).val(rateweight);
+				                        
                         			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addrno);
 	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].addr);
 	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].address);
@@ -768,6 +854,17 @@
                         			evolume-=data_car[data_car_current].ordevolume[0];
                         			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
 			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
+                        			$('#txtCarweight__'+(i+strn_bbt)).val(data_car[data_car_current].weight);
+                        			gweight+=data_car[data_car_current].ordeweight[0];
+                        			eweight-=data_car[data_car_current].ordeweight[0];
+                        			$('#txtGweight__'+(i+strn_bbt)).val(gweight);
+			                        $('#txtEweight__'+(i+strn_bbt)).val(eweight);
+                        			
+                        			ratevolume = data_car[data_car_current].volume==0?0:round(gvolume/data_car[data_car_current].volume*100,2);
+			                        rateweight = data_car[data_car_current].weight==0?0:round(gweight/data_car[data_car_current].weight*100,2);
+			                        $('#txtRatevolume__'+(i+strn_bbt)).val(ratevolume);
+			                        $('#txtRateweight__'+(i+strn_bbt)).val(rateweight);
+				                        
                         			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].addrno);
 	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].addr);
 	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].address);
@@ -792,6 +889,15 @@
                         			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
                         			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
 			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
+                        			$('#txtCarweight__'+(i+strn_bbt)).val(data_car[data_car_current].weight);
+                        			$('#txtGweight__'+(i+strn_bbt)).val(gweight);
+			                        $('#txtEweight__'+(i+strn_bbt)).val(eweight);
+                        			
+                        			ratevolume = data_car[data_car_current].volume==0?0:round(gvolume/data_car[data_car_current].volume*100,2);
+			                        rateweight = data_car[data_car_current].weight==0?0:round(gweight/data_car[data_car_current].weight*100,2);
+			                        $('#txtRatevolume__'+(i+strn_bbt)).val(ratevolume);
+			                        $('#txtRateweight__'+(i+strn_bbt)).val(rateweight);
+				                        
                         			$('#txtAddrno__'+(i+strn_bbt)).val($('#txtEndaddrno').val());
 	                        		$('#txtAddr__'+(i+strn_bbt)).val($('#txtEndaddr').val());
 	                        		$('#txtAddress__'+(i+strn_bbt)).val($('#txtEndaddress').val());
@@ -986,7 +1092,9 @@
 	                		t_mount = data_orde[i].emount;
 	                		while(t_mount>=0){
 	            				t_weight = round(data_orde[i].uweight * t_mount,2);
-	            				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	            				//只算面積
+	            				//t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	            				t_cuft = t_mount*Math.ceil(data_orde[i].lengthb*data_orde[i].width);
 	            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
 	            					data_car[j].gvolume += t_cuft;
 	                				data_car[j].evolume -= t_cuft;
@@ -1017,7 +1125,8 @@
 	                		t_mount = data_orde[i].emount;
 	                		while(t_mount>=0){
 	            				t_weight = round(data_orde[i].uweight * t_mount,2);
-	            				t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	            				//t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	            				t_cuft = t_mount*Math.ceil(data_orde[i].lengthb*data_orde[i].width);
 	            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
 	            					data_car[j].gvolume += t_cuft;
 	                				data_car[j].evolume -= t_cuft;
@@ -1045,7 +1154,8 @@
 									t_mount = data_orde[l].emount;
 			                		while(t_mount>=0){
 		                				t_weight = round(data_orde[l].uweight * t_mount,2);
-		                				t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
+		                				//t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
+		                				t_cuft = t_mount*Math.ceil(data_orde[l].lengthb*data_orde[l].width);
 		                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
 		                					data_car[j].gvolume += t_cuft;
 			                				data_car[j].evolume -= t_cuft;
@@ -1155,10 +1265,18 @@
            // var stylesArray = [{"featureType":"administrative","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"administrative.province","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"saturation":-100},{"lightness":65},{"visibility":"on"}]},{"featureType":"poi","elementType":"all","stylers":[{"saturation":-100},{"lightness":"50"},{"visibility":"simplified"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":"-100"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"all","stylers":[{"lightness":"30"}]},{"featureType":"road.local","elementType":"all","stylers":[{"lightness":"40"}]},{"featureType":"transit","elementType":"all","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"water","elementType":"geometry","stylers":[{"hue":"#ffff00"},{"lightness":-25},{"saturation":-97}]},{"featureType":"water","elementType":"labels","stylers":[{"lightness":-25},{"saturation":-100}]}];
 		
 			function displayRoute(directionsService, directionsDisplay,carno) {
-				
+				$('#mapStatus').find('.carno').eq(0).text(carno);//記錄車牌,以便  當日全部  顯示用
+				if($('#mapAll').prop('checked')){
+					//顯示該車當日全部所跑過的點
+					initMap();
+					var carno = $('#mapStatus').find('.carno').eq(0).text();
+					var date = $('#txtDatea').val();
+					q_gt('tranvccejs', "where=^^['"+carno+"','"+date+"')^^", 0, 0, 0, JSON.stringify({action:"tranvccejs",carno:carno}));
+					
+					return;
+				}
 				locations = [];
                 waypts = [];
-                
                 var begin=-1,end = -1;
                 for(j=0;j<q_bbtCount;j++){
                 	if($('#txtCarno__'+j).val()!=carno)
@@ -1180,7 +1298,13 @@
 							carvolume : q_float('txtCarvolume__'+j),
 							volume : q_float('txtVolume__'+j),
 							gvolume : q_float('txtGvolume__'+j),
-							evolume : q_float('txtEvolume__'+j)
+							evolume : q_float('txtEvolume__'+j),
+							ratevolume : q_float('txtRatevolume__'+j),
+							carweight : q_float('txtCarweight__'+j),
+							weight : q_float('txtWeight__'+j),
+							gweight : q_float('txtGweight__'+j),
+							eweight : q_float('txtEweight__'+j),
+							rateweight : q_float('txtRateweight__'+j)
 						});
 						origin = new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val()));
                 	}else if(j==end){
@@ -1192,7 +1316,13 @@
 							carvolume : q_float('txtCarvolume__'+j),
 							volume : q_float('txtVolume__'+j),
 							gvolume : q_float('txtGvolume__'+j),
-							evolume : q_float('txtEvolume__'+j)
+							evolume : q_float('txtEvolume__'+j),
+							ratevolume : q_float('txtRatevolume__'+j),
+							carweight : q_float('txtCarweight__'+j),
+							weight : q_float('txtWeight__'+j),
+							gweight : q_float('txtGweight__'+j),
+							eweight : q_float('txtEweight__'+j),
+							rateweight : q_float('txtRateweight__'+j)
 						});
 						destination = new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val()));
                 	}else{
@@ -1205,7 +1335,13 @@
 							carvolume : q_float('txtCarvolume__'+j),
 							volume : q_float('txtVolume__'+j),
 							gvolume : q_float('txtGvolume__'+j),
-							evolume : q_float('txtEvolume__'+j)
+							evolume : q_float('txtEvolume__'+j),
+							ratevolume : q_float('txtRatevolume__'+j),
+							carweight : q_float('txtCarweight__'+j),
+							weight : q_float('txtWeight__'+j),
+							gweight : q_float('txtGweight__'+j),
+							eweight : q_float('txtEweight__'+j),
+							rateweight : q_float('txtRateweight__'+j)
 						});
 						waypts.push({
 	                        location : new google.maps.LatLng(parseFloat($('#txtLat__'+j).val()),parseFloat($('#txtLng__'+j).val())),
@@ -1234,10 +1370,28 @@
                 });
             }
             function displayDirections(){
-            	if($('#mapDirection').prop('checked'))
-            		directionsDisplay.setDirections(direction);
+            	if($('#mapDirection').prop('checked')){
+            		if(direction==null){
+            			var carno=$('#mapStatus').find('.carno').eq(0).text();
+						displayRoute(directionsService, directionsDisplay,carno);
+            		}else{
+            			directionsDisplay.setDirections(direction);
+            		}
+            	}
             	else
             		directionsDisplay.set('directions', null);
+            }
+            function displayAll(carno,date){
+            	if($('#mapAll').prop('checked')){
+            		$('#mapDirection').attr('disabled','disabled');
+            		$('#mapDirection').prop('checked',false);
+            	}
+				else{
+					$('#mapDirection').removeAttr('disabled');
+					initMap();
+				}
+				var carno=$('#mapStatus').find('.carno').eq(0).text();
+				displayRoute(directionsService, directionsDisplay,carno);
             }
             function addMarkerWithTimeout(i, timeout){
             	window.setTimeout(function() {
@@ -1269,8 +1423,14 @@
                     	var volume = locations[n].volume;
                     	var gvolume = locations[n].gvolume;
                     	var evolume = locations[n].evolume;
+                    	var ratevolume = locations[n].ratevolume;
+                    	var carweight = locations[n].carweight;
+                    	var weight = locations[n].weight;
+                    	var gweight = locations[n].gweight;
+                    	var eweight = locations[n].eweight;
+                    	var rateweight = locations[n].rateweight;
                     	var rate = locations[n].carvolume==0?'':round(locations[n].gvolume/locations[n].carvolume*100,2)+'%';
-	                    var contentString = '<div id="infowindow" style="width:120px;height:100px;"><a>' + text + '</a><br><a>材積：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+rate+'</a><br><a>可承載：</a><a>'+evolume+'</a></div>';
+	                    var contentString = '<div id="infowindow" style="width:150px;height:180px;"><a>' + text + '</a><br><a>材積：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+ratevolume+'</a><br><a>可承載：</a><a>'+evolume+'</a><br><br><a>重量：</a><a>'+weight+'</a><br><a>已承載重量：</a><a>'+gweight+'</a><br><a>承載率：</a><a>'+rateweight+'%</a><br><a>可承載重量：</a><a>'+eweight+'</a></div>';
 	                    infowindow.close();
 		                infowindow.setContent(contentString);
 		                infowindow.open(map,markers[n]);
@@ -1278,23 +1438,23 @@
 	                markers.push(marker);
 				}, timeout);
             }
-            /*function addMarkerWithTimeout(position, label, color, timeout) {
-				window.setTimeout(function() {
-					var marker = new google.maps.Marker({
-						position: position,
-						label: label,
-						color: color,
-						map: map,
+           	function addMarkerWithTimeout2(i, timeout){
+            	window.setTimeout(function() {
+            		var marker = new google.maps.Marker({
+						position: {lat:locations[i].lat,lng:locations[i].lng},
+						opacity : 0.6,
+                        label : {
+	                            text : locations[i].text,
+	                            color : "darkred",
+	                            fontSize : "16px",
+	                            fontWeight : "900",
+	                            fontFamily : "微軟正黑體"
+	                       	},
+                       	map : map,
 						animation: google.maps.Animation.DROP
 						});
-					marker.setIcon(pinSymbol(color));
-					marker.setLabel({
-                            text : label,
-                            color : "darkred",
-                            fontSize : "16px",
-                            fontFamily : "微軟正黑體"
-                       	});
-                   	marker.addListener('click', function(e) {
+					marker.setIcon(pinSymbol(locations[i].color));
+					marker.addListener('click', function(e) {
                     	var n = -1;
                     	for(var i=0;i<markers.length;i++){
                     		if(markers[i] === this){
@@ -1303,16 +1463,28 @@
                     		}
                     	}
                     	//承載量、承載率、已承載、可承載
-                    	var a = 0;
-	                    var contentString = '<div id="infowindow" style="width:200px;height:150px;"><a>名稱：</a><a>' + $('#txtAddr').val() + '</a><br><a>地址：</a><a class="address"></a><br><br><input type="button" class="remove" value="移除" memo="-1" style="display:none;"/></div>';
+                    	var text = locations[i].text;
+                    	var ordeno = locations[i].ordeno;
+                    	var cust = locations[i].cust;
+                    	var carvolume = locations[n].carvolume;
+                    	var volume = locations[n].volume;
+                    	var gvolume = locations[n].gvolume;
+                    	var evolume = locations[n].evolume;
+                    	var ratevolume = locations[n].ratevolume;
+                    	var carweight = locations[n].carweight;
+                    	var weight = locations[n].weight;
+                    	var gweight = locations[n].gweight;
+                    	var eweight = locations[n].eweight;
+                    	var rateweight = locations[n].rateweight;
+                    	var rate = locations[n].carvolume==0?'':round(locations[n].gvolume/locations[n].carvolume*100,2)+'%';
+	                    var contentString = '<div id="infowindow" style="width:200px;height:230px;"><a>' + text + '</a><br><a>訂單：</a><a>'+ordeno+'</a><br><a>貨主：</a><a>'+cust+'</a><br><br><a>材積：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+ratevolume+'%</a><br><a>可承載：</a><a>'+evolume+'</a><br><br><a>重量：</a><a>'+weight+'</a><br><a>已承載重量：</a><a>'+gweight+'</a><br><a>承載率：</a><a>'+rateweight+'%</a><br><a>可承載重量：</a><a>'+eweight+'</a></div>';
 	                    infowindow.close();
 		                infowindow.setContent(contentString);
 		                infowindow.open(map,markers[n]);
-	                    infowindow.addListener('domready',infowindowReady(-1));
 	                });
-					markers.push(marker);
+	                markers.push(marker);
 				}, timeout);
-			}*/
+            }
 			function pinSymbol(color) {
                 return {
                     path : 'M 0,0 C -1,-10 -5,-11 -5,-15 A 5,5 0 1,1 5,-15 C 5,-11 1,-10 0,0 z',
@@ -1420,10 +1592,10 @@
 				margin: -1px;
 			}
 			.dbbs {
-				width: 2300px;
+				width: 2400px;
 			}
 			.dbbt {
-				width: 1600px;
+				width: 1800px;
 			}
 			.tbbs a {
 				font-size: medium;
@@ -1573,7 +1745,7 @@
 					<td align="center" style="width:70px"><a>重量</a></td>
 					<td align="center" style="width:70px"><a>長</a></td>
 					<td align="center" style="width:70px"><a>寬</a></td>
-					<td align="center" style="width:70px"><a>高</a></td>
+					<td align="center" style="width:70px;display:none;"><a>高</a></td>
 					<td align="center" style="width:70px"><a>材積</a></td>
 					<td align="center" style="width:70px"><a>運送需<br>耗高度</a></td>
 					<td align="center" style="width:70px"><a>運送需<br>耗材積</a></td>
@@ -1587,7 +1759,7 @@
 					<td align="center" style="width:100px"><a>提貨完<br>工時間</a></td>
 					<td align="center" style="width:100px"><a>卸貨完<br>工時間</a></td>
 					<td align="center" style="width:100px"><a>空瓶完<br>工時間</a></td>
-					<td align="center" style="width:120px"><a>訂單</a></td>
+					<td align="center" style="width:200px"><a>訂單</a></td>
 					<td align="center" style="width:30px"><a>提<br>貨</a></td>
 					<td align="center" style="width:30px"><a>卸<br>貨</a></td>
 					<td align="center" style="display:none;width:40px"><a>空瓶</a></td>
@@ -1618,7 +1790,7 @@
 					<td><input type="text" id="txtWeight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtLengthb.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtWidth.*" class="num bbsWeight" style="width:95%;"/></td>
-					<td><input type="text" id="txtHeight.*" class="num" style="width:95%;"/></td>
+					<td style="display:none;"><input type="text" id="txtHeight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtVolume.*" class="num " style="width:95%;"/></td>
 					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtTvolume.*" class="num bbsVolume" style="width:95%;"/></td>
@@ -1671,10 +1843,14 @@
 					<td align="center" style="width:70px"><a>裝卸貨<br>時間(分)</a></td>
 					<td align="center" style="width:70px"><a>完工時間</a></td>
 					<td align="center" style="width:150px"><a>備註</a></td>
-					<td align="center" style="width:150px"><a>訂單</a></td>
+					<td align="center" style="width:200px"><a>訂單</a></td>
 					<td align="center" style="width:300px"><a>地址</a></td>
-					<td align="center" style="width:70px"><a>已承載</a></td>
-					<td align="center" style="width:70px"><a>可承載</a></td>
+					<td align="center" style="width:70px"><a>已承載<br>材積</a></td>
+					<td align="center" style="width:70px"><a>可承載<br>材積</a></td>
+					<td align="center" style="width:70px"><a>承載率%<br>(材積)</a></td>
+					<td align="center" style="width:70px"><a>已承載<br>重量</a></td>
+					<td align="center" style="width:70px"><a>可承載<br>重量</a></td>
+					<td align="center" style="width:70px"><a>承載率%<br>(重量)</a></td>
 				</tr>
 				<tr class="data" style='background:pink;'>
 					<td align="center">
@@ -1705,6 +1881,7 @@
 						<input type="text" id="txtVolume..*" class="num" style="width:95%;"/>
 						<!--記錄車輛 承載量(材積)-->
 						<input type="text" id="txtCarvolume..*" style="display:none;"/>
+						<input type="text" id="txtCarweight..*" style="display:none;"/>
 					</td>
 					<td><input type="text" id="txtWeight..*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtMins1..*" class="num" style="width:95%;"/></td>
@@ -1724,13 +1901,26 @@
 					</td>
 					<td><input type="text" id="txtGvolume..*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtEvolume..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtRatevolume..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtGweight..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtEweight..*" class="num" style="width:95%;"/></td>
+					<td><input type="text" id="txtRateweight..*" class="num" style="width:95%;"/></td>
 				</tr>
 			</table>
 		</div>
 		<input id="q_sys" type="hidden" />
 		<div id="pathImg"> </div>
 		<div id="mapForm" style="width:820px;height:650px;position: absolute;top:50px;left:600px;border-width: 0px;z-index: 80; background-color:pink;display:none;">
-			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;color:white;"><a style="float:left;">滑鼠右鍵拖曳</a><span style="display:block;width:50px;height:1px;float:left;"></span><a style="float:left;">路徑</a><input type="checkbox" id="mapDirection" style="float:left;"/></div>
+			<div id="mapStatus" style="width:820px;height:20px;position: relative; top:0px;left:0px; background-color:darkblue;color:white;"><a style="float:left;">滑鼠右鍵拖曳</a>
+				<span style="display:block;width:50px;height:1px;float:left;"> </span>
+				<a class="carno" style="float:left;"> </a>
+				<span style="display:block;width:50px;height:1px;float:left;"> </span>
+				<a style="float:left;">路徑</a>
+				<input type="checkbox" id="mapDirection" style="float:left;"/>
+				<span style="display:block;width:50px;height:1px;float:left;"> </span>
+				<a style="float:left;">當日全部</a>
+				<input type="checkbox" id="mapAll" style="float:left;"/>
+			</div>
 			<div id="map" style="width:800px;height:600px;position: relative; top:5px;left:10px; "> </div>
 		</div>
 		<!--<div id="map" style="width:400px;height:400px;display:none;position: absolute;"> </div>-->

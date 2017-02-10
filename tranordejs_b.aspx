@@ -123,7 +123,7 @@
 					<td align="center" style="width:60px;"><a>數量</a></td>
 					<td align="center" style="width:60px;"><a>長</a></td>
 					<td align="center" style="width:60px;"><a>寬</a></td>
-					<td align="center" style="width:60px;"><a>高</a></td>
+					<td align="center" style="width:60px;display:none;"><a>高</a></td>
 					<td align="center" style="width:60px;"><a>材積</a></td>
 					<td align="center" style="width:60px;"><a>重量</a></td>
 					<td align="center" style="width:60px;"><a>運送<br>高度</a></td>
@@ -146,7 +146,7 @@
 					<td align="center" style="width:60px;"><a> </a></td>
 					<td align="center" style="width:60px;"><a> </a></td>
 					<td align="center" style="width:60px;"><a> </a></td>
-					<td align="center" style="width:60px;"><a> </a></td>
+					<td align="center" style="width:60px;display:none;"><a> </a></td>
 					<td align="center" style="width:60px;"><a> </a></td>
 					<td align="center" style="width:60px;"><a> </a></td>
 					<td align="center" style="width:60px;"><a> </a></td>
@@ -184,7 +184,7 @@
 					<td style="width:60px;"><input id="txtEmount.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtLengthb.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtWidth.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
-					<td style="width:60px;"><input id="txtHeight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;display:none;"><input id="txtHeight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtVolume.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtWeight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtTheight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
