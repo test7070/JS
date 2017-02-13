@@ -39,6 +39,8 @@
 				$('#btnPrev').hide();
 				$('#btnNext').hide();
 				$('#btnBott').hide();
+				
+				
 			}
             function q_gtPost(t_name) {
 				switch (t_name) {
@@ -101,6 +103,15 @@
 					$('#lblNo_'+i).text((i+1));
 				}
 				//_readonlys(true);
+				
+				switch(q_getPara('sys.project').toUpperCase()){
+					case 'JS':
+						$('.js_hide').hide();
+						$('#lblVolume1').text('面積');
+						break;
+					default:
+						break;
+				}
 			}
 		</script>
 		<style type="text/css">
@@ -124,10 +135,10 @@
 					<td align="center" style="width:60px;"><a>長</a></td>
 					<td align="center" style="width:60px;"><a>寬</a></td>
 					<td align="center" style="width:60px;" class="js_hide"><a>高</a></td>
-					<td align="center" style="width:60px;"><a>材積</a></td>
+					<td align="center" style="width:60px;"><a id="lblVolume1">材積</a></td>
 					<td align="center" style="width:60px;"><a>重量</a></td>
-					<td align="center" style="width:60px;"><a>運送<br>高度</a></td>
-					<td align="center" style="width:60px;"><a>運送<br>材積</a></td>
+					<td align="center" style="width:60px;" class="js_hide"><a>運送<br>高度</a></td>
+					<td align="center" style="width:60px;" class="js_hide"><a>運送<br>材積</a></td>
 				</tr>
 			</table>
 		</div>
@@ -187,8 +198,8 @@
 					<td style="width:60px;" class="js_hide"><input id="txtHeight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtVolume.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 					<td style="width:60px;"><input id="txtWeight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
-					<td style="width:60px;"><input id="txtTheight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
-					<td style="width:60px;"><input id="txtTvolume.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;" class="js_hide"><input id="txtTheight.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
+					<td style="width:60px;" class="js_hide"><input id="txtTvolume.*" type="text" style="text-align:right;width:95%;" readonly="readonly"/></td>
 				</tr>
 			</table>
 		</div>

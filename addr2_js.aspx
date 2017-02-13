@@ -402,6 +402,9 @@
                     lat : 24.8013848,
                     lng : 120.9494774
                 });
+                map.setOptions({draggableCursor: 'default'
+                	,draggingCursor:'default'
+                	,fullscreenControl: true});
 				markers = [];
                 //滑鼠左鍵 新增地點
                 map.addListener('click', function(e) {

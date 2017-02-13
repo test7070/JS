@@ -56,6 +56,7 @@
 						case 'JS':
 							//只算面積  length*width
 							cuft = q_float('txtMount_'+i)*Math.ceil(q_float('txtLengthb_'+i)* q_float('txtWidth_'+i));
+							$('#txtTvolume_'+i).val(Math.ceil(cuft));
 							break;
 						default:
 							cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
@@ -88,13 +89,7 @@
 			function mainPost() {
 				q_mask(bbmMask);
 				
-				switch(q_getPara('sys.project').toUpperCase()){
-					case 'JS':
-						$('.js_hide').hide();
-						break;
-					default:
-						break;
-				}
+				
 			}
 
 			function bbsAssign() {
@@ -226,6 +221,14 @@
 
 			function refresh(recno) {
 				_refresh(recno);
+				switch(q_getPara('sys.project').toUpperCase()){
+					case 'JS':
+						$('.js_hide').hide();
+						$('#lblVolume1').text('面積');
+						break;
+					default:
+						break;
+				}
 			}
 
 			function readonly(t_para, empty) {
@@ -606,10 +609,10 @@
 					<td align="center" style="width:70px"><a>長cm</a></td>
 					<td align="center" style="width:70px"><a>寬cm</a></td>
 					<td align="center" style="width:70px;" class="js_hide"><a>高cm</a></td>
-					<td align="center" style="width:70px"><a>材積</a></td>
+					<td align="center" style="width:70px"><a id="lblVolume1">材積</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
-					<td align="center" style="width:70px"><a>運送需<br>耗高度 </a></td>
-					<td align="center" style="width:70px"><a>運送需<br>耗材積</a></td>
+					<td align="center" style="width:70px" class="js_hide"><a>運送需<br>耗高度 </a></td>
+					<td align="center" style="width:70px" class="js_hide"><a>運送需<br>耗材積</a></td>
 					<td align="center" style="width:150px"><a>提貨日期</a></td>
 					<td align="center" style="width:150px"><a>卸貨日期</a></td>
 				</tr>
@@ -642,8 +645,8 @@
 					<td class="js_hide"><input type="text" id="txtHeight.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtVolume.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtWeight.*" class="num" style="width:95%;" /> </td>
-					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;" /> </td>
-					<td><input type="text" id="txtTvolume.*" class="num" style="width:95%;" /> </td>
+					<td class="js_hide"><input type="text" id="txtTheight.*" class="num" style="width:95%;" /> </td>
+					<td class="js_hide"><input type="text" id="txtTvolume.*" class="num" style="width:95%;" /> </td>
 					<td>
 						<input type="text" id="txtDate1.*" style="width:45%;" />
 						<input type="text" id="txtTime1.*" style="width:45%;" />

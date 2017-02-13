@@ -38,6 +38,8 @@
 					case 'JS':
 						//只算面積  length*width
 						cuft = Math.ceil(q_float('txtLengthb')* q_float('txtWidth'));
+						//因為隱藏了所以直接寫入
+						$('#txtTvolume').val(Math.ceil(cuft));
 						break;
 					default:
 						cuft = round(0.0000353 * q_float('txtLengthb')* q_float('txtWidth')* q_float('txtHeight'),2); 
@@ -62,6 +64,7 @@
 				switch(q_getPara('sys.project').toUpperCase()){
 					case 'JS':
 						$('.js_hide').hide();
+						$('#lblStkmount').text('面積');
 						break;
 					default:
 						break;
@@ -420,11 +423,11 @@
 						<td><span> </span><a id='lblStkmount' class="lbl">材積</a></td>
 						<td><input id="txtStkmount" type="text"  class="txt c1 num"/></td>
 					</tr>
-					<tr>
+					<tr class="js_hide">
 						<td><span> </span><a class="lbl">運送需耗高度</a></td>
 						<td><input id="txtTheight" type="text" class="txt c1 num"/></td>
 					</tr>
-					<tr>
+					<tr class="js_hide">
 						<td><span> </span><a class="lbl">運送需耗材積</a></td>
 						<td><input id="txtTvolume" type="text" class="txt c1 num"/></td>
 					</tr>

@@ -63,6 +63,8 @@
 						case 'JS':
 							//只算面積  length*width
 							cuft = q_float('txtMount_'+i) * Math.ceil(q_float('txtLengthb_'+i)* q_float('txtWidth_'+i));
+							//因為隱藏了所以直接寫入
+							$('#txtTvolume_'+i).val(Math.ceil(cuft));
 							break;
 						default:
 							cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
@@ -79,9 +81,15 @@
 					t_weight = 0;
 					for(var j=0;j<q_bbsCount;j++){
 						if($('#txtOrdeno__'+i).val()==$('#txtOrdeno_'+j).val() && $('#txtNo2__'+i).val()==$('#txtNo2_'+j).val()){
-							//只算面積  length*width
-							//cuft = round(0.0000353 *q_float('txtMount__'+i)* q_float('txtLengthb_'+j)* q_float('txtWidth_'+j)* q_float('txtHeight_'+j),2); 
-							cuft = q_float('txtMount__'+i)*Math.ceil(q_float('txtLengthb__'+i)* q_float('txtWidth__'+i));
+							switch(q_getPara('sys.project').toUpperCase()){
+								case 'JS':
+									//只算面積  length*width
+									cuft = q_float('txtMount__'+i)*Math.ceil(q_float('txtLengthb__'+i)* q_float('txtWidth__'+i));
+									break;
+								default:
+									cuft = round(0.0000353 *q_float('txtMount__'+i)* q_float('txtLengthb_'+j)* q_float('txtWidth_'+j)* q_float('txtHeight_'+j),2); 
+									break;
+							}
 							t_weight = round(q_float('txtMount__'+i)*q_float('txtUweight_'+j),0);
 							break;
 						}
@@ -110,14 +118,6 @@
 
 			function mainPost() {
 				q_mask(bbmMask);
-				
-				switch(q_getPara('sys.project').toUpperCase()){
-					case 'JS':
-						$('.js_hide').hide();
-						break;
-					default:
-						break;
-				}
 				
 				$('#btnOrde').click(function(e){
                 	var t_where ='';
@@ -260,6 +260,7 @@
 				},function(e){
 					$(this).parent().css('background','#cad3ff');
 				});
+				refreshBbs();
 			}
 			function refreshWV(n){
 				var t_productno = $.trim($('#txtProductno_'+n).val());
@@ -298,6 +299,7 @@
 				},function(e){
 					$(this).parent().css('background','pink');
 				});
+				refreshBbs();
             }
 
 			function bbsSave(as) {
@@ -528,6 +530,22 @@
 				_refresh(recno);
 				$('#img').attr('src',$('#txtImg').val());
 				$('#_carno').children().remove();
+				refreshBbs();
+				
+			}
+			function refreshBbs(){
+				switch(q_getPara('sys.project').toUpperCase()){
+					case 'JS':
+						$('.js_hide').hide();
+						$('#lblVolume1').text('面積');
+						$('#lblVolume2').text('面積');
+						$('#lblVolume3').html('已承載<br>面積');
+						$('#lblVolume4').html('可承載<br>面積');
+						$('#lblVolume5').html('承載率%<br>(面積)');
+						break;
+					default:
+						break;
+				}
 			}
 
 			function readonly(t_para, empty) {
@@ -633,6 +651,9 @@
                     	lng : 120.9494774
                     }
                 });
+                map.setOptions({draggableCursor: 'default'
+                	,draggingCursor:'default'
+                	,fullscreenControl: true});
                 directionsDisplay.setMap(map);
                 
                 infowindow = new google.maps.InfoWindow({content: ''});
@@ -1445,7 +1466,10 @@
                     	var eweight = locations[n].eweight;
                     	var rateweight = locations[n].rateweight;
                     	var rate = locations[n].carvolume==0?'':round(locations[n].gvolume/locations[n].carvolume*100,2)+'%';
-	                    var contentString = '<div id="infowindow" style="width:150px;height:180px;"><a>' + text + '</a><br><a>材積：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+ratevolume+'%</a><br><a>可承載：</a><a>'+evolume+'</a><br><br><a>重量：</a><a>'+weight+'</a><br><a>已承載重量：</a><a>'+gweight+'</a><br><a>承載率：</a><a>'+rateweight+'%</a><br><a>可承載重量：</a><a>'+eweight+'</a></div>';
+	                    
+	                    var text_volume = q_getPara('sys.project').toUpperCase() == 'JS' ? '面積':'材積';
+	                    
+	                    var contentString = '<div id="infowindow" style="width:150px;height:180px;"><a>' + text + '</a><br><a>'+text_volume+'：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+ratevolume+'%</a><br><a>可承載：</a><a>'+evolume+'</a><br><br><a>重量：</a><a>'+weight+'</a><br><a>已承載重量：</a><a>'+gweight+'</a><br><a>承載率：</a><a>'+rateweight+'%</a><br><a>可承載重量：</a><a>'+eweight+'</a></div>';
 	                    infowindow.close();
 		                infowindow.setContent(contentString);
 		                infowindow.open(map,markers[n]);
@@ -1492,7 +1516,8 @@
                     	var eweight = locations[n].eweight;
                     	var rateweight = locations[n].rateweight;
                     	var rate = locations[n].carvolume==0?'':round(locations[n].gvolume/locations[n].carvolume*100,2)+'%';
-	                    var contentString = '<div id="infowindow" style="width:200px;height:230px;"><a>' + text + '</a><br><a>訂單：</a><a>'+ordeno+'</a><br><a>貨主：</a><a>'+cust+'</a><br><br><a>材積：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+ratevolume+'%</a><br><a>可承載：</a><a>'+evolume+'</a><br><br><a>重量：</a><a>'+weight+'</a><br><a>已承載重量：</a><a>'+gweight+'</a><br><a>承載率：</a><a>'+rateweight+'%</a><br><a>可承載重量：</a><a>'+eweight+'</a></div>';
+	                   	var text_volume = q_getPara('sys.project').toUpperCase() == 'JS' ? '面積':'材積';
+	                    var contentString = '<div id="infowindow" style="width:200px;height:230px;"><a>' + text + '</a><br><a>訂單：</a><a>'+ordeno+'</a><br><a>貨主：</a><a>'+cust+'</a><br><br><a>'+text_volume+'：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+ratevolume+'%</a><br><a>可承載：</a><a>'+evolume+'</a><br><br><a>重量：</a><a>'+weight+'</a><br><a>已承載重量：</a><a>'+gweight+'</a><br><a>承載率：</a><a>'+rateweight+'%</a><br><a>可承載重量：</a><a>'+eweight+'</a></div>';
 	                    infowindow.close();
 		                infowindow.setContent(contentString);
 		                infowindow.open(map,markers[n]);
@@ -1761,9 +1786,9 @@
 					<td align="center" style="width:70px"><a>長</a></td>
 					<td align="center" style="width:70px"><a>寬</a></td>
 					<td align="center" style="width:70px;" class="js_hide"><a>高</a></td>
-					<td align="center" style="width:70px"><a>材積</a></td>
-					<td align="center" style="width:70px"><a>運送需<br>耗高度</a></td>
-					<td align="center" style="width:70px"><a>運送需<br>耗材積</a></td>
+					<td align="center" style="width:70px"><a id="lblVolume1">材積</a></td>
+					<td align="center" style="width:70px" class="js_hide"><a>運送需<br>耗高度</a></td>
+					<td align="center" style="width:70px" class="js_hide"><a>運送需<br>耗材積</a></td>
 					<td align="center" style="width:70px"><a>裝卸貨<br>時間(分)</a></td>
 					<td align="center" style="width:30px"><a>指<br>定</a></td>
 					<td align="center" style="width:170px"><a>地點</a></td>
@@ -1807,8 +1832,8 @@
 					<td><input type="text" id="txtWidth.*" class="num bbsWeight" style="width:95%;"/></td>
 					<td class="js_hide"><input type="text" id="txtHeight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtVolume.*" class="num " style="width:95%;"/></td>
-					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;"/></td>
-					<td><input type="text" id="txtTvolume.*" class="num bbsVolume" style="width:95%;"/></td>
+					<td class="js_hide"><input type="text" id="txtTheight.*" class="num" style="width:95%;"/></td>
+					<td class="js_hide"><input type="text" id="txtTvolume.*" class="num bbsVolume" style="width:95%;"/></td>
 					<td><input type="text" id="txtMins.*" class="num" style="width:95%;"/></td>
 					<td align="center"><input type="checkbox" id="chkIsassign.*"/></td>
 					<td>
@@ -1851,7 +1876,7 @@
 					<td align="center" style="width:250px"><a>地點</a></td>
 					<td align="center" style="width:120px"><a>品名</a></td>
 					<td align="center" style="width:70px"><a>數量</a></td>
-					<td align="center" style="width:70px"><a>材積</a></td>
+					<td align="center" style="width:70px"><a id="lblVolume2">材積</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
 					<td align="center" style="width:70px"><a>運輸時間<br>(分)</a></td>
 					<td align="center" style="width:70px"><a>到達時間</a></td>
@@ -1860,9 +1885,9 @@
 					<td align="center" style="width:150px"><a>備註</a></td>
 					<td align="center" style="width:200px"><a>訂單</a></td>
 					<td align="center" style="width:300px"><a>地址</a></td>
-					<td align="center" style="width:70px"><a>已承載<br>材積</a></td>
-					<td align="center" style="width:70px"><a>可承載<br>材積</a></td>
-					<td align="center" style="width:70px"><a>承載率%<br>(材積)</a></td>
+					<td align="center" style="width:70px"><a id="lblVolume3">已承載<br>材積</a></td>
+					<td align="center" style="width:70px"><a id="lblVolume4">可承載<br>材積</a></td>
+					<td align="center" style="width:70px"><a id="lblVolume5">承載率%<br>(材積)</a></td>
 					<td align="center" style="width:70px"><a>已承載<br>重量</a></td>
 					<td align="center" style="width:70px"><a>可承載<br>重量</a></td>
 					<td align="center" style="width:70px"><a>承載率%<br>(重量)</a></td>
