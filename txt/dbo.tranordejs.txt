@@ -1,4 +1,4 @@
-ALTER  function [dbo].[tranordejs](@tranvcceno nvarchar(20),@chk1 int,@chk2 int)
+ALTER  function [dbo].[tranordejs](@project nvarchar(20),@tranvcceno nvarchar(20),@chk1 int,@chk2 int)
 returns @tmp table(
 	noa nvarchar(20)
 	,noq nvarchar(20)
@@ -76,8 +76,8 @@ begin
 	update @tmp set emount = mount - gmount
 	delete @tmp where emount<=0
 	update @tmp set [weight]= round(emount * isnull(b.uweight,0),2)
-		 ,[volume]= round(emount *a.lengthb*a.width*a.height*0.0000353,2)
-		 ,[tvolume]= ceiling(emount *a.lengthb*a.width*a.height*0.0000353)
+		 ,[volume]= case when upper(@project)='JS' then emount*ceiling(a.lengthb*a.width) else round(emount *a.lengthb*a.width*a.height*0.0000353,2) end
+		 ,[tvolume]= case when upper(@project)='JS' then emount*ceiling(a.lengthb*a.width) else ceiling(emount *a.lengthb*a.width*a.height*0.0000353) end
 		 ,uweight = isnull(b.uweight,0)
 	from @tmp a
 	left join ucc b on a.productno=b.noa
@@ -124,4 +124,3 @@ begin
 	
 	return 
 end
-

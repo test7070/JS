@@ -33,8 +33,16 @@
 				q_gt(q_name, q_content, q_sqlCount, 1);
 			});
 			function sum(){
-				//cuft = round(0.0000353 * q_float('txtLengthb')* q_float('txtWidth')* q_float('txtHeight'),2); 
-				cuft = Math.ceil(q_float('txtLengthb')* q_float('txtWidth'));
+				var cuft=0;
+				switch(q_getPara('sys.project').toUpperCase()){
+					case 'JS':
+						//只算面積  length*width
+						cuft = Math.ceil(q_float('txtLengthb')* q_float('txtWidth'));
+						break;
+					default:
+						cuft = round(0.0000353 * q_float('txtLengthb')* q_float('txtWidth')* q_float('txtHeight'),2); 
+						break;
+				}
 				$('#txtStkmount').val(cuft);
 				if(q_float('txtTvolume')==0)
 					$('#txtTvolume').val(Math.ceil(cuft));
@@ -50,6 +58,14 @@
 
 			function mainPost() {
 				q_mask(bbmMask);
+				
+				switch(q_getPara('sys.project').toUpperCase()){
+					case 'JS':
+						$('.js_hide').hide();
+						break;
+					default:
+						break;
+				}
 				
 				$('#txtNoa').change(function(e) {
 					$(this).val($.trim($(this).val()).toUpperCase());
@@ -396,7 +412,7 @@
 						<td><span> </span><a class="lbl">寬</a></td>
 						<td><input id="txtWidth" type="text" class="txt c1 num"/></td>
 					</tr>
-					<tr style="display:none;">
+					<tr class="js_hide">
 						<td><span> </span><a class="lbl">高</a></td>
 						<td><input id="txtHeight" type="text" class="txt c1 num"/></td>
 					</tr>

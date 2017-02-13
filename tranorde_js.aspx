@@ -46,6 +46,37 @@
 				q_brwCount();
 				q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
 			});
+			
+			function sum() {
+				if (!(q_cur == 1 || q_cur == 2))
+					return;
+				var cuft=0;
+				for(var i=0;i<q_bbsCount;i++){
+					switch(q_getPara('sys.project').toUpperCase()){
+						case 'JS':
+							//只算面積  length*width
+							cuft = q_float('txtMount_'+i)*Math.ceil(q_float('txtLengthb_'+i)* q_float('txtWidth_'+i));
+							break;
+						default:
+							cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
+							break;
+					}
+					$('#txtVolume_'+i).val(cuft);
+					if(q_float('txtTvolume_'+i)==0){
+						$('#txtTvolume_'+i).val(Math.ceil(cuft));
+					}	
+					$('#txtMoney_'+i).val(round(q_mul(q_float('txtMount_'+i),q_float('txtPrice_'+i)),0));
+					if($('#txtDate1').val().length>0){
+						$('#txtDate1_'+i).val($('#txtDate1').val());
+						$('#txtTime1_'+i).val($('#txtTime1').val());
+					}
+					if($('#txtDate2').val().length>0){
+						$('#txtDate2_'+i).val($('#txtDate2').val());
+						$('#txtTime2_'+i).val($('#txtTime2').val());
+					}
+				}
+			}
+			
 			function main() {
 				if (dataErr) {
 					dataErr = false;
@@ -56,6 +87,14 @@
 
 			function mainPost() {
 				q_mask(bbmMask);
+				
+				switch(q_getPara('sys.project').toUpperCase()){
+					case 'JS':
+						$('.js_hide').hide();
+						break;
+					default:
+						break;
+				}
 			}
 
 			function bbsAssign() {
@@ -109,27 +148,7 @@
 				return true;
 			}
 
-			function sum() {
-				if (!(q_cur == 1 || q_cur == 2))
-					return;
-				for(var i=0;i<q_bbsCount;i++){
-					//cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
-					cuft = q_float('txtMount_'+i)*Math.ceil(q_float('txtLengthb_'+i)* q_float('txtWidth_'+i));
-					$('#txtVolume_'+i).val(cuft);
-					if(q_float('txtTvolume_'+i)==0){
-						$('#txtTvolume_'+i).val(Math.ceil(cuft));
-					}	
-					$('#txtMoney_'+i).val(round(q_mul(q_float('txtMount_'+i),q_float('txtPrice_'+i)),0));
-					if($('#txtDate1').val().length>0){
-						$('#txtDate1_'+i).val($('#txtDate1').val());
-						$('#txtTime1_'+i).val($('#txtTime1').val());
-					}
-					if($('#txtDate2').val().length>0){
-						$('#txtDate2_'+i).val($('#txtDate2').val());
-						$('#txtTime2_'+i).val($('#txtTime2').val());
-					}
-				}
-			}
+			
 
 			function q_boxClose(s2) {
 				var ret;
@@ -586,7 +605,7 @@
 					<td align="center" style="width:100px"><a>注意事項</a></td>
 					<td align="center" style="width:70px"><a>長cm</a></td>
 					<td align="center" style="width:70px"><a>寬cm</a></td>
-					<td align="center" style="width:70px;display:none;"><a>高cm</a></td>
+					<td align="center" style="width:70px;" class="js_hide"><a>高cm</a></td>
 					<td align="center" style="width:70px"><a>材積</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
 					<td align="center" style="width:70px"><a>運送需<br>耗高度 </a></td>
@@ -620,7 +639,7 @@
 					<td><input type="text" id="txtMemo.*" style="width:95%;" /></td>
 					<td><input type="text" id="txtLengthb.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtWidth.*" class="num" style="width:95%;" /> </td>
-					<td style="display:none;"><input type="text" id="txtHeight.*" class="num" style="width:95%;" /> </td>
+					<td class="js_hide"><input type="text" id="txtHeight.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtVolume.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtWeight.*" class="num" style="width:95%;" /> </td>
 					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;" /> </td>

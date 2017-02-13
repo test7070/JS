@@ -57,10 +57,17 @@
 			function sum() {
 				if (!(q_cur == 1 || q_cur == 2))
 					return;
+				var cuft=0;
 				for(var i=0;i<q_bbsCount;i++){
-					//只算面積  length*width
-					//cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
-					cuft = Math.ceil(q_float('txtLengthb_'+i)* q_float('txtWidth_'+i));
+					switch(q_getPara('sys.project').toUpperCase()){
+						case 'JS':
+							//只算面積  length*width
+							cuft = q_float('txtMount_'+i) * Math.ceil(q_float('txtLengthb_'+i)* q_float('txtWidth_'+i));
+							break;
+						default:
+							cuft = round(0.0000353 * q_float('txtLengthb_'+i)* q_float('txtWidth_'+i)* q_float('txtHeight_'+i)* q_float('txtMount_'+i),2); 
+							break;
+					}
 					$('#txtVolume_'+i).val(cuft);
 					$('#txtWeight_'+i).val(round(q_float('txtMount_'+i)*q_float('txtUweight_'+i),0));
 					if(q_float('txtTvolume_'+i)==0){
@@ -104,9 +111,17 @@
 			function mainPost() {
 				q_mask(bbmMask);
 				
+				switch(q_getPara('sys.project').toUpperCase()){
+					case 'JS':
+						$('.js_hide').hide();
+						break;
+					default:
+						break;
+				}
+				
 				$('#btnOrde').click(function(e){
                 	var t_where ='';
-                	q_box("tranordejs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:$('#txtNoa').val(),chk1:$('#chkChk1').prop('checked')?1:0,chk2:$('#chkChk2').prop('checked')?1:0}), "tranorde_tranvcce", "95%", "95%", '');
+                	q_box("tranordejs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({project:q_getPara('sys.project').toUpperCase(),noa:$('#txtNoa').val(),chk1:$('#chkChk1').prop('checked')?1:0,chk2:$('#chkChk2').prop('checked')?1:0}), "tranorde_tranvcce", "95%", "95%", '');
                 });
                 $('#btnCar').click(function(e){
                 	var t_where ='',t_date=$('#txtDatea').val();
@@ -1430,7 +1445,7 @@
                     	var eweight = locations[n].eweight;
                     	var rateweight = locations[n].rateweight;
                     	var rate = locations[n].carvolume==0?'':round(locations[n].gvolume/locations[n].carvolume*100,2)+'%';
-	                    var contentString = '<div id="infowindow" style="width:150px;height:180px;"><a>' + text + '</a><br><a>材積：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+ratevolume+'</a><br><a>可承載：</a><a>'+evolume+'</a><br><br><a>重量：</a><a>'+weight+'</a><br><a>已承載重量：</a><a>'+gweight+'</a><br><a>承載率：</a><a>'+rateweight+'%</a><br><a>可承載重量：</a><a>'+eweight+'</a></div>';
+	                    var contentString = '<div id="infowindow" style="width:150px;height:180px;"><a>' + text + '</a><br><a>材積：</a><a>'+volume+'</a><br><a>已承載：</a><a>'+gvolume+'</a><br><a>承載率：</a><a>'+ratevolume+'%</a><br><a>可承載：</a><a>'+evolume+'</a><br><br><a>重量：</a><a>'+weight+'</a><br><a>已承載重量：</a><a>'+gweight+'</a><br><a>承載率：</a><a>'+rateweight+'%</a><br><a>可承載重量：</a><a>'+eweight+'</a></div>';
 	                    infowindow.close();
 		                infowindow.setContent(contentString);
 		                infowindow.open(map,markers[n]);
@@ -1745,7 +1760,7 @@
 					<td align="center" style="width:70px"><a>重量</a></td>
 					<td align="center" style="width:70px"><a>長</a></td>
 					<td align="center" style="width:70px"><a>寬</a></td>
-					<td align="center" style="width:70px;display:none;"><a>高</a></td>
+					<td align="center" style="width:70px;" class="js_hide"><a>高</a></td>
 					<td align="center" style="width:70px"><a>材積</a></td>
 					<td align="center" style="width:70px"><a>運送需<br>耗高度</a></td>
 					<td align="center" style="width:70px"><a>運送需<br>耗材積</a></td>
@@ -1790,7 +1805,7 @@
 					<td><input type="text" id="txtWeight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtLengthb.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtWidth.*" class="num bbsWeight" style="width:95%;"/></td>
-					<td style="display:none;"><input type="text" id="txtHeight.*" class="num" style="width:95%;"/></td>
+					<td class="js_hide"><input type="text" id="txtHeight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtVolume.*" class="num " style="width:95%;"/></td>
 					<td><input type="text" id="txtTheight.*" class="num" style="width:95%;"/></td>
 					<td><input type="text" id="txtTvolume.*" class="num bbsVolume" style="width:95%;"/></td>
