@@ -145,14 +145,14 @@
 					isRun = true;
 					carSchedule();
 				});
-				$('#btnIns').before($('#btnIns').clone().attr('id', 'btnMap').attr('value', '地圖'));
+				/*$('#btnIns').before($('#btnIns').clone().attr('id', 'btnMap').attr('value', '地圖'));
                 $('#btnMap').click(function() {
                     $('#mapForm').toggle();
                     if($('#mapForm').is(':visible')){
                     	initMap();
                     	//refreshMarker();	
                     }
-                });
+                });*/
                 //window.onload = addListeners;
 				$('#mapStatus').mousedown(function(e) {
 					if(e.button==2){			   		
