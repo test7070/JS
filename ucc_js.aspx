@@ -408,15 +408,15 @@
 						<td><input id="txtUweight" type="text"  class="txt c1 num"/></td>
 					</tr>
 					<tr>
-						<td><span> </span><a class="lbl">長</a></td>
+						<td><span> </span><a class="lbl">長cm</a></td>
 						<td><input id="txtLengthb" type="text" class="txt c1 num"/></td>
 					</tr>
 					<tr>
-						<td><span> </span><a class="lbl">寬</a></td>
+						<td><span> </span><a class="lbl">寬cm</a></td>
 						<td><input id="txtWidth" type="text" class="txt c1 num"/></td>
 					</tr>
 					<tr class="js_hide">
-						<td><span> </span><a class="lbl">高</a></td>
+						<td><span> </span><a class="lbl">高cm</a></td>
 						<td><input id="txtHeight" type="text" class="txt c1 num"/></td>
 					</tr>
 					<tr>

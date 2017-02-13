@@ -1783,9 +1783,9 @@
 					<td align="center" style="width:150px"><a>品名</a></td>
 					<td align="center" style="width:70px"><a>數量</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
-					<td align="center" style="width:70px"><a>長</a></td>
-					<td align="center" style="width:70px"><a>寬</a></td>
-					<td align="center" style="width:70px;" class="js_hide"><a>高</a></td>
+					<td align="center" style="width:70px"><a>長cm</a></td>
+					<td align="center" style="width:70px"><a>寬cm</a></td>
+					<td align="center" style="width:70px;" class="js_hide"><a>高cm</a></td>
 					<td align="center" style="width:70px"><a id="lblVolume1">材積</a></td>
 					<td align="center" style="width:70px" class="js_hide"><a>運送需<br>耗高度</a></td>
 					<td align="center" style="width:70px" class="js_hide"><a>運送需<br>耗材積</a></td>
