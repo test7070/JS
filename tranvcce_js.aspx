@@ -120,6 +120,10 @@
 				q_mask(bbmMask);
 				
 				$('#btnOrde').click(function(e){
+					if(!$('#chkChk1').prop('checked') && !$('#chkChk2').prop('checked')){
+						alert('請先選擇"提貨"或"卸貨"');
+						return;
+					}
                 	var t_where ='';
                 	q_box("tranordejs_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({project:q_getPara('sys.project').toUpperCase(),noa:$('#txtNoa').val(),chk1:$('#chkChk1').prop('checked')?1:0,chk2:$('#chkChk2').prop('checked')?1:0}), "tranorde_tranvcce", "95%", "95%", '');
                 });
@@ -142,6 +146,18 @@
                 });
                 
 				$('#btnRun').click(function() {
+					//訂單沒有指定路徑就一定要輸入起點、終點
+					var isMsg = false;
+					for(var i=0;i<q_bbsCount;i++){
+						if(q_float('txtMount_'+i)>0 && $('#txtOrdeno_'+i).val().length>0 && !$('#chkIsassign_'+i).prop('checked')){
+							isMsg = true;
+							break;
+						}
+					}
+					if(isMsg && ($('#txtAddrno').val().length==0 || $('#txtEndaddrno').val().length==0)){
+						alert('請輸入"起點"和"終點"');
+						return;
+					}
 					isRun = true;
 					carSchedule();
 				});
@@ -326,6 +342,8 @@
                         	for(var i=0;i<q_bbsCount;i++)
                         		$('#btnMinus_'+i).click();
                         	as = b_ret;
+                        	while(q_bbsCount<as.length)
+                        		$('#btnPlus').click();
                     		q_gridAddRow(bbsHtm, 'tbbs', 'txtTypea,txtOrdeno,txtNo2,txtCustno,txtCust,txtProductno,txtProduct,txtUweight,txtMount,txtWeight,txtVolume,txtAddrno,txtAddr,txtAddress,txtLat,txtLng,txtMemo,txtLengthb,txtWidth,txtHeight,txtTheight,txtTvolume,txtConn,txtTel,txtAllowcar,chkChk1,chkChk2,chkChk3'
                         	, as.length, as, 'typea,noa,noq,custno,cust,productno,product,uweight,emount,weight,volume,addrno,addr,address,lat,lng,memo,lengthb,width,height,theight,tvolume,conn,tel,allowcar,chk1,chk2,chk3', '','');
                        		carSchedule();
@@ -878,48 +896,76 @@
 	                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].productno);
 	                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[n].product);
                         		}
-                        		
                         		imgsrc += '&markers=color:red|label:'+(i+1)+'|'+getLatLngString(route.legs[i].end_location.lat())+','+getLatLngString(route.legs[i].end_location.lng());
                         	}else{
-                        		
-                        		//response.request.destination.lat()
+                        		//最後一筆
                         		if(data_car[data_car_current].isassign==1){
-                        			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
-                        			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
-                        			gvolume+=data_car[data_car_current].ordevolume[0];
-                        			evolume-=data_car[data_car_current].ordevolume[0];
-                        			$('#txtGvolume__'+(i+strn_bbt)).val(gvolume);
-			                        $('#txtEvolume__'+(i+strn_bbt)).val(evolume);
-                        			$('#txtCarweight__'+(i+strn_bbt)).val(data_car[data_car_current].weight);
-                        			gweight+=data_car[data_car_current].ordeweight[0];
-                        			eweight-=data_car[data_car_current].ordeweight[0];
-                        			$('#txtGweight__'+(i+strn_bbt)).val(gweight);
-			                        $('#txtEweight__'+(i+strn_bbt)).val(eweight);
-                        			
-                        			ratevolume = data_car[data_car_current].volume==0?0:round(gvolume/data_car[data_car_current].volume*100,2);
-			                        rateweight = data_car[data_car_current].weight==0?0:round(gweight/data_car[data_car_current].weight*100,2);
-			                        $('#txtRatevolume__'+(i+strn_bbt)).val(ratevolume);
-			                        $('#txtRateweight__'+(i+strn_bbt)).val(rateweight);
-				                        
-                        			$('#txtAddrno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].addrno);
-	                        		$('#txtAddr__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].addr);
-	                        		$('#txtAddress__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].assignpath[data_car[data_car_current].orde[0].assignpath.length-1].address);
-                        			for(var j=0;j<q_bbsCount;j++){
-	                        			if(data_car[data_car_current].orde[0].ordeno == $('#txtOrdeno_'+j).val()+'-'+$('#txtNo2_'+j).val()){
-	                        				$('#txtMins2__'+(i+strn_bbt)).val($('#txtMins_'+j).val());
-	                        			}
-	                        		}
-                        			$('#txtMount__'+(i+strn_bbt)).val(data_car[data_car_current].ordemount[0]);
-	                        		$('#txtVolume__'+(i+strn_bbt)).val(data_car[data_car_current].ordevolume[0]);
-	                        		$('#txtWeight__'+(i+strn_bbt)).val(data_car[data_car_current].ordeweight[0]);
-	                        		t_orde = data_car[data_car_current].orde[0].ordeno;
-	                        		$('#txtOrdeno__'+(i+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
-	                        		$('#txtNo2__'+(i+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
-	                        	
-	                        		$('#txtCustno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].custno);
-	                        		$('#txtCust__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].cust);
-	                        		$('#txtProductno__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].productno);
-	                        		$('#txtProduct__'+(i+strn_bbt)).val(data_car[data_car_current].orde[0].product);
+                        			//可能有相同指定地點的一起送
+                        			for(var j=0;j<data_car[data_car_current].orde.length;j++){
+                        				
+                        				$('#txtCarno__'+(i+j+strn_bbt)).val(data_car[data_car_current].carno);
+	                        			$('#txtCarvolume__'+(i+j+strn_bbt)).val(data_car[data_car_current].volume);
+	                        			gvolume+=data_car[data_car_current].ordevolume[j];
+	                        			evolume-=data_car[data_car_current].ordevolume[j];
+	                        			$('#txtGvolume__'+(i+j+strn_bbt)).val(gvolume);
+				                        $('#txtEvolume__'+(i+j+strn_bbt)).val(evolume);
+	                        			$('#txtCarweight__'+(i+j+strn_bbt)).val(data_car[data_car_current].weight);
+	                        			gweight+=data_car[data_car_current].ordeweight[j];
+	                        			eweight-=data_car[data_car_current].ordeweight[j];
+	                        			$('#txtGweight__'+(i+j+strn_bbt)).val(gweight);
+				                        $('#txtEweight__'+(i+j+strn_bbt)).val(eweight);
+	                        			
+	                        			ratevolume = data_car[data_car_current].volume==0?0:round(gvolume/data_car[data_car_current].volume*100,2);
+				                        rateweight = data_car[data_car_current].weight==0?0:round(gweight/data_car[data_car_current].weight*100,2);
+				                        $('#txtRatevolume__'+(i+j+strn_bbt)).val(ratevolume);
+				                        $('#txtRateweight__'+(i+j+strn_bbt)).val(rateweight);
+					                        
+	                        			$('#txtAddrno__'+(i+j+strn_bbt)).val(data_car[data_car_current].orde[j].assignpath[data_car[data_car_current].orde[j].assignpath.length-1].addrno);
+		                        		$('#txtAddr__'+(i+j+strn_bbt)).val(data_car[data_car_current].orde[j].assignpath[data_car[data_car_current].orde[j].assignpath.length-1].addr);
+		                        		$('#txtAddress__'+(i+j+strn_bbt)).val(data_car[data_car_current].orde[j].assignpath[data_car[data_car_current].orde[j].assignpath.length-1].address);
+	                        			for(var k=0;k<q_bbsCount;k++){
+		                        			if(data_car[data_car_current].orde[j].ordeno == $('#txtOrdeno_'+k).val()+'-'+$('#txtNo2_'+k).val()){
+		                        				$('#txtMins2__'+(i+j+strn_bbt)).val($('#txtMins_'+k).val());
+		                        				break;
+		                        			}
+		                        		}
+	                        			$('#txtMount__'+(i+j+strn_bbt)).val(data_car[data_car_current].ordemount[j]);
+		                        		$('#txtVolume__'+(i+j+strn_bbt)).val(data_car[data_car_current].ordevolume[j]);
+		                        		$('#txtWeight__'+(i+j+strn_bbt)).val(data_car[data_car_current].ordeweight[j]);
+		                        		t_orde = data_car[data_car_current].orde[j].ordeno;
+		                        		$('#txtOrdeno__'+(i+j+strn_bbt)).val(t_orde.substring(0,t_orde.length-4));
+		                        		$('#txtNo2__'+(i+j+strn_bbt)).val(t_orde.substring(t_orde.length-3,t_orde.length));
+		                        	
+		                        		$('#txtCustno__'+(i+j+strn_bbt)).val(data_car[data_car_current].orde[j].custno);
+		                        		$('#txtCust__'+(i+j+strn_bbt)).val(data_car[data_car_current].orde[j].cust);
+		                        		$('#txtProductno__'+(i+j+strn_bbt)).val(data_car[data_car_current].orde[j].productno);
+		                        		$('#txtProduct__'+(i+j+strn_bbt)).val(data_car[data_car_current].orde[j].product);
+                        				//-----------------------
+                        				$('#txtEndaddress__'+(i+j+strn_bbt)).val(route.legs[i].end_address);
+			                        	$('#txtLat__'+(i+j+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lat()));
+			                            $('#txtLng__'+(i+j+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lng()));
+			                        	if(j==0){
+			                        		$('#txtMemo__'+(i+j+strn_bbt)).val(route.legs[i].distance.text);
+			                        		//時間 +25%
+			                        		$('#txtMins1__'+(i+j+strn_bbt)).val(Math.round(route.legs[i].duration.value*1.25/60));
+			                        	}
+			                			else
+			                				$('#txtMins1__'+(i+j+strn_bbt)).val(0);
+			                			date.setMinutes(date.getMinutes() + round((q_float('txtMins1__'+(i+j+strn_bbt))),0));
+			                			hour = '00'+date.getHours();
+			                			hour = hour.substring(hour.length-2,hour.length);
+			                			minute = '00'+date.getMinutes();
+			                			minute = minute.substring(minute.length-2,minute.length);
+			                			$('#txtTime1__'+(i+j+strn_bbt)).val(hour+':'+minute);
+			                			
+			                			date.setMinutes(date.getMinutes() + q_float('txtMins2__'+(i+j+strn_bbt)));
+			                			hour = '00'+date.getHours();
+			                			hour = hour.substring(hour.length-2,hour.length);
+			                			minute = '00'+date.getMinutes();
+			                			minute = minute.substring(minute.length-2,minute.length);
+			                			$('#txtTime2__'+(i+j+strn_bbt)).val(hour+':'+minute);
+                        			}
+                        			strn_bbt = strn_bbt+data_car[data_car_current].orde.length-1;
                         		}else{
                         			$('#txtCarno__'+(i+strn_bbt)).val(data_car[data_car_current].carno);
                         			$('#txtCarvolume__'+(i+strn_bbt)).val(data_car[data_car_current].volume);
@@ -940,25 +986,29 @@
                         		}
                         		imgsrc += '&markers=color:blue|label:E|'+getLatLngString(route.legs[i].end_location.lat())+','+getLatLngString(route.legs[i].end_location.lng());
                         	}
-                        	$('#txtEndaddress__'+(i+strn_bbt)).val(route.legs[i].end_address);
-                        	$('#txtLat__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lat()));
-                            $('#txtLng__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lng()));
-                        	$('#txtMemo__'+(i+strn_bbt)).val(route.legs[i].distance.text);
-                        	//時間 +25%
-                        	$('#txtMins1__'+(i+strn_bbt)).val(Math.round(route.legs[i].duration.value*1.25/60));
-                			date.setMinutes(date.getMinutes() + round((q_float('txtMins1__'+(i+strn_bbt))),0));
-                			hour = '00'+date.getHours();
-                			hour = hour.substring(hour.length-2,hour.length);
-                			minute = '00'+date.getMinutes();
-                			minute = minute.substring(minute.length-2,minute.length);
-                			$('#txtTime1__'+(i+strn_bbt)).val(hour+':'+minute);
-                			
-                			date.setMinutes(date.getMinutes() + q_float('txtMins2__'+(i+strn_bbt)));
-                			hour = '00'+date.getHours();
-                			hour = hour.substring(hour.length-2,hour.length);
-                			minute = '00'+date.getMinutes();
-                			minute = minute.substring(minute.length-2,minute.length);
-                			$('#txtTime2__'+(i+strn_bbt)).val(hour+':'+minute);
+                			if(data_car[data_car_current].isassign==1 && i==route.legs.length-1){
+                				//上面有另外做
+                			}else{
+                				$('#txtEndaddress__'+(i+strn_bbt)).val(route.legs[i].end_address);
+	                        	$('#txtLat__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lat()));
+	                            $('#txtLng__'+(i+strn_bbt)).val(getLatLngString(route.legs[i].end_location.lng()));
+	                        	$('#txtMemo__'+(i+strn_bbt)).val(route.legs[i].distance.text);
+	                        	//時間 +25%
+	                        	$('#txtMins1__'+(i+strn_bbt)).val(Math.round(route.legs[i].duration.value*1.25/60));
+	                			date.setMinutes(date.getMinutes() + round((q_float('txtMins1__'+(i+strn_bbt))),0));
+	                			hour = '00'+date.getHours();
+	                			hour = hour.substring(hour.length-2,hour.length);
+	                			minute = '00'+date.getMinutes();
+	                			minute = minute.substring(minute.length-2,minute.length);
+	                			$('#txtTime1__'+(i+strn_bbt)).val(hour+':'+minute);
+	                			
+	                			date.setMinutes(date.getMinutes() + q_float('txtMins2__'+(i+strn_bbt)));
+	                			hour = '00'+date.getHours();
+	                			hour = hour.substring(hour.length-2,hour.length);
+	                			minute = '00'+date.getMinutes();
+	                			minute = minute.substring(minute.length-2,minute.length);
+	                			$('#txtTime2__'+(i+strn_bbt)).val(hour+':'+minute);
+                			}
                         }
                         //imgsrc += '&markers=color:green|label:E|'+$('#txtEndlat').val()+','+$('#txtEndlng').val();
                         imgsrc+='&key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8';
@@ -1116,6 +1166,7 @@
 					/*
 					 * 指定路徑
 					 * 原則上,一個地點能多台車跑,但跑該點的車輛就不再跑其他的地方
+					 * 相同地點可以一起
 					 */
 					for(var i=0;i<data_orde.length;i++){
 						if(data_orde[i].isassign==0 || data_orde[i].emount<=0)
@@ -1128,9 +1179,16 @@
 	                		t_mount = data_orde[i].emount;
 	                		while(t_mount>=0){
 	            				t_weight = round(data_orde[i].uweight * t_mount,2);
-	            				//只算面積
-	            				//t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
-	            				t_cuft = t_mount*Math.ceil(data_orde[i].lengthb*data_orde[i].width);
+	            				t_cuft = 0;
+	            				switch(q_getPara('sys.project').toUpperCase()){
+	            					case 'JS':
+	            						//只算面積
+	            						t_cuft = t_mount*Math.ceil(data_orde[i].lengthb*data_orde[i].width);
+	            						break;
+	            					default:
+	            						t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	            						break;
+	            				}
 	            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
 	            					data_car[j].gvolume += t_cuft;
 	                				data_car[j].evolume -= t_cuft;
@@ -1147,6 +1205,42 @@
 	            				}
 	            				t_mount--;
 	            			}
+	            			//順便跑其他相同的點
+	            			for(var k=i+1;k<data_orde.length;k++){
+	            				if(data_car[j].eweight<=0 || data_car[j].evolume<=0)
+	                				break;
+	            				if(!(data_orde[k].isassign==1 && data_orde[k].addrno==data_orde[i].addrno))
+	            					continue;
+	            				t_mount = data_orde[k].emount;
+		                		while(t_mount>=0){
+		            				t_weight = round(data_orde[k].uweight * t_mount,2);
+		            				t_cuft = 0;
+		            				switch(q_getPara('sys.project').toUpperCase()){
+		            					case 'JS':
+		            						//只算面積
+		            						t_cuft = t_mount*Math.ceil(data_orde[k].lengthb*data_orde[k].width);
+		            						break;
+		            					default:
+		            						t_cuft = round(0.0000353*t_mount*data_orde[k].lengthb*data_orde[k].width*data_orde[k].height,0);
+		            						break;
+		            				}
+		            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
+		            					data_car[j].gvolume += t_cuft;
+		                				data_car[j].evolume -= t_cuft;
+		                				data_car[j].gweight += t_weight;
+		        						data_car[j].eweight -= t_weight;
+		                				data_orde[k].gmount += t_mount;
+		                				data_orde[k].emount -= t_mount;
+		                				data_car[j].orde.push(data_orde[k]);
+		                				data_car[j].ordevolume.push(t_cuft);
+		                				data_car[j].ordeweight.push(t_weight);
+		                				data_car[j].ordemount.push(t_mount);
+		                				data_car[j].isassign = 1; //有指定地點,就只跑那一趟
+		            					break;
+		            				}
+		            				t_mount--;
+		            			}
+	            			}
                 		}	
                 	}
 					//無指定路徑
@@ -1161,8 +1255,16 @@
 	                		t_mount = data_orde[i].emount;
 	                		while(t_mount>=0){
 	            				t_weight = round(data_orde[i].uweight * t_mount,2);
-	            				//t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
-	            				t_cuft = t_mount*Math.ceil(data_orde[i].lengthb*data_orde[i].width);
+	            				t_cuft = 0;
+	            				switch(q_getPara('sys.project').toUpperCase()){
+	            					case 'JS':
+	            						//只算面積
+	            						t_cuft = t_mount*Math.ceil(data_orde[i].lengthb*data_orde[i].width);
+	            						break;
+	            					default:
+	            						t_cuft = round(0.0000353*t_mount*data_orde[i].lengthb*data_orde[i].width*data_orde[i].height,0);
+	            						break;
+	            				}
 	            				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
 	            					data_car[j].gvolume += t_cuft;
 	                				data_car[j].evolume -= t_cuft;
@@ -1179,7 +1281,7 @@
 	            				t_mount--;
 	            			}	
 							//一次就把那台車排完
-							for(var k;k<data_orde[i].orderange.length;k++){					
+							for(var k=0;k<data_orde[i].orderange.length;k++){					
 								t_nextOrdeno = data_orde[i].orderange[k].ordeno;
 								for(var l=0;l<data_orde.length;l++){
 									//先跑近的單子
@@ -1190,8 +1292,15 @@
 									t_mount = data_orde[l].emount;
 			                		while(t_mount>=0){
 		                				t_weight = round(data_orde[l].uweight * t_mount,2);
-		                				//t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
-		                				t_cuft = t_mount*Math.ceil(data_orde[l].lengthb*data_orde[l].width);
+		                				switch(q_getPara('sys.project').toUpperCase()){
+			            					case 'JS':
+			            						//只算面積
+			            						t_cuft = t_mount*Math.ceil(data_orde[l].lengthb*data_orde[l].width);
+			            						break;
+			            					default:
+			            						t_cuft = round(0.0000353*t_mount*data_orde[l].lengthb*data_orde[l].width*data_orde[l].height,0);
+			            						break;
+			            				}
 		                				if(t_mount>0 && data_car[j].eweight>=t_weight && data_car[j].evolume>=t_cuft){
 		                					data_car[j].gvolume += t_cuft;
 			                				data_car[j].evolume -= t_cuft;
@@ -1229,17 +1338,20 @@
 				    		}
 				    	}
 				    	if(msg.length>0){
-				    		alert('未派完訂單:\n'+msg);
+				    		q_msg($('#txtNoa'), '未派完訂單:\n'+msg,0,30000 );
+				    		//alert('未派完訂單:\n'+msg);
 				    	}
 					}
 					//等全部資料都載入才執行路徑
 					if(isRun){
 	            		isRun = false;
-	            		if(data_orde.length==0)
-							alert('無訂單或訂單地點未設定');
-						if(data_car.length==0)
-							alert('無車輛');
-						if(data_car.length>0 && data_orde.length>0){
+	            		if(data_orde.length==0 && data_car.length==0)
+	            			alert('無訂單或訂單地點未設定\n未選擇車輛');
+	            		else if(data_orde.length==0)
+	            			alert('無訂單或訂單地點未設定');
+	            		else if(data_car.length==0)
+							alert('未選擇車輛');
+						else{
 							data_car_current = 0;
 							for (var i = 0; i < q_bbtCount; i++) {
 	                        	$('#btnMinut__'+i).click();
@@ -1635,7 +1747,7 @@
 				width: 2400px;
 			}
 			.dbbt {
-				width: 1800px;
+				width: 2000px;
 			}
 			.tbbs a {
 				font-size: medium;
@@ -1878,12 +1990,12 @@
 					<td align="center" style="width:70px"><a>數量</a></td>
 					<td align="center" style="width:70px"><a id="lblVolume2">材積</a></td>
 					<td align="center" style="width:70px"><a>重量</a></td>
-					<td align="center" style="width:70px"><a>運輸時間<br>(分)</a></td>
-					<td align="center" style="width:70px"><a>到達時間</a></td>
+					<td align="center" style="width:70px"><a>運輸<br>時間(分)</a></td>
+					<td align="center" style="width:70px"><a>到達<br>時間</a></td>
 					<td align="center" style="width:70px"><a>裝卸貨<br>時間(分)</a></td>
-					<td align="center" style="width:70px"><a>完工時間</a></td>
+					<td align="center" style="width:70px"><a>完工<br>時間</a></td>
 					<td align="center" style="width:150px"><a>備註</a></td>
-					<td align="center" style="width:200px"><a>訂單</a></td>
+					<td align="center" style="width:220px"><a>訂單</a></td>
 					<td align="center" style="width:300px"><a>地址</a></td>
 					<td align="center" style="width:70px"><a id="lblVolume3">已承載<br>材積</a></td>
 					<td align="center" style="width:70px"><a id="lblVolume4">可承載<br>材積</a></td>
