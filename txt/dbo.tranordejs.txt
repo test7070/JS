@@ -10,17 +10,24 @@ returns @tmp table(
 	,uweight float
 	,addrno nvarchar(20)
 	,addr nvarchar(50)
+	,addrno2 nvarchar(20)
+	,addr2 nvarchar(50)
 	,conn nvarchar(50)
 	,tel nvarchar(50)
 	,mount float
 	,memo nvarchar(max)
+	,memo2 nvarchar(max)
 	,gmount float
 	,emount float
 	,[weight] float
 	,lengthb float
 	,width float
+	,gweight float
+	,eweight float
 	,height float
 	,[volume] float
+	,[gvolume] float
+	,[evolume] float
 	,theight float
 	,tvolume float
 	,[address] nvarchar(100)
@@ -37,56 +44,87 @@ returns @tmp table(
 	,chk3 bit
 ) as
 begin
-	if(@chk1=1)
+
+	if(upper(@project)='WH')
 	begin
-		--地點:  提貨地點
-		insert into @tmp(chktype,chk1,chk2,chk3
-			,noa,noq,typea,custno,cust,productno,product,addrno,addr,conn,tel
-			,mount,lengthb,width,height,theight,tvolume,memo,gmount
-			,date1,time1,date2,time2)
-		select '提貨',1,0,0
-			,a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,b.addrno,b.addr,a.conn,a.tel
-			,isnull(a.mount,0),a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
-			,a.date1,a.time1,a.date2,a.time2
+		insert into @tmp(noa,noq,custno,cust,productno,product,lengthb,width,height
+			,mount,volume,[weight]
+			,addrno,addr,addrno2,addr2,chk1,chk2,chk3,memo,memo2,gmount,gvolume,gweight)
+		select a.noa,a.noq,b.custno,d.nick,a.productno,a.product,a.lengthb,a.width,a.height
+			,a.mount,a.volume,a.[weight]
+			,a.addrno,a.addr,a.addrno2,a.addr2,a.chk1,a.chk2,a.chk3,a.memo,a.memo2
+			,isnull(c.mount,0),isnull(c.volume,0),isnull(c.[weight],0)
 		from view_tranordes a
 		left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
-		outer apply(select sum(ISNULL(mount,0)) mount from view_tranvcces where noa!=@tranvcceno and chk1=1 and ordeno=a.noa and no2=a.noq ) c
+		outer apply(select sum(ISNULL(mount,0)) mount
+			,sum(ISNULL(volume,0)) volume 
+			,sum(ISNULL([weight],0)) [weight] 
+			from view_tranvcces where noa!=@tranvcceno and ordeno=a.noa and no2=a.noq ) c
 		left join cust d on b.custno=d.noa
 		where ISNULL(b.enda,0) = 0
 		order by a.noa,a.noq
+		
+		update @tmp set emount = mount - gmount
+		delete @tmp where emount<=0
+		update @tmp set [eweight]= round(emount * isnull(b.uweight,0),2)
+			 ,[evolume]= round(emount *a.lengthb*a.width*a.height*0.0000353,2) 
+			 ,uweight = isnull(b.uweight,0)
+		from @tmp a
+		left join ucc b on a.productno=b.noa
 	end
-	if(@chk2=1)
+	else
 	begin
-		insert into @tmp(chktype,chk1,chk2,chk3
-			,noa,noq,typea,custno,cust,productno,product,addrno,addr,conn,tel
-			,mount,lengthb,width,height,theight,tvolume,memo,gmount
-			,date1,time1,date2,time2)
-		select '卸貨',0,1,0
-			,a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,a.addrno,a.addr,a.conn,a.tel
-			,isnull(a.mount,0),a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
-			,a.date1,a.time1,a.date2,a.time2
-		from view_tranordes a
-		left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
-		outer apply(select sum(ISNULL(mount,0)) mount from view_tranvcces where noa!=@tranvcceno and chk2=1 and ordeno=a.noa and no2=a.noq ) c
-		left join cust d on b.custno=d.noa
-		where ISNULL(b.enda,0) = 0
-		order by a.noa,a.noq
+		--JS
+		if(@chk1=1)
+		begin
+			--地點:  提貨地點
+			insert into @tmp(chktype,chk1,chk2,chk3
+				,noa,noq,typea,custno,cust,productno,product,addrno,addr,conn,tel
+				,mount,lengthb,width,height,theight,tvolume,memo,gmount
+				,date1,time1,date2,time2)
+			select '提貨',1,0,0
+				,a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,b.addrno,b.addr,a.conn,a.tel
+				,isnull(a.mount,0),a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
+				,a.date1,a.time1,a.date2,a.time2
+			from view_tranordes a
+			left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
+			outer apply(select sum(ISNULL(mount,0)) mount from view_tranvcces where noa!=@tranvcceno and chk1=1 and ordeno=a.noa and no2=a.noq ) c
+			left join cust d on b.custno=d.noa
+			where ISNULL(b.enda,0) = 0
+			order by a.noa,a.noq
+		end
+		if(@chk2=1)
+		begin
+			insert into @tmp(chktype,chk1,chk2,chk3
+				,noa,noq,typea,custno,cust,productno,product,addrno,addr,conn,tel
+				,mount,lengthb,width,height,theight,tvolume,memo,gmount
+				,date1,time1,date2,time2)
+			select '卸貨',0,1,0
+				,a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,a.addrno,a.addr,a.conn,a.tel
+				,isnull(a.mount,0),a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
+				,a.date1,a.time1,a.date2,a.time2
+			from view_tranordes a
+			left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
+			outer apply(select sum(ISNULL(mount,0)) mount from view_tranvcces where noa!=@tranvcceno and chk2=1 and ordeno=a.noa and no2=a.noq ) c
+			left join cust d on b.custno=d.noa
+			where ISNULL(b.enda,0) = 0
+			order by a.noa,a.noq
+		end
+		
+		update @tmp set emount = mount - gmount
+		delete @tmp where emount<=0
+		update @tmp set [weight]= round(emount * isnull(b.uweight,0),2)
+			 ,[volume]= case when upper(@project)='JS' then emount*ceiling(a.lengthb*a.width) else round(emount *a.lengthb*a.width*a.height*0.0000353,2) end
+			 ,[tvolume]= case when upper(@project)='JS' then emount*ceiling(a.lengthb*a.width) else ceiling(emount *a.lengthb*a.width*a.height*0.0000353) end
+			 ,uweight = isnull(b.uweight,0)
+		from @tmp a
+		left join ucc b on a.productno=b.noa
+		update @tmp set [address]=isnull(b.[address],'')
+			,lat=isnull(b.lat,'')
+			,lng=isnull(b.lng,'')
+		from @tmp a
+		left join addr2 b on a.addrno=b.noa
 	end
-	
-	update @tmp set emount = mount - gmount
-	delete @tmp where emount<=0
-	update @tmp set [weight]= round(emount * isnull(b.uweight,0),2)
-		 ,[volume]= case when upper(@project)='JS' then emount*ceiling(a.lengthb*a.width) else round(emount *a.lengthb*a.width*a.height*0.0000353,2) end
-		 ,[tvolume]= case when upper(@project)='JS' then emount*ceiling(a.lengthb*a.width) else ceiling(emount *a.lengthb*a.width*a.height*0.0000353) end
-		 ,uweight = isnull(b.uweight,0)
-	from @tmp a
-	left join ucc b on a.productno=b.noa
-	update @tmp set [address]=isnull(b.[address],'')
-		,lat=isnull(b.lat,'')
-		,lng=isnull(b.lng,'')
-	from @tmp a
-	left join addr2 b on a.addrno=b.noa
-	
 	--已移除自訂車牌,改為指定路徑
 	--declare @addrno nvarchar(20)
 	--declare @carno nvarchar(20)
