@@ -42,16 +42,17 @@ returns @tmp table(
 	,chk1 bit
 	,chk2 bit
 	,chk3 bit
+	,unit nvarchar(20)
 ) as
 begin
 
 	if(upper(@project)='WH')
 	begin
 		insert into @tmp(noa,noq,custno,cust,productno,product,lengthb,width,height
-			,mount,volume,[weight]
+			,mount,unit,volume,[weight]
 			,addrno,addr,addrno2,addr2,chk1,chk2,chk3,memo,memo2,gmount,gvolume,gweight)
 		select a.noa,a.noq,b.custno,d.nick,a.productno,a.product,a.lengthb,a.width,a.height
-			,a.mount,a.volume,a.[weight]
+			,a.mount,a.unit,a.volume,a.[weight]
 			,a.addrno,a.addr,a.addrno2,a.addr2,a.chk1,a.chk2,a.chk3,a.memo,a.memo2
 			,isnull(c.mount,0),isnull(c.volume,0),isnull(c.[weight],0)
 		from view_tranordes a
@@ -80,11 +81,11 @@ begin
 			--地點:  提貨地點
 			insert into @tmp(chktype,chk1,chk2,chk3
 				,noa,noq,typea,custno,cust,productno,product,addrno,addr,conn,tel
-				,mount,lengthb,width,height,theight,tvolume,memo,gmount
+				,mount,unit,lengthb,width,height,theight,tvolume,memo,gmount
 				,date1,time1,date2,time2)
 			select '提貨',1,0,0
 				,a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,b.addrno,b.addr,a.conn,a.tel
-				,isnull(a.mount,0),a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
+				,isnull(a.mount,0),a.unit,a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
 				,a.date1,a.time1,a.date2,a.time2
 			from view_tranordes a
 			left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
@@ -97,11 +98,11 @@ begin
 		begin
 			insert into @tmp(chktype,chk1,chk2,chk3
 				,noa,noq,typea,custno,cust,productno,product,addrno,addr,conn,tel
-				,mount,lengthb,width,height,theight,tvolume,memo,gmount
+				,mount,unit,lengthb,width,height,theight,tvolume,memo,gmount
 				,date1,time1,date2,time2)
 			select '卸貨',0,1,0
 				,a.noa,a.noq,a.typea,b.custno,d.nick,a.productno,a.product,a.addrno,a.addr,a.conn,a.tel
-				,isnull(a.mount,0),a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
+				,isnull(a.mount,0),a.unit,a.lengthb,a.width,a.height,a.theight,a.tvolume,a.memo,isnull(c.mount,0)
 				,a.date1,a.time1,a.date2,a.time2
 			from view_tranordes a
 			left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
