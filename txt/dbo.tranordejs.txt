@@ -46,7 +46,7 @@ returns @tmp table(
 ) as
 begin
 
-	if(upper(@project)='WH')
+	if(upper(@project)='WH' or upper(@project)='DC')
 	begin
 		insert into @tmp(noa,noq,custno,cust,productno,product,lengthb,width,height
 			,mount,unit,volume,[weight]
@@ -64,6 +64,10 @@ begin
 		left join cust d on b.custno=d.noa
 		where ISNULL(b.enda,0) = 0
 		order by a.noa,a.noq
+		
+		update @tmp set conn=b.namea
+		from @tmp a
+		outer apply(select top 1 namea from conn where noa=a.custno and len(isnull(namea,''))>0 order by noq) b
 		
 		update @tmp set emount = mount - gmount
 		delete @tmp where emount<=0
