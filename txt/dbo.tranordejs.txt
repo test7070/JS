@@ -43,16 +43,17 @@ returns @tmp table(
 	,chk2 bit
 	,chk3 bit
 	,unit nvarchar(20)
+	,n int
 ) as
 begin
 
 	if(upper(@project)='WH' or upper(@project)='DC')
 	begin
 		insert into @tmp(noa,noq,custno,cust,productno,product,lengthb,width,height
-			,mount,unit,volume,[weight]
+			,mount,unit,volume,[weight],n
 			,addrno,addr,addrno2,addr2,chk1,chk2,chk3,memo,memo2,gmount,gvolume,gweight,typea)
 		select a.noa,a.noq,b.custno,d.nick,a.productno,a.product,a.lengthb,a.width,a.height
-			,a.mount,a.unit,a.volume,a.[weight]
+			,a.mount,a.unit,a.volume,a.[weight],1
 			,a.addrno,a.addr,a.addrno2,a.addr2,a.chk1,a.chk2,a.chk3,a.memo,a.memo2
 			,isnull(c.mount,0),isnull(c.volume,0),isnull(c.[weight],0),a.typea
 		from view_tranordes a
