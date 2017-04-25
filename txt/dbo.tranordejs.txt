@@ -46,8 +46,25 @@ returns @tmp table(
 	,n int
 ) as
 begin
-
-	if(upper(@project)='WH' or upper(@project)='DC')
+	if(upper(@project)='DC')
+	begin
+		insert into @tmp(n,noa,typea,custno,cust,addrno,addr,addrno2,addr2,memo
+			,mount,gmount,emount)
+		select 1 n,a.noa+'-'+a.noq,a.typea,b.custno,d.nick,a.addrno,a.addr,a.addrno2,a.addr2,a.memo
+			,a.mount,isnull(c.mount,0),0
+		from view_tranordes a
+		left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
+		outer apply(select sum(ISNULL(mount,0)) mount
+			from view_trans where noa!=@tranvcceno and ordeno=a.noa+'-'+a.noq ) c
+		left join cust d on b.custno=d.noa
+		where ISNULL(b.enda,0) = 0
+		order by a.noa,a.noq
+		
+		update @tmp set emount = mount - gmount
+		delete @tmp where emount<=0
+		
+	end
+	else if(upper(@project)='WH')
 	begin
 		insert into @tmp(noa,noq,custno,cust,productno,product,lengthb,width,height
 			,mount,unit,volume,[weight],n
