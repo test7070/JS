@@ -1,4 +1,4 @@
-ALTER  function [dbo].[tranordejs](@project nvarchar(20),@tranvcceno nvarchar(20),@chk1 int,@chk2 int)
+ALTER  function [dbo].[tranordejs](@project nvarchar(20),@tranvcceno nvarchar(20),@chk1 int,@chk2 int,@condition nvarchar(max))
 returns @tmp table(
 	noa nvarchar(20)
 	,noq nvarchar(20)
@@ -42,27 +42,58 @@ returns @tmp table(
 	,chk1 bit
 	,chk2 bit
 	,chk3 bit
+	,chk4 bit
 	,unit nvarchar(20)
 	,n int
+	,casetype nvarchar(20)
+	,caseno nvarchar(20)
+	,caseno2 nvarchar(20)
+	,vocc nvarchar(50)
+	,stype nvarchar(20)
+	,port2 nvarchar(20) --領櫃地
+	,empdock2 nvarchar(20) --交櫃地
+	,so nvarchar(20)
+	,etc nvarchar(20) --結關日 (出口)
+	,ef nvarchar(20) --重櫃期限 (進口)
+	,datea2 nvarchar(20)
 ) as
 begin
 	if(upper(@project)='DC')
 	begin
-		insert into @tmp(n,noa,typea,custno,cust,addrno,addr,addrno2,addr2,memo
-			,mount,gmount,emount)
-		select 1 n,a.noa+'-'+a.noq,a.typea,b.custno,d.nick,a.addrno,a.addr,a.addrno2,a.addr2,a.memo
-			,a.mount,isnull(c.mount,0),0
+		insert into @tmp(n,noa,custno,cust,addrno,addr,memo
+			,casetype,caseno,caseno2,vocc,stype
+			,port2,empdock2,productno,product,so,etc,ef
+			,datea2,chk1,chk2,chk3,chk4)
+		select 1 n,a.noa+'-'+a.noq,b.custno,b.nick,a.addrno,a.addr,b.memo
+			,b.casetype,a.Containerno1,a.Containerno2,b.vocc,b.stype
+			,b.port2,b.empdock2,b.productno,b.product,b.so,b.etc,b.ef
+			,case when b.stype='進口' then b.ef else b.etc end
+			,0,0,0,0
 		from view_tranordes a
 		left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
-		outer apply(select sum(ISNULL(mount,0)) mount
-			from view_trans where noa!=@tranvcceno and ordeno=a.noa+'-'+a.noq ) c
-		left join cust d on b.custno=d.noa
 		where ISNULL(b.enda,0) = 0
-		order by a.noa,a.noq
+		order by case when b.stype='進口' then b.ef else b.etc end desc,a.noa,a.noq
 		
-		update @tmp set emount = mount - gmount
-		delete @tmp where emount<=0
+		delete @tmp where not ((len(@condition)=0 or stype=@condition) or charindex(@condition,caseno)>0 or charindex(@condition,caseno2)>0)
+
+		update @tmp set chk1=1
+		from @tmp a
+		left join view_trans b on b.noa!=@tranvcceno and a.noa=b.ordeno and b.cstype='領' 
+		where b.noa is not null
+		update @tmp set chk2=1
+		from @tmp a
+		left join view_trans b on b.noa!=@tranvcceno and a.noa=b.ordeno and b.cstype='送' 
+		where b.noa is not null
+		update @tmp set chk3=1
+		from @tmp a
+		left join view_trans b on b.noa!=@tranvcceno and a.noa=b.ordeno and b.cstype='收' 
+		where b.noa is not null
+		update @tmp set chk4=1
+		from @tmp a
+		left join view_trans b on b.noa!=@tranvcceno and a.noa=b.ordeno and b.cstype='交' 
+		where b.noa is not null
 		
+		delete @tmp where chk1=1 and chk2=2 and chk3=1 and chk4=1
 	end
 	else if(upper(@project)='WH')
 	begin

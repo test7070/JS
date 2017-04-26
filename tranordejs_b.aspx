@@ -28,7 +28,7 @@
                 var t_para = new Array();
 	            try{
 	            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
-	            	t_content = "where=^^['"+t_para.project+"','"+t_para.noa+"',"+t_para.chk1+","+t_para.chk2+")^^";
+	            	t_content = "where=^^['"+t_para.project+"','"+t_para.noa+"',"+t_para.chk1+","+t_para.chk2+",'')^^";
 	            }catch(e){
 	            }    
                 brwCount = -1;
