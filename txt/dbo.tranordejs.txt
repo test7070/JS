@@ -56,6 +56,11 @@ returns @tmp table(
 	,etc nvarchar(20) --結關日 (出口)
 	,ef nvarchar(20) --重櫃期限 (進口)
 	,datea2 nvarchar(20)
+	
+	,ischk1 bit
+	,ischk2 bit
+	,ischk3 bit
+	,ischk4 bit
 ) as
 begin
 	if(upper(@project)='JS')
@@ -156,28 +161,27 @@ begin
 		from view_tranordes a
 		left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
 		where ISNULL(b.enda,0) = 0
+		and ((len(@condition)=0 or b.stype=@condition) or charindex(@condition,a.Containerno1)>0 or charindex(@condition,a.Containerno2)>0)
 		order by case when b.stype='進口' then b.ef else b.etc end desc,a.noa,a.noq
-		
-		delete @tmp where not ((len(@condition)=0 or stype=@condition) or charindex(@condition,caseno)>0 or charindex(@condition,caseno2)>0)
 
-		update @tmp set chk1=1
+		update @tmp set chk1=1,ischk1=1
 		from @tmp a
 		left join view_trans b on b.noa!=@tranvcceno and a.noa=b.ordeno and b.cstype='領' 
 		where b.noa is not null
-		update @tmp set chk2=1
+		update @tmp set chk2=1,ischk2=1
 		from @tmp a
 		left join view_trans b on b.noa!=@tranvcceno and a.noa=b.ordeno and b.cstype='送' 
 		where b.noa is not null
-		update @tmp set chk3=1
+		update @tmp set chk3=1,ischk3=1
 		from @tmp a
 		left join view_trans b on b.noa!=@tranvcceno and a.noa=b.ordeno and b.cstype='收' 
 		where b.noa is not null
-		update @tmp set chk4=1
+		update @tmp set chk4=1,ischk4=1
 		from @tmp a
 		left join view_trans b on b.noa!=@tranvcceno and a.noa=b.ordeno and b.cstype='交' 
 		where b.noa is not null
 		
-		delete @tmp where chk1=1 and chk2=2 and chk3=1 and chk4=1
+		delete @tmp where chk1=1 and chk2=1 and chk3=1 and chk4=1
 	end
 	
 	return 
