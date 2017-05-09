@@ -661,7 +661,7 @@
 				
                 directionsService = new google.maps.DirectionsService();
                 //directionsDisplay = new google.maps.DirectionsRenderer();
-                directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+                directionsDisplay = new google.maps.DirectionsRenderer({draggable : true,suppressMarkers: true});
                 map = new google.maps.Map(document.getElementById('map'), {
                     zoom : 13,
                     center : {
