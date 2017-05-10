@@ -303,7 +303,21 @@
                     		return;
                     	$('#mapForm').show().offset({left:$(this).offset().left+250,top:$(this).offset().top});  
                 		initMap();
+                        
                         displayRoute(directionsService, directionsDisplay,$('#txtCarno__'+n).val());
+						//指定路徑的就抓 BBS 的來顯示
+                        /*var paths = "";
+                        for(var i=0;i<q_bbsCount;i++){
+                        	if($('#txtOrdeno__'+n).val() == $('#txtOrdeno_'+i).val() && $('#txtNo2__'+n).val() == $('#txtNo2_'+i).val()){
+                        		paths = $('#txtPaths_'+i).val().split('|');
+                        		break;
+                        	}
+                        }
+                      	if(paths.length>0){
+                        	for(var i=0;i<paths.length;i++){
+	                			poly.getPath().push(new google.maps.LatLng(parseFloat(paths[i].split(',')[0]),parseFloat(paths[i].split(',')[1])));
+	                		}
+                        }*/
                     });	
                 }
                 _bbtAssign();
@@ -674,6 +688,13 @@
                 	,fullscreenControl: true});
                 directionsDisplay.setMap(map);
                 
+				poly = new google.maps.Polyline({
+					strokeColor: '#000000',
+					strokeOpacity: 1.0,
+					strokeWeight: 3
+				});
+				poly.setMap(map);
+				  
                 infowindow = new google.maps.InfoWindow({content: ''});
             }
 
@@ -747,7 +768,19 @@
                         	,$('#txtDatea').val().substring(7,9)
                         	,$('#txtTimea').val().substring(0,2)
                         	,$('#txtTimea').val().substring(3,5));
-                        	
+                        //假如是指定路徑,就儲存路徑資料到txtPaths
+                        if(data_car[data_car_current].isassign==1){
+                        	for(var i=0;i<q_bbsCount;i++){
+                        		if(data_car[data_car_current].orde[0].ordeno == $('#txtOrdeno_'+i).val()+'-'+$('#txtNo2_'+i).val()){
+                        			var path = "";
+		                        	for(var j=0;j<response.routes[0].overview_path.length;j++){
+		                        		path += (path.length==0?'':'|') + response.routes[0].overview_path[j].lat()+','+response.routes[0].overview_path[j].lng();
+		                        	}
+		                        	$('#txtPaths_'+i).val(path);
+		                        	break;
+                        		}
+                        	}
+                        }
                         directionsDisplay.setDirections(response);
                         var route = response.routes[0];
                         var strn_bbt=0;
@@ -1152,6 +1185,9 @@
 							return 1;
 					});						
 				}
+				//
+				for(var i=0;i<q_bbsCount;i++)
+					$('#txtPaths_'+i).val('');
 				//載入指定路徑資料
 				getAssignPath(0);
             }
@@ -1953,6 +1989,7 @@
 						<input type="text" id="txtAddr.*" style="float:left;width:40%;"/>
 						<input type="button" id="btnAddr.*" style="display:none;"/>
 						<input type="button" id="btnLicence.*" style="float:left;width:15%;" value="證"/>
+						<input type="text" id="txtPaths.*" style="display:none;"/>
 					</td>
 					<td>
 						<input type="text" id="txtAddress.*" style="width:95%;"/>

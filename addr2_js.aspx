@@ -67,7 +67,6 @@
                 		poly.getPath().push(new google.maps.LatLng(parseFloat(location[i].split(',')[0]),parseFloat(location[i].split(',')[1])));
                 	}
                 	
-                	
                 });
 
                 $('#btnRun').click(function(e) {
@@ -237,6 +236,9 @@
                 }
             }
 			function getDirection(noa){
+				wrServer(noa);
+				return;
+				//暫時不用
 				$('#txtDirection').val('');
 				//指定路徑
 				if(q_bbsCount<=0){
@@ -466,6 +468,7 @@
 				    strokeWeight: 3
 				  });
 				  poly.setMap(map);
+				  
   
                 map.setOptions({draggableCursor: 'default'
                 	,draggingCursor:'default'
@@ -897,7 +900,7 @@
 						<td><span> </span><a id="lblMemo" class="lbl">注意事項</a></td>
 						<td colspan="3"><textarea id="txtMemo" class="txt c1" style="height:50px;"> </textarea></td>
 					</tr>
-					<tr>
+					<tr style="display:none;">
 						<td><span> </span><a class="lbl">路徑</a><input type="button" id="btnShowDirection" value="SHOW"></td>
 						<td colspan="3"><textarea id="txtDirection" class="txt c1" style="height:50px;"> </textarea></td>
 					</tr>
