@@ -55,6 +55,20 @@
                         q_gt('addr2', t_where, 0, 0, 0, "chkNoa_change", r_accy);
                     }
                 });
+                
+                $('#btnShowDirection').click(function(e){
+                	if( $('#txtDirection').val().length==0)
+                		return;
+                	initMap();
+                	refreshMarker();
+                	
+                	var location = $('#txtDirection').val().split('|');
+                	for(var i=0;i<location.length;i++){
+                		poly.getPath().push(new google.maps.LatLng(parseFloat(location[i].split(',')[0]),parseFloat(location[i].split(',')[1])));
+                	}
+                	
+                	
+                });
 
                 $('#btnRun').click(function(e) {
                     var address = $.trim($('#txtAddress').val());
@@ -152,7 +166,7 @@
                         Unlock(1);
                         return;
                     } else {
-                        wrServer($('#txtNoa').val());
+                        getDirection($('#txtNoa').val());
                     }
                     break;
                 case q_name:
@@ -219,10 +233,50 @@
                     t_where = "where=^^ noa='" + $('#txtNoa').val() + "'^^";
                     q_gt('addr2', t_where, 0, 0, 0, "chkNoa_btnOk", r_accy);
                 } else {
-                    wrServer($('#txtNoa').val());
+                    getDirection($('#txtNoa').val());
                 }
             }
-
+			function getDirection(noa){
+				$('#txtDirection').val('');
+				//指定路徑
+				if(q_bbsCount<=0){
+					wrServer(noa);
+				}
+				else{
+					var waypts = [];
+					for(var i=1;i<q_bbsCount;i++){
+						waypts.push({
+                            location : new google.maps.LatLng(q_float('txtLat_'+i),q_float('txtLng_'+i)),
+                            stopover : true
+                        });
+					}
+					directionsService.route({
+	                    origin : new google.maps.LatLng(parseFloat($('#txtLat_0').val()),parseFloat($('#txtLng_0').val())),
+	                    destination : new google.maps.LatLng(parseFloat($('#txtLat').val()),parseFloat($('#txtLng').val())),
+	                    waypoints : waypts,
+	                    //optimizeWaypoints : true,
+	                    travelMode : google.maps.TravelMode.DRIVING
+	                }, function(response, status) {
+	                    if (status === google.maps.DirectionsStatus.OK) {
+	                        console.log(response);
+	                        try{
+	                        	var path = "";
+	                        	for(var i=0;i<response.routes[0].overview_path.length;i++){
+	                        		path += (path.length==0?'':'|') + response.routes[0].overview_path[i].lat()+','+response.routes[0].overview_path[i].lng();
+	                        	}
+	                        }catch(e){
+	                        	console.log(e);
+	                        }
+	                        console.log(path);
+	                        $('#txtDirection').val(path);
+	                    } else {
+	                        alert('Directions request failed due to ' + status);
+	                    }
+	                    wrServer(noa);
+	                });
+				}
+			}
+			
             function wrServer(key_value) {
                 var i;
 
@@ -393,7 +447,8 @@
             //MAP
             var map,
                 directionsService,
-                directionsDisplay;
+                directionsDisplay,
+                poly;
             var markers = [],infowindow;
             function initMap() {
                 map = new google.maps.Map(document.getElementById('map'));
@@ -402,6 +457,16 @@
                     lat : 24.8013848,
                     lng : 120.9494774
                 });
+                directionsService = new google.maps.DirectionsService();
+                directionsDisplay = new google.maps.DirectionsRenderer({draggable : true});
+                
+                poly = new google.maps.Polyline({
+				    strokeColor: '#000000',
+				    strokeOpacity: 1.0,
+				    strokeWeight: 3
+				  });
+				  poly.setMap(map);
+  
                 map.setOptions({draggableCursor: 'default'
                 	,draggingCursor:'default'
                 	,fullscreenControl: true});
@@ -830,7 +895,11 @@
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblMemo" class="lbl">注意事項</a></td>
-						<td colspan="3">						<textarea id="txtMemo" class="txt c1" style="height:50px;"> </textarea></td>
+						<td colspan="3"><textarea id="txtMemo" class="txt c1" style="height:50px;"> </textarea></td>
+					</tr>
+					<tr>
+						<td><span> </span><a class="lbl">路徑</a><input type="button" id="btnShowDirection" value="SHOW"></td>
+						<td colspan="3"><textarea id="txtDirection" class="txt c1" style="height:50px;"> </textarea></td>
 					</tr>
 				</table>
 			</div>
