@@ -238,7 +238,7 @@
 			function getDirection(noa){
 				wrServer(noa);
 				return;
-				//暫時不用
+				////暫時不用
 				$('#txtDirection').val('');
 				//指定路徑
 				if(q_bbsCount<=0){
