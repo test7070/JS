@@ -677,8 +677,8 @@
                 //directionsDisplay = new google.maps.DirectionsRenderer();
                 directionsDisplay = new google.maps.DirectionsRenderer({draggable : true,suppressMarkers: true});
                 map = new google.maps.Map(document.getElementById('map'), {
-                    zoom : 13,
-                    center : {
+                    zoom : 13
+                    ,center : {
                         lat : 24.8013848,
                     	lng : 120.9494774
                     }
@@ -1538,6 +1538,7 @@
 				for(var i=0;i<locations.length;i++){
 					addMarkerWithTimeout(i, 300);
 				}
+				map.setCenter(origin);
                 directionsService.route({
                     origin : origin,
                     destination : destination,
