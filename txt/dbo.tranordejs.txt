@@ -118,6 +118,7 @@ begin
 	end
 	else if(upper(@project)='WH')
 	begin
+		-- @condition   訂單日期
 		insert into @tmp(noa,noq,custno,cust,productno,product,lengthb,width,height
 			,mount,unit,volume,[weight],n
 			,addrno,addr,addrno2,addr2,chk1,chk2,chk3,memo,memo2,gmount,gvolume,gweight,typea)
@@ -135,6 +136,7 @@ begin
 		left join cust d on b.custno=d.noa
 		where ISNULL(b.enda,0) = 0 
 		and c.noa is null --一筆訂單只能匯入一次, 一次只顯示最近300筆
+		and b.datea = @condition
 		order by b.datea desc,a.noa,a.noq
 		update @tmp set emount = mount - gmount
 		
