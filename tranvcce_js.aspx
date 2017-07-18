@@ -1374,7 +1374,7 @@
 				    		}
 				    	}
 				    	if(msg.length>0){
-				    		q_msg($('#txtNoa'), '未派完訂單:\n'+msg,0,30000 );
+				    		q_msg($('#txtEndaddress'), '未派完訂單:\n'+msg,0,30000 );
 				    		//alert('未派完訂單:\n'+msg);
 				    	}
 					}
