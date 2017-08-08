@@ -1,0 +1,203 @@
+ALTER  function [dbo].[trancarjs](@tranvcceno nvarchar(20),@trandate nvarchar(20),@t_addrno nvarchar(max))
+returns @tmp table(
+	carno nvarchar(20)
+	,driverno nvarchar(20)
+	,driver nvarchar(50)
+	,[weight] float
+	,volume float
+	,memo nvarchar(max) --已派地點
+	,mins1 float --運輸時間
+	,mins2 float --裝卸時間
+) as
+begin
+	set @t_addrno = replace(@t_addrno,'@',',')
+	declare @tmpa table(
+		sel int identity(1,1)
+		,addrno nvarchar(20)
+		,teamno nvarchar(20)
+	)
+	insert into @tmpa(addrno)
+	select n
+	from dbo.fnSplit(@t_addrno)
+	group by n
+	
+	update @tmpa set teamno=ISNULL(b.custno,'')
+	from @tmpa a
+	left join addr2 b on a.addrno=b.noa
+	------------------------------------------------
+	declare @tmpc table(
+		sel int identity(1,1)
+		,teamno nvarchar(20)
+		,licenceno nvarchar(20)
+	)
+	insert into @tmpc(teamno,licenceno)
+	select a.teamno,b.addrno
+	from(select teamno from @tmpa where len(isnull(teamno,''))>0 group by teamno) a
+	left join addr3s b on a.teamno=b.noa
+	where len(ISNULL(b.addrno,''))>0
+	------------------------------------------------
+	declare @tmpd table(
+		sel int identity(1,1)
+		,carno nvarchar(20)
+		,licenceno nvarchar(20)
+	)
+	insert into @tmpd(carno,licenceno)
+	select noa carno,job licenceno
+	from conn a
+	group by a.noa,a.job
+	
+	declare @tmpe table(
+		sel int identity(1,1)
+		,teamno nvarchar(20)
+		,licenceno nvarchar(20)
+		,carno nvarchar(20)
+	)
+	insert into @tmpe(teamno,licenceno,carno)
+	select a.teamno,a.licenceno,b.carno
+	from @tmpc a
+	left join @tmpd b on a.licenceno=b.licenceno
+	
+	--select * from @tmpa	
+	--select * from @tmpc
+	--select * from @tmpd
+	--select * from @tmpe
+	 
+	--找出符合集團要求的車輛
+	declare @tmpb table(
+		teamno nvarchar(20)
+		,carno nvarchar(20)
+	)
+	
+	declare @teamno nvarchar(20)
+	declare @carno nvarchar(20)
+	
+	declare cursor_table cursor for
+	select teamno from @tmpc where len(isnull(teamno,''))>0 group by teamno
+	open cursor_table
+	fetch next from cursor_table
+	into @teamno
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		declare cursor_table2 cursor for
+		select carno from @tmpe where teamno=@teamno group by carno
+		open cursor_table2
+		fetch next from cursor_table2
+		into @carno
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			--檢查是否符合每一項
+			if not exists(
+			select a.licenceno 
+			from @tmpc a
+			left join @tmpe b on a.licenceno=b.licenceno and @carno=b.carno
+			where a.teamno=@teamno and b.sel is null)
+			begin
+				insert into @tmpb(teamno,carno)values(@teamno,@carno)
+			end
+						
+			fetch next from cursor_table2
+			into @carno
+		end
+		close cursor_table2
+		deallocate cursor_table2
+
+		fetch next from cursor_table
+		into @teamno
+	end
+	close cursor_table
+	deallocate cursor_table
+	-----------------------------------------------------------------
+	-- 列出符合全部地點要求的車輛(取交集)
+	--declare @tmp table(
+	--	carno nvarchar(20)
+	--	,driverno nvarchar(20)
+	--	,driver nvarchar(50)
+	--	,[weight] float
+	--	,volume float
+	--	,memo nvarchar(max) --已派地點
+	--	,mins1 float --運輸時間
+	--	,mins2 float --裝卸時間
+	--)
+	--select carno from @tmpb group by carno
+	--select teamno from @tmpa where len(ISNULL(teamno,''))>0 group by teamno
+	
+	if not exists(select * from @tmpb)
+	begin
+		insert into @tmp(carno)select carno from car2 order by carno
+	end
+	else
+	begin
+		declare cursor_table cursor for
+		select carno from @tmpb group by carno
+		open cursor_table
+		fetch next from cursor_table
+		into @carno
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			if not exists(
+			select * 
+			from (select @carno carno,teamno from @tmpa where len(ISNULL(teamno,''))>0 group by teamno) a 
+			left join @tmpb b on a.carno=b.carno and a.teamno=b.teamno 
+			where a.carno=@carno 
+			and b.carno is null)
+			begin
+				insert into @tmp(carno)values(@carno)
+			end
+			
+			fetch next from cursor_table
+			into @carno
+		end
+		close cursor_table
+		deallocate cursor_table
+	end
+	-------------------------------------------------------------------------------
+	--車輛基本資料
+	update @tmp set driverno=ISNULL(b.driverno,'')
+		,[weight]=ISNULL(b.[weight2],0)
+		,volume = cast(isnull(b.volume,0) as float)
+		,memo = ''
+	from @tmp a
+	left join car2 b on a.carno=b.carno
+	
+	update @tmp set driver = isnull(b.namea,'')
+	from @tmp a
+	left join driver b on a.driverno=b.noa
+	
+	declare @tmpx table(
+		carno nvarchar(20)
+		,addrno nvarchar(20)
+	)
+	declare @memo nvarchar(max)
+	declare @addrno nvarchar(20)
+	declare @addr nvarchar(50)
+	declare @mins1 float
+	declare @mins2 float
+	
+	declare cursor_table cursor for 
+	select a.carno,a.addrno,a.addr,isnull(a.mins1,0),isnull(a.mins2,0)
+	from view_tranvccet a
+	left join view_tranvcce b on a.accy=b.accy and a.noa=b.noa 
+	left join @tmp c on a.carno=c.carno
+	where b.noa != @tranvcceno 
+	and b.datea=@trandate 
+	and len(a.ordeno)>0
+	order by a.carno, a.addrno
+	open cursor_table 
+	fetch next from cursor_table 
+	into @carno,@addrno,@addr,@mins1,@mins2
+	while(@@FETCH_STATUS <> -1) 
+	begin 
+		if not exists(select * from @tmpx where carno=@carno and addrno=@addrno)
+		begin
+			insert into @tmpx(carno,addrno)values(@carno,@addrno)
+			update @tmp set memo=isnull(memo,'') + case when len(isnull(memo,0))>0 then ',' else '' end + @addr where carno=@carno
+		end
+		update @tmp set  mins1 = isnull(mins1,0) + @mins1, mins2 = isnull(mins2,0) + @mins2 where carno=@carno
+		fetch next from cursor_table 
+		into @carno,@addrno,@addr,@mins1,@mins2
+	end 
+	close cursor_table 
+	deallocate cursor_table 
+	
+	return 
+end

@@ -1,0 +1,152 @@
+z_tranorde_js01:--z_tranorde_js01	
+	SET QUOTED_IDENTIFIER OFF
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(20) = case when '#non' = [3] then '' else [3] end
+	declare @t_bdate nvarchar(20) = case when '#non' = [4] then '' else [4] end
+	declare @t_edate nvarchar(20) = case when '#non'=[5] then char(255) else [5] end
+	declare @t_bdate1 nvarchar(20) = case when '#non' = [6] then '' else [6] end
+	declare @t_edate1 nvarchar(20) = case when '#non'=[7] then char(255) else [7] end
+	declare @t_bdate2 nvarchar(20) = case when '#non' = [8] then '' else [8] end
+	declare @t_edate2 nvarchar(20) = case when '#non'=[9] then char(255) else [9] end
+	
+	declare @t_bcustno nvarchar(20) = case when '#non' = [10] then '' else [10] end
+	declare @t_ecustno nvarchar(20) = case when '#non'=[11] then char(255) else [11] end
+	declare @t_bproductno nvarchar(20) = case when '#non' = [12] then '' else [12] end
+	declare @t_eproductno nvarchar(20) = case when '#non'=[13] then char(255) else [13] end
+	declare @t_bstraddrno nvarchar(20) = case when '#non' = [14] then '' else [14] end
+	declare @t_estraddrno nvarchar(20) = case when '#non'=[15] then char(255) else [15] end
+	declare @t_baddrno nvarchar(20) = case when '#non' = [16] then '' else [16] end
+	declare @t_eaddrno nvarchar(20) = case when '#non'=[17] then char(255) else [17] end
+	
+	declare @t_chk1 nvarchar(max)=case when '#non' = [18] then '' else [18] end
+	declare @t_chk2 nvarchar(max)=case when '#non' = [19] then '' else [19] end
+	declare @t_enda nvarchar(max)=case when '#non' = [20] then '' else [20] end
+	------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(20)
+		,pno int
+		,recno int
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,datea nvarchar(20)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,straddrno nvarchar(20)
+		,straddr nvarchar(50)
+		,addrno nvarchar(20)
+		,addr nvarchar(50)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,lengthb float
+		,width float
+		,height float
+		,[weight] float
+		,volume float
+		,theight float
+		,tvolume float
+		
+		,mount float
+		,price float
+		,total float
+		,date1 nvarchar(20)
+		,date2 nvarchar(20)
+		--提貨
+		,gmount1 float
+		,gweight1 float
+		,gvolume1 float		
+		,emount1 float
+		,eweight1 float
+		,evolume1 float
+		--卸貨
+		,gmount2 float
+		,gweight2 float
+		,gvolume2 float
+		,emount2 float
+		,eweight2 float
+		,evolume2 float
+	)
+	insert into @tmp(pno,gno,accy,noa,noq,datea,addrno,addr,productno,product,lengthb
+		,width,height,[weight],volume,theight,tvolume
+		,mount,price,total
+		,date1,date2
+		,custno,cust,straddrno,straddr)
+	select '1','1',a.accy,a.noa,a.noq,b.datea,a.addrno,a.addr,a.productno,a.product,a.lengthb
+		,a.width,a.height,a.[weight],a.volume,a.theight,a.tvolume
+		,a.mount,a.price,a.[money]
+		,a.date1,a.date2
+		,b.custno,b.comp,b.addrno,b.addr
+	from view_tranordes a
+	left join view_tranorde b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @t_bdate and @t_edate 
+	and a.date1 between @t_bdate1 and @t_edate1
+	and a.date2 between @t_bdate2 and @t_edate2
+	and b.custno between @t_bcustno and @t_ecustno
+	and a.productno between @t_bproductno and @t_eproductno
+	and a.addrno between @t_baddrno and @t_eaddrno
+	and b.addrno between @t_bstraddrno and @t_estraddrno
+	and (len(@t_enda)=0 or @t_enda = isnull(b.enda,0) )
+	
+	
+	update @tmp set gmount1=isnull(b.mount,0),gweight1=ISNULL(b.[weight],0),gvolume1=ISNULL(b.tvolume,0)
+	from @tmp a
+	outer apply(select SUM(mount) mount,SUM([weight]) [weight],SUM(tvolume) tvolume 
+		from view_tranvcces where ordeno=a.noa and no2=a.noq and chk1=1) b
+	
+	update @tmp set gmount2=isnull(b.mount,0),gweight2=ISNULL(b.[weight],0),gvolume2=ISNULL(b.tvolume,0)
+	from @tmp a
+	outer apply(select SUM(mount) mount,SUM([weight]) [weight],SUM(tvolume) tvolume 
+		from view_tranvcces where ordeno=a.noa and no2=a.noq and chk2=1) b
+	
+	update @tmp set emount1 = ISNULL(mount,0) - ISNULL(gmount1,0)
+		,eweight1 = ISNULL([weight],0) - ISNULL(gweight1,0)
+		,evolume1 = ISNULL([tvolume],0) - ISNULL(gvolume1,0)
+		,emount2 = ISNULL(mount,0) - ISNULL(gmount2,0)
+		,eweight2 = ISNULL([weight],0) - ISNULL(gweight2,0)
+		,evolume2 = ISNULL([tvolume],0) - ISNULL(gvolume2,0)
+	------------------------------------------------------------
+	if(@t_chk1=1)
+	begin
+		delete @tmp where gmount1=0
+	end 
+	if(@t_chk2=1)
+	begin
+		delete @tmp where gmount2=0 
+	end
+	
+	update @tmp set recno=b.recno
+	from @tmp a
+	left join (select sel,ROW_NUMBER()over(order by noa,noq) recno from @tmp ) b on a.sel=b.sel
+	--sum
+	insert into @tmp(gno,pno,mount,total,[weight],tvolume,gmount1,emount1,gmount2,emount2)
+	select '2',2,SUM(ISNULL(mount,0)),SUM(ISNULL(total,0)),SUM(ISNULL([weight],0)),SUM(ISNULL(tvolume,0))
+		,SUM(ISNULL(gmount1,0)),SUM(ISNULL(emount1,0)),SUM(ISNULL(gmount2,0)),SUM(ISNULL(emount2,0))
+	from @tmp
+	
+	select gno
+		,recno rr
+		,"tranorde_js?noa=\'"+noa+"\' and "+cast(recno as nvarchar)+"=$rr?" ghref
+		
+		,datea a01--登錄日期	
+		,cust a02--客戶	
+		,straddr a03--提貨地	
+		,addr a04--卸貨地	
+		,product a05--品名	
+		,lengthb a06--長	
+		,width a07--寬	
+		,height a08--高	
+		,dbo.getComma(mount,-1) a09--數量	
+		,price a10--單價	
+		,dbo.getComma(total,-1) a11--金額	
+		,dbo.getComma([weight],-1) a12--重量	
+		,dbo.getComma([tvolume],-1) a13--材積	
+		,date1 a14--提貨日期	
+		,dbo.getComma(gmount1,-1) a15--已提數量	
+		,dbo.getComma(emount1,-1) a16--未提數量	
+		,date2 a17--卸貨日期	
+		,dbo.getComma(gmount2,-1) a18--已卸數量	
+		,dbo.getComma(emount2,-1) a19--未卸數量
+	from @tmp
+	order by pno,recno;

@@ -1,0 +1,46 @@
+ALTER function [dbo].[tranvccejs](@carno nvarchar(20),@date nvarchar(20))
+returns @tmp table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,addrno nvarchar(20)
+		,addr nvarchar(50)
+		,[address] nvarchar(100)
+		,endaddress nvarchar(100)
+		,lat nvarchar(20)
+		,lng nvarchar(20)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,mount float
+		,volume float
+		,[weight] float
+		,ordeno nvarchar(20)
+		,no2 nvarchar(10)
+		,carvolume float
+		,evolume float
+		,gvolume float
+		,ratevolume float
+		,carweight float
+		,eweight float
+		,gweight float
+		,rateweight float
+) as
+begin
+	insert into @tmp(accy,noa,noq,custno,cust,addrno,[address],endaddress,lat,lng,productno,product
+		,mount,volume,[weight],ordeno,no2
+		,carvolume,evolume,gvolume,ratevolume
+		,carweight,eweight,gweight,rateweight)
+	select a.accy,a.noa,a.noq,a.custno,a.cust,a.addrno,a.[address],a.endaddress,a.lat,a.lng,a.productno,a.product
+		,a.mount,a.volume,a.[weight],a.ordeno,a.no2
+		,a.carvolume,a.evolume,a.gvolume,a.ratevolume
+		,a.carweight,a.eweight,a.gweight,a.rateweight
+	from view_tranvccet a
+	left join view_tranvcce b on a.accy=b.accy and a.noa=b.noa
+	where a.carno=@carno
+	and b.datea=@date
+	and b.noa is not null
+return 
+end
