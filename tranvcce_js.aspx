@@ -205,6 +205,9 @@
 				$('#mapAll').click(function(e){
 					displayAll();
 				});
+				$('#btnStore').click(function() {
+				   q_box('z_tranvcce_js.aspx' + "?;;;;" + r_accy, '', "95%", "95%", q_getMsg("popPrint"));
+				});
 			}
 			/*function addListeners() {
                 document.getElementById('mapStatus').addEventListener('mousedown', mouseDown, false);
@@ -1713,7 +1716,7 @@
 			}
 			.dbbm {
 				float: left;
-				width: 600px;
+				width: 700px;
 				/*margin: -1px;
 				 border: 1px black solid;*/
 				border-radius: 5px;
@@ -1916,6 +1919,7 @@
 							<input id="btnRun" type="button" value="3.排程" style="width:100%;"/>
 							<input id="txtImg" type="text" style="display:none;"/>
 						</td>
+						<td><input id="btnStore" type="button" value="4.倉庫庫存表" style="width:100%;"/></td>
 					</tr>
 				</table>
 			</div>
