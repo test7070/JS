@@ -1,0 +1,78 @@
+z_tranvcce_js01:--z_tranvcce_js01
+declare @t_bdate nvarchar(10)
+declare @t_edate nvarchar(10)
+set @t_bdate = case when '#non'=[2] then '' else [2] end
+set @t_edate = case when '#non'=[3] then char(255) else [3] end
+declare @tmp table(
+	gno nvarchar(1),
+	storeno nvarchar(50),
+	store nvarchar(100),
+	datea nvarchar(10),
+	ordeno nvarchar(50),
+	noq nvarchar(50),
+	custno nvarchar(50),
+	comp nvarchar(100),
+	productno nvarchar(50),
+	product nvarchar(100),
+	omount float,
+	cmount float,
+	smount float,
+	ncmount float,
+	nsmount float,
+	lengthb float,
+	width float,
+	volume float,
+	mins float,
+	chk1 nvarchar(1),
+	addrno nvarchar(50),
+	addr nvarchar(100),
+	addrness nvarchar(max)
+)
+insert @tmp
+select '9',endaddrno,endaddr,datea,ordeno,no2,custno,cust,b.productno,b.product,isnull(c.mount,0)
+,case when b.chk1='1' then b.mount else 0 end,case when b.chk2='1' then b.mount else 0 end
+,isnull(c.mount,0)-case when b.chk1='1' then b.mount else 0 end,''
+,b.lengthb
+,b.width,b.volume,mins,case when isassign='1' then 'V' else '' end,b.addrno,b.addr,b.address
+from view_tranvcce a left join view_tranvcces b on a.noa=b.noa
+left join view_tranordes c on b.ordeno=c.noa and b.no2=c.noq
+
+update @tmp
+set nsmount= case when isnull(ncmount,0)!=0 then ncmount else cmount-smount end
+
+insert @tmp(gno,storeno,store,productno,product,ordeno,omount,cmount,smount,ncmount,nsmount)
+select '0',storeno,store,productno,product,'前期存量',sum(omount),sum(cmount),sum(smount),sum(ncmount),sum(nsmount)
+from @tmp
+where datea<@t_bdate
+group by storeno,store,productno,product
+
+insert @tmp
+select '1',storeno,store,datea,ordeno,'',custno,comp,productno,product,sum(omount),sum(cmount),sum(smount)
+,sum(ncmount),sum(nsmount),lengthb,width,volume,mins,chk1,addrno,addr,addrness
+from @tmp
+where datea between @t_bdate and @t_edate
+and gno='9'
+group by storeno,store,datea,ordeno,chk1,custno,comp,productno,product,lengthb,width,volume,mins,addrno,addr,addrness
+
+insert @tmp(gno,storeno,store,productno,product,ordeno,omount,cmount,smount,ncmount,nsmount)
+select '2',storeno,store,productno,product,'目前存量',sum(omount),sum(cmount),sum(smount),sum(ncmount),sum(nsmount)
+from @tmp
+where gno='9'
+group by storeno,store,productno,product
+
+delete @tmp where gno='9'
+
+insert @tmp(gno,storeno,productno)
+select '3',storeno,char(255)
+from @tmp
+group by storeno
+
+select 
+dbo.getComma(omount,0),
+dbo.getComma(cmount,0),
+dbo.getComma(smount,0),
+dbo.getComma(ncmount,0),
+dbo.getComma(nsmount,0),
+* from @tmp
+order by storeno,productno,gno,ordeno
+;
