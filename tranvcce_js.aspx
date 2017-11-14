@@ -564,6 +564,12 @@
 				$('#_carno').children().remove();
 				refreshBbs();
 				
+				$('#pathImg').html('');
+				for(var i=0;i<q_bbtCount;i++){
+					if($.trim($('#txtPaths__'+i).val()).length>0){
+						$('#pathImg').append('<img src="'+JSON.parse($('#txtPaths__'+i).val()).path.replace(/＆/g,"&")+'" title="'+JSON.parse($('#txtPaths__'+i).val()).carno+'"> </img>');
+					}
+				}
 			}
 			function refreshBbs(){
 				switch(q_getPara('sys.project').toUpperCase()){
@@ -755,13 +761,14 @@
                 console.log(origin);
                 console.log(destination);
                 console.log(waypts);*/
-                directionsService.route({
+               var request = {
                     origin : origin,
                     destination : destination,
                     waypoints : waypts,
                     optimizeWaypoints : (data_car[data_car_current].isassign==1?false:true),//指定路徑就照原先所設定的
                     travelMode : google.maps.TravelMode.DRIVING
-                }, function(response, status) {
+                };
+                directionsService.route(request, function(response, status) {
                     if (status === google.maps.DirectionsStatus.OK) {
                         var date = new Date(parseInt($('#txtDatea').val().substring(0,3))+1911
                         	,$('#txtDatea').val().substring(4,6)
@@ -796,7 +803,8 @@
                         //var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?center='+$('#txtLat').val()+','+$('#txtLng').val()+'&size=300x300&maptype=roadmap';
                         var imgsrc = 'https://maps.googleapis.com/maps/api/staticmap?size=300x300&maptype=roadmap';
                         
-                        imgsrc += '&markers=color:green|label:S|'+response.request.origin.lat()+','+response.request.origin.lng();
+                        //imgsrc += '&markers=color:green|label:S|'+response.request.origin.lat()+','+response.request.origin.lng();
+                        imgsrc += '&markers=color:green|label:S|'+route.legs[0].start_location.lat()+','+route.legs[0].start_location.lng();
                         
                         var gvolume=0,evolume=data_car[data_car_current].volume;
                         var gweight=0,eweight=data_car[data_car_current].weight;
@@ -1046,6 +1054,13 @@
                         //imgsrc += '&markers=color:green|label:E|'+$('#txtEndlat').val()+','+$('#txtEndlng').val();
                         imgsrc+='&key=AIzaSyC4lkDc9H0JanDkP8MUpO-mzXRtmugbiI8';
                         $('#pathImg').append('<img src="'+imgsrc+'" title="'+data_car[data_car_current].carno+'"> </img>');
+                        //排程時會清空所有的txtPaths__
+                        for(var i=0;i<q_bbtCount;i++){
+                        	if($.trim($('#txtPaths__'+i).val()).length==0){
+                        		$('#txtPaths__'+i).val(JSON.stringify({carno:data_car[data_car_current].carno,path:imgsrc}));
+                        		break;
+                        	}
+                        }
                         data_car_current++;
                         if(data_car_current<data_car.length){
 						   	initMap();
@@ -1391,6 +1406,7 @@
 							data_car_current = 0;
 							for (var i = 0; i < q_bbtCount; i++) {
 	                        	$('#btnMinut__'+i).click();
+	                        	$('#txtPaths__'+i).val('');
 	                        }
 	                        $('#pathImg').html('');
 	                        $('#mapForm').hide();
@@ -2046,6 +2062,8 @@
 					<td align="center">
 						<input class="btn"  id="btnMinut..*" type="button" value='-' style=" font-weight: bold; display:noxne;" />
 						<input type="text" id="txtNoq..*" style="display:none;"/>
+						<!-- 儲存圖片路徑,以便平時觀看 -->
+						<input type="text" id="txtPaths..*" style="display:none;"/>
 					</td>
 					<td><input type="button" id="btnMap..*" value="圖"/></td>
 					<td><a id="lblNo..*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
