@@ -132,7 +132,21 @@ begin
 			,typea,time1,time2,lengthb,width,height
 			,mount,unit,volume,[weight]
 			,money1,money2,money3,money4,memo,memo2)
-		select top 300 1, a.noa,a.noq
+		select top 100 1, a.noa,a.noq
+			,a.custno,a.cust,a.custno2,a.cust2
+			,a.addrno,a.addr,a.containerno1
+			,a.addrno2,a.addr2,a.containerno2 
+			,a.typea,a.time1,a.time2,a.lengthb,a.width,a.height
+			,a.mount,a.unit,a.volume,a.[weight]
+			,a.total,a.total2
+			,0,0
+			,a.memo,a.memo2
+		from view_tranordes a
+		outer apply(select top 1 * from view_tranvcces where ordeno=a.noa and no2=a.noq and noa!=@tranvcceno) c
+		where c.noa is null --一筆訂單只能匯入一次, 一次只顯示最近300筆
+		and a.trandate= @condition
+		order by a.trandate desc,a.noa,a.noq
+		/*select top 100 1, a.noa,a.noq
 			,b.custno,b.nick,b.productno,b.product
 			,b.addrno,b.addr,b.casepackaddr
 			,b.cbno,b.caddr,b.caseopenaddr 
@@ -146,7 +160,7 @@ begin
 		where ISNULL(b.enda,0) = 0 
 		and c.noa is null --一筆訂單只能匯入一次, 一次只顯示最近300筆
 		and b.datea = @condition
-		order by b.datea desc,a.noa,a.noq
+		order by b.datea desc,a.noa,a.noq*/
 	end
 	else 
 	begin
